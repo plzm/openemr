@@ -6,7 +6,11 @@ on:
 jobs:
   deploy:
     name: Deploy Infrastructure
+    environment: ${{ vars.OE_ENVIRONMENT }}
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        location: ${{ vars.OE_AZURE_LOCATIONS }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -34,21 +38,18 @@ jobs:
       - name: Create Resource Groups
         if: success()
         run: |
-          ./scripts/01-deploy-infra/01-deploy-rgs.sh
+          # ./scripts/01-deploy-infra/01-deploy-rgs.sh
+          az group create -n "$RG_NAME_SECURITY" -l "${{ matrix.location }}"
 
-      - name: Deploy User-Assigned MI
+      - name: Deploy User-Assigned Identity
         if: success()
         run: |
-          ./scripts/01-deploy-infra/02-deploy-uami.sh
+          ./scripts/01-deploy-infra/02-deploy-uai.sh
 
-      - name: Deploy Network
-        if: success()
-        run: |
-          ./scripts/01-deploy-infra/03-deploy-network.sh
-
-
-
-
+      #- name: Deploy Network
+      #  if: success()
+      #  run: |
+      #    ./scripts/01-deploy-infra/03-deploy-network.sh
 
       - name: Azure logout
         if: always()
