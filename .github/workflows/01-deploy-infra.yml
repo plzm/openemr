@@ -1,0 +1,60 @@
+name: 01-Deploy-Infrastructure
+
+on: 
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy Infrastructure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Make scripts executable
+        run: |
+          find ./scripts -type f -exec chmod +x {} \;
+
+      - name: Azure login
+        if: success()
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set Azure CLI extensions to auto-install
+        if: success()
+        run: |
+          az config set extension.use_dynamic_install=yes_without_prompt
+
+      - name: Set Environment Variables
+        if: success()
+        run: |
+          ./scripts/set-env-vars.sh
+
+      - name: Create Resource Groups
+        if: success()
+        run: |
+          ./scripts/01-deploy-infra/01-deploy-rgs.sh
+
+      - name: Deploy User-Assigned MI
+        if: success()
+        run: |
+          ./scripts/01-deploy-infra/02-deploy-uami.sh
+
+      - name: Deploy Network
+        if: success()
+        run: |
+          ./scripts/01-deploy-infra/03-deploy-network.sh
+
+
+
+
+
+      - name: Azure logout
+        if: always()
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az logout
+            az cache purge
+            az account clear
