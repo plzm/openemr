@@ -33,22 +33,22 @@ jobs:
 
       - name: Set Environment Variables
         if: success()
-        shell: bash
         run: |
           . ./scripts/set-env-vars.sh
           setEnvVar "FOO" "bar"
+        shell: bash
 
       - name: Test Env Var in bash
         if: success()
-        shell: bash
         run: |
           echo ${{ env.FOO }}
+        shell: bash
 
       - name: Test Env Var in pwsh
         if: success()
-        shell: pwsh
         run: |
           Write-Output ${{ env.FOO }}
+        shell: pwsh
 
       #- name: Create Resource Groups
       #  if: success()
