@@ -15,36 +15,62 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Make scripts executable
-        run: |
-          find ./scripts -type f -exec chmod +x {} \;
-
-      - name: Azure login
-        if: success()
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      #- name: Make scripts executable
+      #  run: |
+      #    find ./scripts -type f -exec chmod +x {} \;
 
       - name: Set Azure CLI extensions to auto-install
         if: success()
         run: |
           az config set extension.use_dynamic_install=yes_without_prompt
 
+      - name: Azure login
+        if: success()
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          enable-AzPSSession: true
+
       - name: Set Environment Variables
         if: success()
+        shell: bash
         run: |
-          ./scripts/set-env-vars.sh
+          . ./scripts/set-env-vars.sh
+          setEnvVar "FOO" "bar"
 
-      - name: Create Resource Groups
+      - name: Test Env Var in bash
         if: success()
+        shell: bash
         run: |
-          # ./scripts/01-deploy-infra/01-deploy-rgs.sh
-          az group create -n "$RG_NAME_SECURITY" -l "${{ matrix.location }}"
+          echo ${{ env.FOO }}
 
-      - name: Deploy User-Assigned Identity
+      - name: Test Env Var in pwsh
         if: success()
+        shell: pwsh
         run: |
-          ./scripts/01-deploy-infra/02-deploy-uai.sh
+          Write-Output ${{ env.FOO }}
+
+      #- name: Create Resource Groups
+      #  if: success()
+      #  shell: pwsh
+      #  run: |
+      #    az group create -n -l 
+
+
+
+
+
+
+      #- name: Create Resource Groups
+      #  if: success()
+      #  run: |
+      #    # ./scripts/01-deploy-infra/01-deploy-rgs.sh
+      #    az group create -n "$RG_NAME_SECURITY" -l "${{ matrix.location }}"
+
+      #- name: Deploy User-Assigned Identity
+      #  if: success()
+      #  run: |
+      #    ./scripts/01-deploy-infra/02-deploy-uai.sh
 
       #- name: Deploy Network
       #  if: success()
