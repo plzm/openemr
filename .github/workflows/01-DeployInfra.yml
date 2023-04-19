@@ -13,7 +13,7 @@ jobs:
         location: ['${{ vars.OE_AZURE_LOCATIONS }}']
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set Azure CLI extensions to auto-install
         if: success()
@@ -31,19 +31,21 @@ jobs:
         if: success()
         run: |
           . ./scripts/SetEnvVar.ps1
-          setEnvVar "FOO" "BAR"
+          SetEnvVar "FOO" "BAR"
         shell: pwsh
 
       - name: Test Env Var in bash
         if: success()
         run: |
           echo ${{ env.FOO }}
+          echo $FOO
         shell: bash
 
       - name: Test Env Var in pwsh
         if: success()
         run: |
           Write-Output ${{ env.FOO }}
+          Write-Output $FOO
         shell: pwsh
 
       #- name: Create Resource Groups

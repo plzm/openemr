@@ -15,7 +15,7 @@ function SetEnvVar
     None
     .EXAMPLE
     PS> . ./SetEnvVar.ps1
-    PS> SetEnvVar -VarName "fooVar" -VarValue "fooValue"
+    PS> SetEnvVar -VarName "OE_FOO" -VarValue "BAR"
     .LINK
     None
   #>
@@ -33,10 +33,14 @@ function SetEnvVar
 
   if ($env.GITHUB_ENV)
   {
+    Write-Host "GH"
     Write-Output "$VarName=$VarValue" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
   }
   else
   {
-    Invoke-Expression ("$" + "env:" + "$VarName='$VarValue'")
+    Write-Host "local"
+    $cmd = "$" + "env:" + "$VarName='$VarValue'"
+    #$cmd
+    Invoke-Expression $cmd
   }
 }
