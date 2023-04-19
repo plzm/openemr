@@ -34,19 +34,13 @@ jobs:
           SetEnvVar "FOO" "BAR"
         shell: pwsh
 
-      - name: Test Env Var in bash
+      - name: Test Matrix Location
         if: success()
         run: |
-          echo ${{ env.FOO }}
-          echo $FOO
-        shell: bash
-
-      - name: Test Env Var in pwsh
-        if: success()
-        run: |
-          Write-Output ${{ env.FOO }}
-          Write-Output $env:FOO
+          Write-Output "${{ matrix.location }}"
         shell: pwsh
+
+
 
       #- name: Create Resource Groups
       #  if: success()
@@ -87,3 +81,18 @@ jobs:
       #- name: Make scripts executable
       #  run: |
       #    find ./scripts -type f -exec chmod +x {} \;
+
+
+      #- name: Test Env Var in pwsh
+      #  if: success()
+      #  run: |
+      #    Write-Output ${{ env.FOO }}
+      #    Write-Output $env:FOO
+      #  shell: pwsh
+
+      #- name: Test Env Var in bash
+      #  if: success()
+      #  run: |
+      #    echo ${{ env.FOO }}
+      #    echo $FOO
+      #  shell: bash
