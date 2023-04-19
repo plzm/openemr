@@ -18,11 +18,21 @@ jobs:
   lint_workflows:
     name: Lint Workflows
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+      statuses: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-
-      - name: Run Action Linting
-        uses: cfy9/action-linting@main
         with:
-          arguments: "-color"
+          # Full git history is needed to get a proper
+          # list of changed files within `super-linter`
+          fetch-depth: 0
+
+      - name: Lint Code Base
+        uses: github/super-linter@v5
+        env:
+          VALIDATE_ALL_CODEBASE: false
+          DEFAULT_BRANCH: develop
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
