@@ -23,7 +23,6 @@ jobs:
     strategy:
       matrix:
         ${{fromJson(needs.prep_matrix.outputs.matrix)}}
-        #location: [eastus, eastus2]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
