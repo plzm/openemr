@@ -15,10 +15,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      #- name: Make scripts executable
-      #  run: |
-      #    find ./scripts -type f -exec chmod +x {} \;
-
       - name: Set Azure CLI extensions to auto-install
         if: success()
         run: |
@@ -34,9 +30,9 @@ jobs:
       - name: Set Environment Variables
         if: success()
         run: |
-          . ./scripts/set-env-vars.sh
-          setEnvVar "FOO" "bar"
-        shell: bash
+          . ./scripts/SetEnvVar.ps1
+          setEnvVar "FOO" "BAR"
+        shell: pwsh
 
       - name: Test Env Var in bash
         if: success()
@@ -56,6 +52,15 @@ jobs:
       #  run: |
       #    az group create -n -l 
 
+
+      - name: Azure logout
+        if: always()
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az logout
+            az cache purge
+            az account clear
 
 
 
@@ -77,11 +82,6 @@ jobs:
       #  run: |
       #    ./scripts/01-deploy-infra/03-deploy-network.sh
 
-      - name: Azure logout
-        if: always()
-        uses: azure/CLI@v1
-        with:
-          inlineScript: |
-            az logout
-            az cache purge
-            az account clear
+      #- name: Make scripts executable
+      #  run: |
+      #    find ./scripts -type f -exec chmod +x {} \;
