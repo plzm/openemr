@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        location: ${{ vars.OE_AZURE_LOCATIONS }}
+        location: [${{ vars.OE_AZURE_LOCATIONS }}]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
