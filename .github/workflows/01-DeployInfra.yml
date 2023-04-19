@@ -4,16 +4,28 @@ on:
   workflow_dispatch:
 
 jobs:
+  prep_matrix:
+    name: Prepare Matrix
+    environment: ${{ vars.OE_ENVIRONMENT }}
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+    - id: set-matrix
+      run: echo "::set-output name=matrix::{\"include\":[${{ vars.OE_AZURE_LOCATIONS }}]}"
+      #run: echo "::set-output name=matrix::{\"include\":[{\"location\":\"eastus\"},{\"location\":\"eastus2\"}]}"
+
   deploy:
+    needs: prep_matrix
     name: Deploy Infrastructure
     environment: ${{ vars.OE_ENVIRONMENT }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        location: ['${{ vars.OE_AZURE_LOCATIONS }}']
+        ${{fromJson(needs.prep_matrix.outputs.matrix)}}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set Azure CLI extensions to auto-install
         if: success()
@@ -31,20 +43,17 @@ jobs:
         if: success()
         run: |
           . ./scripts/SetEnvVar.ps1
-          setEnvVar "FOO" "BAR"
+          SetEnvVar "FOO" "BAR"
         shell: pwsh
 
-      - name: Test Env Var in bash
+      - name: Test Matrix Location
         if: success()
         run: |
-          echo ${{ env.FOO }}
-        shell: bash
-
-      - name: Test Env Var in pwsh
-        if: success()
-        run: |
-          Write-Output ${{ env.FOO }}
+          Write-Output ${{ vars.OE_AZURE_LOCATIONS }}
+          Write-Output "${{ matrix.location }}"
         shell: pwsh
+
+
 
       #- name: Create Resource Groups
       #  if: success()
@@ -85,3 +94,18 @@ jobs:
       #- name: Make scripts executable
       #  run: |
       #    find ./scripts -type f -exec chmod +x {} \;
+
+
+      #- name: Test Env Var in pwsh
+      #  if: success()
+      #  run: |
+      #    Write-Output ${{ env.FOO }}
+      #    Write-Output $env:FOO
+      #  shell: pwsh
+
+      #- name: Test Env Var in bash
+      #  if: success()
+      #  run: |
+      #    echo ${{ env.FOO }}
+      #    echo $FOO
+      #  shell: bash
