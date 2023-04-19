@@ -37,6 +37,7 @@ jobs:
       - name: Test Matrix Location
         if: success()
         run: |
+          Write-Output ${{ vars.OE_AZURE_LOCATIONS }}
           Write-Output "${{ matrix.location }}"
         shell: pwsh
 
