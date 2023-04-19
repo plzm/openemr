@@ -45,7 +45,7 @@ jobs:
         if: success()
         run: |
           Write-Output ${{ env.FOO }}
-          Write-Output $FOO
+          Write-Output $env:FOO
         shell: pwsh
 
       #- name: Create Resource Groups
