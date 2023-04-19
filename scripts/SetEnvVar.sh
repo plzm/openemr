@@ -19,7 +19,7 @@ setEnvVar() {
     # We are in GitHub CI environment - export to GitHub Actions workflow context for availability in later tasks in this workflow
     cmd=$(echo -e "echo \x22""$varName""=""$varValue""\x22 \x3E\x3E \x24GITHUB_ENV")
     eval $cmd
-  elif
+  else
     # Export for local/immediate use
     cmd="export ""$varName""=\"""$varValue""\""
     eval $cmd
