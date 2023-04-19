@@ -12,7 +12,8 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
     - id: set-matrix
-      run: echo "::set-output name=matrix::{\"include\":[{\"location\":\"eastus\"},{\"location\":\"eastus2\"}]}"
+      run: echo "::set-output name=matrix::{\"include\":[${{ vars.OE_AZURE_LOCATIONS }}]}"
+      #run: echo "::set-output name=matrix::{\"include\":[{\"location\":\"eastus\"},{\"location\":\"eastus2\"}]}"
 
   deploy:
     needs: prep_matrix
