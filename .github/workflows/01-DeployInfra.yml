@@ -12,7 +12,8 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
     - id: set-matrix
-      run: echo "matrix={\"include\":[${{ vars.OE_AZURE_LOCATIONS }}]}" >> $GITHUB_OUTPUT
+      run: |
+        echo "matrix={\"include\":[${{ vars.OE_AZURE_LOCATIONS }}]}" >> "$GITHUB_OUTPUT"
 
   deploy:
     needs: prep_matrix
