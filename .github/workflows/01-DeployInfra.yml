@@ -12,8 +12,8 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
     - id: set-matrix
-      run: echo "::set-output name=matrix::{\"include\":[${{ vars.OE_AZURE_LOCATIONS }}]}"
-      #run: echo "::set-output name=matrix::{\"include\":[{\"location\":\"eastus\"},{\"location\":\"eastus2\"}]}"
+      run: |
+        echo "matrix={\"include\":[${{ vars.OE_AZURE_LOCATIONS }}]}" >> "$GITHUB_OUTPUT"
 
   deploy:
     needs: prep_matrix
@@ -43,23 +43,16 @@ jobs:
         if: success()
         run: |
           . ./scripts/SetEnvVar.ps1
-          SetEnvVar "FOO" "BAR"
+
+          # Resource Group Names
+          SetEnvVar2 -VarName "OE_RG_NAME" -VarValue "${{ vars.OE_ORG_NAME }}-openemr-${{ matrix.location }}"
         shell: pwsh
 
-      - name: Test Matrix Location
+      - name: Create Resource Groups
         if: success()
         run: |
-          Write-Output ${{ vars.OE_AZURE_LOCATIONS }}
-          Write-Output "${{ matrix.location }}"
+          az group create -l "${{ matrix.location }}" -n "${{ env.OE_RG_NAME }}"
         shell: pwsh
-
-
-
-      #- name: Create Resource Groups
-      #  if: success()
-      #  shell: pwsh
-      #  run: |
-      #    az group create -n -l 
 
 
       - name: Azure logout
