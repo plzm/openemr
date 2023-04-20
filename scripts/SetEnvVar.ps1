@@ -1,4 +1,4 @@
-function SetEnvVar
+function SetEnvVar2
 {
   <#
     .SYNOPSIS
@@ -15,7 +15,7 @@ function SetEnvVar
     None
     .EXAMPLE
     PS> . ./SetEnvVar.ps1
-    PS> SetEnvVar -VarName "OE_FOO" -VarValue "BAR"
+    PS> SetEnvVar2 -VarName "OE_FOO" -VarValue "BAR"
     .LINK
     None
   #>
@@ -43,4 +43,56 @@ function SetEnvVar
     #$cmd
     Invoke-Expression $cmd
   }
+}
+
+function SetEnvVar1()
+{
+  <#
+    .SYNOPSIS
+    This command sets an environment variable. It detects if the runtime context is GitHub Actions and if so, sets it correctly for GHA runners.
+    .DESCRIPTION
+    This command sets an environment variable. It detects if the runtime context is GitHub Actions and if so, sets it correctly for GHA runners.
+    .PARAMETER VarPair
+    The environment variable name and value as VAR_NAME=VAR_VALUE
+    .INPUTS
+    None
+    .OUTPUTS
+    None
+    .EXAMPLE
+    PS> . ./SetEnvVar.ps1
+    PS> SetEnvVar1 -VarPair "OE_FOO=BAR"
+    .LINK
+    None
+  #>
+
+  [CmdletBinding()]
+  param
+  (
+    [Parameter(Mandatory = $true)]
+    [string]
+    $VarPair
+  )
+
+  if ($VarPair -like "*=*")
+  {
+    $arr = $VarPair -split "="
+
+    if ($arr.Count -eq 2)
+    {
+      SetEnvVar2 -VarName $arr[0] -VarValue $arr[1]
+    }
+    else
+    {
+      Write-Host "You must pass a VarValue param like FOO=BAR, with a variable name separated from variable value by an equals sign. No change made."
+    }
+  }
+  else
+  {
+    Write-Host "You must pass a VarValue param like FOO=BAR, with a variable name separated from variable value by an equals sign. No change made."
+  }
+}
+
+function Get-EnvironmentVariables()
+{
+  Get-ChildItem env:
 }

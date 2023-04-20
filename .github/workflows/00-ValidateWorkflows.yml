@@ -8,11 +8,15 @@ on:
       - 'feature/*'
       - 'fix/*'
       - 'release/*'
+    paths:
+      - '.github/workflows/**'
   pull_request:
     branches:
       - develop
       - main
       - 'release/*'
+    paths:
+      - '.github/workflows/**'
 
 jobs:
   lint_workflows:
