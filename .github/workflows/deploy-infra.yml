@@ -46,7 +46,7 @@ jobs:
           . ./scripts/SetEnvVar.ps1
 
           # Resource Group Names
-          SetEnvVar2 -VarName "OE_RG_NAME" -VarValue "${{ vars.OE_ORG_NAME }}-openemr-${{ matrix.location }}"
+          SetEnvVar2 -VarName "OE_RG_NAME" -VarValue "${{ vars.OE_NAME_PREFIX }}-${{ vars.OE_NAME_INFIX }}-${{ matrix.location }}"
         shell: pwsh
 
       - name: Create Resource Groups
