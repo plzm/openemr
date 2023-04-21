@@ -1,5 +1,5 @@
 ---
-name: 01-Deploy-Infrastructure
+name: Deploy Azure Infrastructure
 
 on: 
   workflow_dispatch:
