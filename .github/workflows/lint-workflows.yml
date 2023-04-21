@@ -1,4 +1,5 @@
-name: Validate GHA Workflows
+---
+name: Lint Workflows
 
 on:
   workflow_dispatch:
@@ -34,9 +35,11 @@ jobs:
           # list of changed files within `super-linter`
           fetch-depth: 0
 
-      - name: Lint Code Base
+      - name: Lint Workflows
         uses: github/super-linter/slim@v5
         env:
-          VALIDATE_ALL_CODEBASE: false
+          VALIDATE_ALL_CODEBASE: true
           DEFAULT_BRANCH: develop
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FILTER_REGEX_INCLUDE: .*.github/workflows/.*
+...
