@@ -12,9 +12,9 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-    - id: set-matrix
-      run: |
-        echo "matrix={\"include\":[${{ vars.OE_AZURE_LOCATIONS }}]}" >> "$GITHUB_OUTPUT"
+      - id: set-matrix
+        run: |
+          echo "matrix={\"include\":[${{ vars.OE_AZURE_LOCATIONS }}]}" >> "$GITHUB_OUTPUT"
 
   deploy:
     needs: prep_matrix
@@ -46,10 +46,14 @@ jobs:
           . ./scripts/SetEnvVar.ps1
 
           # Resource Group Names
-          SetEnvVar2 -VarName "OE_RG_NAME" -VarValue "${{ vars.OE_NAME_PREFIX }}-${{ vars.OE_NAME_INFIX }}-${{ matrix.location }}"
+          SetEnvVar2 `
+          -VarName "OE_RG_NAME" `
+          -VarValue "${{ vars.OE_NAME_PREFIX }}-${{ vars.OE_NAME_INFIX }}-${{ matrix.location }}"
 
           # UAI Name
-          SetEnvVar2 -VarName "OE_UAI_NAME" -VarValue "mid-${{ vars.OE_NAME_PREFIX }}-${{ vars.OE_NAME_INFIX }}-${{ matrix.location }}-01"
+          SetEnvVar2 `
+          -VarName "OE_UAI_NAME" `
+          -VarValue "mid-${{ vars.OE_NAME_PREFIX }}-${{ vars.OE_NAME_INFIX }}-${{ matrix.location }}-01"
         shell: pwsh
 
       - name: Create Resource Groups
@@ -57,7 +61,10 @@ jobs:
         run: |
           . ./scripts/infra/DeployRG.ps1
 
-          DeployRG -SubscriptionID "${{ vars.OE_AZURE_SUBSCRIPTION_ID }}" Location "${{ matrix.location }}" -ResourceGroupName "${{ env.OE_RG_NAME }}"
+          DeployRG `
+          -SubscriptionID "${{ vars.OE_AZURE_SUBSCRIPTION_ID }}" `
+          -Location "${{ matrix.location }}" `
+          -ResourceGroupName "${{ env.OE_RG_NAME }}"
         shell: pwsh
 
       - name: Create User Assigned Identity
@@ -65,7 +72,12 @@ jobs:
         run: |
           . ./scripts/infra/DeployUAI.ps1
 
-          DeployUAI -SubscriptionID "${{ vars.OE_AZURE_SUBSCRIPTION_ID }}" Location "${{ matrix.location }}" -ResourceGroupName "${{ env.OE_RG_NAME }}" -TenantId "${{ env.OE_AZURE_TENANT_ID }}" -UAIName "${{ env.OE_UAI_NAME }}"
+          DeployUAI `
+          -SubscriptionID "${{ vars.OE_AZURE_SUBSCRIPTION_ID }}" `
+          -Location "${{ matrix.location }}" `
+          -ResourceGroupName "${{ env.OE_RG_NAME }}" `
+          -TenantId "${{ env.OE_AZURE_TENANT_ID }}" `
+          -UAIName "${{ env.OE_UAI_NAME }}"
         shell: pwsh
 
 
