@@ -76,7 +76,7 @@ jobs:
           -SubscriptionID "${{ vars.OE_AZURE_SUBSCRIPTION_ID }}" `
           -Location "${{ matrix.location }}" `
           -ResourceGroupName "${{ env.OE_RG_NAME }}" `
-          -TenantId "${{ env.OE_AZURE_TENANT_ID }}" `
+          -TenantId "${{ vars.OE_AZURE_TENANT_ID }}" `
           -UAIName "${{ env.OE_UAI_NAME }}"
         shell: pwsh
 
