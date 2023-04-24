@@ -1,5 +1,5 @@
 ---
-name: Deploy Azure Infrastructure
+name: Deploy Infrastructure
 
 on: 
   workflow_dispatch:
@@ -12,9 +12,9 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-    - id: set-matrix
-      run: |
-        echo "matrix={\"include\":[${{ vars.OE_AZURE_LOCATIONS }}]}" >> "$GITHUB_OUTPUT"
+      - id: set-matrix
+        run: |
+          echo "matrix={\"include\":[${{ vars.OE_AZURE_LOCATIONS }}]}" >> "$GITHUB_OUTPUT"
 
   deploy:
     needs: prep_matrix
@@ -46,13 +46,38 @@ jobs:
           . ./scripts/SetEnvVar.ps1
 
           # Resource Group Names
-          SetEnvVar2 -VarName "OE_RG_NAME" -VarValue "${{ vars.OE_NAME_PREFIX }}-${{ vars.OE_NAME_INFIX }}-${{ matrix.location }}"
+          SetEnvVar2 `
+          -VarName "OE_RG_NAME" `
+          -VarValue "${{ vars.OE_NAME_PREFIX }}-${{ vars.OE_NAME_INFIX }}-${{ matrix.location }}"
+
+          # UAI Name
+          SetEnvVar2 `
+          -VarName "OE_UAI_NAME" `
+          -VarValue "mid-${{ vars.OE_NAME_PREFIX }}-${{ vars.OE_NAME_INFIX }}-${{ matrix.location }}-01"
         shell: pwsh
 
       - name: Create Resource Groups
         if: success()
         run: |
-          az group create -l "${{ matrix.location }}" -n "${{ env.OE_RG_NAME }}"
+          . ./scripts/infra/DeployRG.ps1
+
+          DeployRG `
+          -SubscriptionID "${{ vars.OE_AZURE_SUBSCRIPTION_ID }}" `
+          -Location "${{ matrix.location }}" `
+          -ResourceGroupName "${{ env.OE_RG_NAME }}"
+        shell: pwsh
+
+      - name: Create User Assigned Identity
+        if: success()
+        run: |
+          . ./scripts/infra/DeployUAI.ps1
+
+          DeployUAI `
+          -SubscriptionID "${{ vars.OE_AZURE_SUBSCRIPTION_ID }}" `
+          -Location "${{ matrix.location }}" `
+          -ResourceGroupName "${{ env.OE_RG_NAME }}" `
+          -TenantId "${{ env.OE_AZURE_TENANT_ID }}" `
+          -UAIName "${{ env.OE_UAI_NAME }}"
         shell: pwsh
 
 
@@ -65,20 +90,6 @@ jobs:
             az cache purge
             az account clear
 
-
-
-
-
-      #- name: Create Resource Groups
-      #  if: success()
-      #  run: |
-      #    # ./scripts/01-deploy-infra/01-deploy-rgs.sh
-      #    az group create -n "$RG_NAME_SECURITY" -l "${{ matrix.location }}"
-
-      #- name: Deploy User-Assigned Identity
-      #  if: success()
-      #  run: |
-      #    ./scripts/01-deploy-infra/02-deploy-uai.sh
 
       #- name: Deploy Network
       #  if: success()
