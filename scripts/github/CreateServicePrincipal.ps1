@@ -6,7 +6,7 @@ param
   [Parameter(Mandatory = $true)]
   [string]
   $ServicePrincipalName,
-  [Parameter(Mandatory = $true)]
+  [Parameter()]
   [string]
   $RoleName = "Owner"
 )
