@@ -11,6 +11,8 @@ function DeployUAI()
     The Azure region
     .PARAMETER ResourceGroupName
     The Resource Group name
+    .PARAMETER TemplateUri
+    The ARM template URI
     .PARAMETER TenantId
     The Azure tenant ID
     .PARAMETER UAIName
@@ -21,7 +23,7 @@ function DeployUAI()
     None
     .EXAMPLE
     PS> . ./DeployUAI.ps1
-    PS> DeployUAI -SubscriptionID "MyAzureSubscriptionId" Location "westus" -ResourceGroupName "MyResourceGroupName" -TenantId "MyTenantId" -UAIName "MyUAIName"
+    PS> DeployUAI -SubscriptionID "MyAzureSubscriptionId" Location "westus" -ResourceGroupName "MyResourceGroupName" -TemplateUri "MyARMTemplateURI" -TenantId "MyTenantId" -UAIName "MyUAIName"
     .LINK
     None
   #>
@@ -40,6 +42,9 @@ function DeployUAI()
     $ResourceGroupName,
     [Parameter(Mandatory = $true)]
     [string]
+    $TemplateUri,
+    [Parameter(Mandatory = $true)]
+    [string]
     $TenantId,
     [Parameter(Mandatory = $true)]
     [string]
@@ -51,7 +56,7 @@ function DeployUAI()
     -n "UAI-$Location" `
     -l "$Location" `
     -g "$ResourceGroupName" `
-    --template-uri "" `
+    --template-uri "$TemplateUri" `
     --parameters `
     location="$Location" `
     tenantId="$TenantId" `
