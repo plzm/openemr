@@ -23,7 +23,7 @@ function DeployUAI()
     None
     .EXAMPLE
     PS> . ./DeployUAI.ps1
-    PS> DeployUAI -SubscriptionID "MyAzureSubscriptionId" Location "westus" -ResourceGroupName "MyResourceGroupName" -TemplateUri "MyARMTemplateURI" -TenantId "MyTenantId" -UAIName "MyUAIName"
+    PS> DeployUAI -SubscriptionID "MyAzureSubscriptionId" -Location "westus" -ResourceGroupName "MyResourceGroupName" -TemplateUri "MyARMTemplateURI" -TenantId "MyTenantId" -UAIName "MyUAIName"
     .LINK
     None
   #>
@@ -53,8 +53,7 @@ function DeployUAI()
 
   az deployment group create `
     --subscription "$SubscriptionId" `
-    -n "UAI-$Location" `
-    -l "$Location" `
+    -n "$UAIName" `
     -g "$ResourceGroupName" `
     --template-uri "$TemplateUri" `
     --parameters `
