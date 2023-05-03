@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ${{fromJson(needs.prep_matrix.outputs.matrix)}}
+        ${{ fromJson(needs.prep_matrix.outputs.matrix) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -40,25 +40,33 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: true
 
-      - name: Set Environment Variables
+      - name: Set Dynamic Environment Variables
         if: success()
         run: |
           . ./scripts/SetEnvVar.ps1
 
-          # Resource Group Names
-          SetEnvVar2 `
-          -VarName "OE_RG_NAME" `
-          -VarValue "${{ vars.OE_NAME_PREFIX }}-${{ vars.OE_NAME_INFIX }}-${{ matrix.location }}"
+          # Resource Group Name (eventually Names)
+          $rgName = "${{ vars.OE_NAME_PREFIX }}-${{ vars.OE_NAME_INFIX }}-${{ matrix.location }}"
+          SetEnvVar2 -VarName "OE_RG_NAME" -VarValue $rgName
 
           # UAI Name
-          SetEnvVar2 `
-          -VarName "OE_UAI_NAME" `
-          -VarValue "mid-${{ vars.OE_NAME_PREFIX }}-${{ vars.OE_NAME_INFIX }}-${{ matrix.location }}-01"
+          $uaiName = "mid-${{ vars.OE_NAME_PREFIX }}-${{ vars.OE_NAME_INFIX }}-${{ matrix.location }}-01"
+          SetEnvVar2 -VarName "OE_UAI_NAME" -VarValue $uaiName
 
           # VNet Name
-          SetEnvVar2 `
-          -VarName "OE_VNET_NAME" `
-          -VarValue "vnt-${{ vars.OE_NAME_PREFIX }}-${{ vars.OE_NAME_INFIX }}-${{ matrix.location }}-01"
+          $vnetName = "vnt-${{ vars.OE_NAME_PREFIX }}-${{ vars.OE_NAME_INFIX }}-${{ matrix.location }}-01"
+          SetEnvVar2 -VarName "OE_VNET_NAME" -VarValue $vnetName
+        shell: pwsh
+
+      - name: Set Config-Driven Environment Variables
+        if: success()
+        run: |
+          . ./scripts/SetEnvVar.ps1
+
+          $json = "${{ fromJson(vars.OE_AZURE_LOCATIONS) }}" | ConvertFrom-Json
+          $region = ($json | Where-Object { $_.location -eq "${{ matrix.location }}" })
+
+          SetEnvVar2 -VarName "OE_VNET_ADDRESS_SPACE" -VarValue $region.vnetAddressSpace
         shell: pwsh
 
       - name: Set Tags
@@ -82,9 +90,7 @@ jobs:
           $tagsJson = "`"$tagsJson`""
 
           # Set the env var
-          SetEnvVar2 `
-          -VarName "OE_TAGS_JSON" `
-          -VarValue "$tagsJson"
+          SetEnvVar2 -VarName "OE_TAGS_JSON" -VarValue "$tagsJson"
         shell: pwsh
 
       - name: Create Resource Groups
@@ -99,7 +105,7 @@ jobs:
           -Tags "${{ env.OE_TAGS_JSON }}"
         shell: pwsh
 
-      - name: Create User Assigned Identity
+      - name: Deploy User Assigned Identity
         if: success()
         run: |
           . ./scripts/infra/DeployUAI.ps1
@@ -125,12 +131,10 @@ jobs:
           -ResourceGroupName "${{ env.OE_RG_NAME }}" `
           -TemplateUri "${{ vars.OE_ARM_TEMPLATE_URI_PREFIX }}net.vnet.json" `
           -VNetName "${{ env.OE_VNET_NAME }}" `
-          -VNetPrefix "${{ env. }}" `
+          -VNetPrefix "${{ env.OE_VNET_ADDRESS_SPACE }}" `
           -EnableDdosProtection $false `
           -Tags "${{ env.OE_TAGS_JSON }}"
-
         shell: pwsh
-
 
       - name: Azure logout
         if: always()
@@ -140,9 +144,6 @@ jobs:
             az logout
             az cache purge
             az account clear
-
-
-
 
       #- name: Test Env Var in pwsh
       #  if: success()

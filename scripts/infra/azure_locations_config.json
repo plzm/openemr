@@ -1,0 +1,10 @@
+[
+  {
+    \"location\": \"westus\",
+    \"vnetAddressSpace\": \"10.1.0.0/16\"
+  },
+  {
+    \"location\": \"westus2\",
+    \"vnetAddressSpace\": \"10.2.0.0/16\"
+  }
+]
