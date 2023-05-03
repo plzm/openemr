@@ -1,1 +1,1 @@
-[{"location": "westus", "vnetAddressSpace": "foo"}, {"location": "westus2", "vnetAddressSpace": "bar"}]
+[{"location": "westus", "vnetAddressSpace": "10.0.1.0/24"}, {"location": "westus2", "vnetAddressSpace": "10.0.2.0/24"}]
