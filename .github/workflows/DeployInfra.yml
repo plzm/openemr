@@ -64,6 +64,7 @@ jobs:
           . ./scripts/SetEnvVar.ps1
 
           $json = "${{ fromJson(vars.OE_AZURE_LOCATIONS_CONFIG) }}" | ConvertFrom-Json
+          Write-Output $json
           $region = ($json | Where-Object { $_.location -eq "${{ matrix.location }}" })
 
           SetEnvVar2 -VarName "OE_VNET_ADDRESS_SPACE" -VarValue "$region.vnetAddressSpace"
