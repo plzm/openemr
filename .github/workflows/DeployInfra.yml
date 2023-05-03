@@ -28,35 +28,35 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      #- name: Set Azure CLI extensions to auto-install
-      #  if: success()
-      #  run: |
-      #    az config set extension.use_dynamic_install=yes_without_prompt
+      - name: Set Azure CLI extensions to auto-install
+        if: success()
+        run: |
+          az config set extension.use_dynamic_install=yes_without_prompt
 
-      #- name: Azure login
-      #  if: success()
-      #  uses: azure/login@v1
-      #  with:
-      #    creds: ${{ secrets.AZURE_CREDENTIALS }}
-      #    enable-AzPSSession: true
+      - name: Azure login
+        if: success()
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          enable-AzPSSession: true
 
-      #- name: Set Dynamic Environment Variables
-      #  if: success()
-      #  run: |
-      #    . ./scripts/SetEnvVar.ps1
+      - name: Set Dynamic Environment Variables
+        if: success()
+        run: |
+          . ./scripts/SetEnvVar.ps1
 
-      #    # Resource Group Name (eventually Names)
-      #    $rgName = "${{ vars.OE_NAME_PREFIX }}-${{ vars.OE_NAME_INFIX }}-${{ matrix.location }}"
-      #    SetEnvVar2 -VarName "OE_RG_NAME" -VarValue $rgName
+          # Resource Group Name (eventually Names)
+          $rgName = "${{ vars.OE_NAME_PREFIX }}-${{ vars.OE_NAME_INFIX }}-${{ matrix.location }}"
+          SetEnvVar2 -VarName "OE_RG_NAME" -VarValue $rgName
 
-      #    # UAI Name
-      #    $uaiName = "mid-${{ vars.OE_NAME_PREFIX }}-${{ vars.OE_NAME_INFIX }}-${{ matrix.location }}-01"
-      #    SetEnvVar2 -VarName "OE_UAI_NAME" -VarValue $uaiName
+          # UAI Name
+          $uaiName = "mid-${{ vars.OE_NAME_PREFIX }}-${{ vars.OE_NAME_INFIX }}-${{ matrix.location }}-01"
+          SetEnvVar2 -VarName "OE_UAI_NAME" -VarValue $uaiName
 
-      #    # VNet Name
-      #    $vnetName = "vnt-${{ vars.OE_NAME_PREFIX }}-${{ vars.OE_NAME_INFIX }}-${{ matrix.location }}-01"
-      #    SetEnvVar2 -VarName "OE_VNET_NAME" -VarValue $vnetName
-      #  shell: pwsh
+          # VNet Name
+          $vnetName = "vnt-${{ vars.OE_NAME_PREFIX }}-${{ vars.OE_NAME_INFIX }}-${{ matrix.location }}-01"
+          SetEnvVar2 -VarName "OE_VNET_NAME" -VarValue $vnetName
+        shell: pwsh
 
       - name: Set Config-Driven Environment Variables
         if: success()
@@ -65,86 +65,85 @@ jobs:
 
           $json = '${{ vars.OE_AZURE_LOCATIONS_CONFIG }}' | ConvertFrom-Json
           $region = ($json | Where-Object { $_.location -eq "${{ matrix.location }}" })
-          Write-Output $region.vnetAddressSpace
 
-          #SetEnvVar2 -VarName "OE_VNET_ADDRESS_SPACE" -VarValue "$region.vnetAddressSpace"
+          SetEnvVar2 -VarName "OE_VNET_ADDRESS_SPACE" -VarValue "$region.vnetAddressSpace"
         shell: pwsh
 
-      #- name: Set Tags
-      #  if: success()
-      #  run: |
-      #    . ./scripts/SetEnvVar.ps1
+      - name: Set Tags
+        if: success()
+        run: |
+          . ./scripts/SetEnvVar.ps1
 
-      #    $tagEnv = "env=${{ vars.OE_ENVIRONMENT }}"
-      #    $tagFoo = "foo=bar"
+          $tagEnv = "env=${{ vars.OE_ENVIRONMENT }}"
+          $tagFoo = "foo=bar"
 
-      #    $tagsCli = @($tagEnv, $tagFoo)
+          $tagsCli = @($tagEnv, $tagFoo)
 
-      #    $tagsObject = @{}
-      #    $tagsObject['env'] = '${{ vars.OE_ENVIRONMENT }}'
-      #    $tagsObject['foo'] = 'bar'
+          $tagsObject = @{}
+          $tagsObject['env'] = '${{ vars.OE_ENVIRONMENT }}'
+          $tagsObject['foo'] = 'bar'
 
-      #    # The following manipulations are needed to get through separate un-escaping by Powershell AND by Azure CLI, and to get CLI to correctly see the tags as a JSON string
-      #    # passed into ARM templates as an object type.
-      #    $tagsJson = ConvertTo-Json -InputObject $tagsObject -Compress
-      #    $tagsJson = $tagsJson.Replace('"', '''')
-      #    $tagsJson = "`"$tagsJson`""
+          # The following manipulations are needed to get through separate un-escaping by Powershell AND by Azure CLI, and to get CLI to correctly see the tags as a JSON string
+          # passed into ARM templates as an object type.
+          $tagsJson = ConvertTo-Json -InputObject $tagsObject -Compress
+          $tagsJson = $tagsJson.Replace('"', '''')
+          $tagsJson = "`"$tagsJson`""
 
-      #    # Set the env var
-      #    SetEnvVar2 -VarName "OE_TAGS_JSON" -VarValue "$tagsJson"
-      #  shell: pwsh
+          # Set the env var
+          SetEnvVar2 -VarName "OE_TAGS_JSON" -VarValue "$tagsJson"
+        shell: pwsh
 
-      #- name: Create Resource Groups
-      #  if: success()
-      #  run: |
-      #    . ./scripts/infra/DeployRG.ps1
+      - name: Create Resource Groups
+        if: success()
+        run: |
+          . ./scripts/infra/DeployRG.ps1
 
-      #    DeployRG `
-      #    -SubscriptionID "${{ vars.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #    -Location "${{ matrix.location }}" `
-      #    -ResourceGroupName "${{ env.OE_RG_NAME }}" `
-      #    -Tags "${{ env.OE_TAGS_JSON }}"
-      #  shell: pwsh
+          DeployRG `
+          -SubscriptionID "${{ vars.OE_AZURE_SUBSCRIPTION_ID }}" `
+          -Location "${{ matrix.location }}" `
+          -ResourceGroupName "${{ env.OE_RG_NAME }}" `
+          -Tags "${{ env.OE_TAGS_JSON }}"
+        shell: pwsh
 
-      #- name: Deploy User Assigned Identity
-      #  if: success()
-      #  run: |
-      #    . ./scripts/infra/DeployUAI.ps1
+      - name: Deploy User Assigned Identity
+        if: success()
+        run: |
+          . ./scripts/infra/DeployUAI.ps1
 
-      #    DeployUAI `
-      #    -SubscriptionID "${{ vars.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #    -Location "${{ matrix.location }}" `
-      #    -ResourceGroupName "${{ env.OE_RG_NAME }}" `
-      #    -TemplateUri "${{ vars.OE_ARM_TEMPLATE_URI_PREFIX }}identity.user-assigned-mi.json" `
-      #    -TenantId "${{ vars.OE_AZURE_TENANT_ID }}" `
-      #    -UAIName "${{ env.OE_UAI_NAME }}" `
-      #    -Tags "${{ env.OE_TAGS_JSON }}"
-      #  shell: pwsh
+          DeployUAI `
+          -SubscriptionID "${{ vars.OE_AZURE_SUBSCRIPTION_ID }}" `
+          -Location "${{ matrix.location }}" `
+          -ResourceGroupName "${{ env.OE_RG_NAME }}" `
+          -TemplateUri "${{ vars.OE_ARM_TEMPLATE_URI_PREFIX }}identity.user-assigned-mi.json" `
+          -TenantId "${{ vars.OE_AZURE_TENANT_ID }}" `
+          -UAIName "${{ env.OE_UAI_NAME }}" `
+          -Tags "${{ env.OE_TAGS_JSON }}"
+        shell: pwsh
 
-      #- name: Deploy Network
-      #  if: success()
-      #  run: |
-      #    . ./scripts/infra/DeployNetwork.ps1
+      - name: Deploy Network
+        if: success()
+        run: |
+          . ./scripts/infra/DeployNetwork.ps1
 
-      #    DeployVNet `
-      #    -SubscriptionID "${{ vars.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #    -Location "${{ matrix.location }}" `
-      #    -ResourceGroupName "${{ env.OE_RG_NAME }}" `
-      #    -TemplateUri "${{ vars.OE_ARM_TEMPLATE_URI_PREFIX }}net.vnet.json" `
-      #    -VNetName "${{ env.OE_VNET_NAME }}" `
-      #    -VNetPrefix "${{ env.OE_VNET_ADDRESS_SPACE }}" `
-      #    -EnableDdosProtection $false `
-      #    -Tags "${{ env.OE_TAGS_JSON }}"
-      #  shell: pwsh
+          DeployVNet `
+          -SubscriptionID "${{ vars.OE_AZURE_SUBSCRIPTION_ID }}" `
+          -Location "${{ matrix.location }}" `
+          -ResourceGroupName "${{ env.OE_RG_NAME }}" `
+          -TemplateUri "${{ vars.OE_ARM_TEMPLATE_URI_PREFIX }}net.vnet.json" `
+          -VNetName "${{ env.OE_VNET_NAME }}" `
+          -VNetPrefix "${{ env.OE_VNET_ADDRESS_SPACE }}" `
+          -EnableDdosProtection $false `
+          -Tags "${{ env.OE_TAGS_JSON }}"
+        shell: pwsh
 
-      #- name: Azure logout
-      #  if: always()
-      #  uses: azure/CLI@v1
-      #  with:
-      #    inlineScript: |
-      #      az logout
-      #      az cache purge
-      #      az account clear
+      - name: Azure logout
+        if: always()
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az logout
+            az cache purge
+            az account clear
 
       #- name: Test Env Var in pwsh
       #  if: success()
