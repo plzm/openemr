@@ -11,13 +11,15 @@ function DeployRG()
     The Azure region
     .PARAMETER ResourceGroupName
     The Resource Group name
+    .PARAMETER Tags
+    Tags as JSON
     .INPUTS
     None
     .OUTPUTS
     None
     .EXAMPLE
     PS> . ./DeployRG.ps1
-    PS> DeployRG -SubscriptionID "MyAzureSubscriptionId" Location "westus" -ResourceGroupName "MyResourceGroupName"
+    PS> DeployRG -SubscriptionID "MyAzureSubscriptionId" Location "westus" -ResourceGroupName "MyResourceGroupName" -Tags "MyTags"
     .LINK
     None
   #>
@@ -33,8 +35,11 @@ function DeployRG()
     $Location,
     [Parameter(Mandatory = $true)]
     [string]
-    $ResourceGroupName
+    $ResourceGroupName,
+    [Parameter(Mandatory = $false)]
+    [string]
+    $Tags = ""
   )
 
-  az group create --subscription "$SubscriptionId" -l "$Location" -n "$ResourceGroupName" --verbose
+  az group create --subscription "$SubscriptionId" -l "$Location" -n "$ResourceGroupName" --tags "$Tags" --verbose
 }

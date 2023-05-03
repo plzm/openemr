@@ -54,6 +54,37 @@ jobs:
           SetEnvVar2 `
           -VarName "OE_UAI_NAME" `
           -VarValue "mid-${{ vars.OE_NAME_PREFIX }}-${{ vars.OE_NAME_INFIX }}-${{ matrix.location }}-01"
+
+          # VNet Name
+          SetEnvVar2 `
+          -VarName "OE_VNET_NAME" `
+          -VarValue "vnt-${{ vars.OE_NAME_PREFIX }}-${{ vars.OE_NAME_INFIX }}-${{ matrix.location }}-01"
+        shell: pwsh
+
+      - name: Set Tags
+        if: success()
+        run: |
+          . ./scripts/SetEnvVar.ps1
+
+          $tagEnv = "env=${{ vars.OE_ENVIRONMENT }}"
+          $tagFoo = "foo=bar"
+
+          $tagsCli = @($tagEnv, $tagFoo)
+
+          $tagsObject = @{}
+          $tagsObject['env'] = '${{ vars.OE_ENVIRONMENT }}'
+          $tagsObject['foo'] = 'bar'
+
+          # The following manipulations are needed to get through separate un-escaping by Powershell AND by Azure CLI, and to get CLI to correctly see the tags as a JSON string
+          # passed into ARM templates as an object type.
+          $tagsJson = ConvertTo-Json -InputObject $tagsObject -Compress
+          $tagsJson = $tagsJson.Replace('"', '''')
+          $tagsJson = "`"$tagsJson`""
+
+          # Set the env var
+          SetEnvVar2 `
+          -VarName "OE_TAGS_JSON" `
+          -VarValue "$tagsJson"
         shell: pwsh
 
       - name: Create Resource Groups
@@ -64,7 +95,8 @@ jobs:
           DeployRG `
           -SubscriptionID "${{ vars.OE_AZURE_SUBSCRIPTION_ID }}" `
           -Location "${{ matrix.location }}" `
-          -ResourceGroupName "${{ env.OE_RG_NAME }}"
+          -ResourceGroupName "${{ env.OE_RG_NAME }}" `
+          -Tags "${{ env.OE_TAGS_JSON }}"
         shell: pwsh
 
       - name: Create User Assigned Identity
@@ -78,7 +110,25 @@ jobs:
           -ResourceGroupName "${{ env.OE_RG_NAME }}" `
           -TemplateUri "${{ vars.OE_ARM_TEMPLATE_URI_PREFIX }}identity.user-assigned-mi.json" `
           -TenantId "${{ vars.OE_AZURE_TENANT_ID }}" `
-          -UAIName "${{ env.OE_UAI_NAME }}"
+          -UAIName "${{ env.OE_UAI_NAME }}" `
+          -Tags "${{ env.OE_TAGS_JSON }}"
+        shell: pwsh
+
+      - name: Deploy Network
+        if: success()
+        run: |
+          . ./scripts/infra/DeployNetwork.ps1
+
+          DeployVNet `
+          -SubscriptionID "${{ vars.OE_AZURE_SUBSCRIPTION_ID }}" `
+          -Location "${{ matrix.location }}" `
+          -ResourceGroupName "${{ env.OE_RG_NAME }}" `
+          -TemplateUri "${{ vars.OE_ARM_TEMPLATE_URI_PREFIX }}net.vnet.json" `
+          -VNetName "${{ env.OE_VNET_NAME }}" `
+          -VNetPrefix "${{ env. }}" `
+          -EnableDdosProtection $false `
+          -Tags "${{ env.OE_TAGS_JSON }}"
+
         shell: pwsh
 
 
@@ -92,14 +142,6 @@ jobs:
             az account clear
 
 
-      #- name: Deploy Network
-      #  if: success()
-      #  run: |
-      #    ./scripts/01-deploy-infra/03-deploy-network.sh
-
-      #- name: Make scripts executable
-      #  run: |
-      #    find ./scripts -type f -exec chmod +x {} \;
 
 
       #- name: Test Env Var in pwsh
