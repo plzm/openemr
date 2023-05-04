@@ -88,12 +88,12 @@ jobs:
           $tagsForArm = ConvertTo-Json -InputObject $tagsObject -Compress
           $tagsForArm = $tagsForArm.Replace('"', '''')
           $tagsForArm = "`"$tagsForArm`""
-
+          $tagsForArm
           # Set the env vars
           # Tags for straight CLI commands
           SetEnvVar2 -VarName "OE_TAGS_FOR_CLI" -VarValue "$tagsForAzureCli"
           # Tags for ARM template tags parameter
-          SetEnvVar2 -VarName "OE_TAGS_FOR_ARM" -VarValue "$tagsForArm"
+          SetEnvVar2 -VarName "OE_TAGS_FOR_ARM" -VarValue $tagsForArm
         shell: pwsh
 
       - name: Create Resource Groups

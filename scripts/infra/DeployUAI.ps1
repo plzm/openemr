@@ -18,7 +18,7 @@ function DeployUAI()
     .PARAMETER UAIName
     The User Assigned Identity name
     .PARAMETER Tags
-    Tags as JSON
+    Tags
     .INPUTS
     None
     .OUTPUTS
@@ -65,5 +65,5 @@ function DeployUAI()
     location="$Location" `
     tenantId="$TenantId" `
     identityName="$UAIName" `
-    tags="$Tags"
+    tags=$Tags
 }

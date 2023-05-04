@@ -17,6 +17,8 @@ function DeployVNet()
     The Azure tenant ID
     .PARAMETER UAIName
     The User Assigned Identity name
+    .PARAMETER Tags
+    Tags
     .INPUTS
     None
     .OUTPUTS

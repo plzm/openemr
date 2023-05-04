@@ -12,7 +12,7 @@ function DeployRG()
     .PARAMETER ResourceGroupName
     The Resource Group name
     .PARAMETER Tags
-    Tags as JSON
+    Tags
     .INPUTS
     None
     .OUTPUTS
