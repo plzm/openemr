@@ -77,20 +77,23 @@ jobs:
           $tagEnv = "env=${{ vars.OE_ENVIRONMENT }}"
           $tagFoo = "foo=bar"
 
-          $tagsCli = @($tagEnv, $tagFoo)
+          $tagsForAzureCli = @($tagEnv, $tagFoo)
 
           $tagsObject = @{}
           $tagsObject['env'] = '${{ vars.OE_ENVIRONMENT }}'
           $tagsObject['foo'] = 'bar'
 
-          # The following manipulations are needed to get through separate un-escaping by Powershell AND by Azure CLI, and to get CLI to correctly see the tags as a JSON string
-          # passed into ARM templates as an object type.
-          $tagsJson = ConvertTo-Json -InputObject $tagsObject -Compress
-          $tagsJson = $tagsJson.Replace('"', '''')
-          $tagsJson = "`"$tagsJson`""
+          # The following manipulations are needed to get through separate un-escaping by Powershell AND by Azure CLI, 
+          # and to get CLI to correctly see the tags as a JSON string passed into ARM templates as an object type.
+          $tagsForArm = ConvertTo-Json -InputObject $tagsObject -Compress
+          $tagsForArm = $tagsForArm.Replace('"', '''')
+          $tagsForArm = "`"$tagsForArm`""
 
-          # Set the env var
-          SetEnvVar2 -VarName "OE_TAGS_JSON" -VarValue "$tagsJson"
+          # Set the env vars
+          # Tags for straight CLI commands
+          SetEnvVar2 -VarName "OE_TAGS_FOR_CLI" -VarValue "$tagsForAzureCli"
+          # Tags for ARM template tags parameter
+          SetEnvVar2 -VarName "OE_TAGS_FOR_ARM" -VarValue "$tagsForArm"
         shell: pwsh
 
       - name: Create Resource Groups
@@ -102,7 +105,7 @@ jobs:
           -SubscriptionID "${{ vars.OE_AZURE_SUBSCRIPTION_ID }}" `
           -Location "${{ matrix.location }}" `
           -ResourceGroupName "${{ env.OE_RG_NAME }}" `
-          -Tags "${{ env.OE_TAGS_JSON }}"
+          -Tags "${{ env.OE_TAGS_FOR_CLI }}"
         shell: pwsh
 
       - name: Deploy User Assigned Identity
@@ -117,7 +120,7 @@ jobs:
           -TemplateUri "${{ vars.OE_ARM_TEMPLATE_URI_PREFIX }}identity.user-assigned-mi.json" `
           -TenantId "${{ vars.OE_AZURE_TENANT_ID }}" `
           -UAIName "${{ env.OE_UAI_NAME }}" `
-          -Tags "${{ env.OE_TAGS_JSON }}"
+          -Tags "${{ env.OE_TAGS_FOR_ARM }}"
         shell: pwsh
 
       - name: Deploy Network
@@ -133,7 +136,7 @@ jobs:
           -VNetName "${{ env.OE_VNET_NAME }}" `
           -VNetPrefix "${{ env.OE_VNET_ADDRESS_SPACE }}" `
           -EnableDdosProtection $false `
-          -Tags "${{ env.OE_TAGS_JSON }}"
+          -Tags "${{ env.OE_TAGS_FOR_ARM }}"
         shell: pwsh
 
       - name: Azure logout
