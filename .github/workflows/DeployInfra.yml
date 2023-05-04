@@ -86,14 +86,15 @@ jobs:
           # The following manipulations are needed to get through separate un-escaping by Powershell AND by Azure CLI, 
           # and to get CLI to correctly see the tags as a JSON string passed into ARM templates as an object type.
           $tagsForArm = ConvertTo-Json -InputObject $tagsObject -Compress
-          $tagsForArm = $tagsForArm.Replace('"', '''')
-          $tagsForArm = "`"$tagsForArm`""
-          $tagsForArm
+          #$tagsForArm = $tagsForArm.Replace('"', '''')
+          #$tagsForArm = "`"$tagsForArm`""
+          $tagsForArm = "`'$tagsForArm`'"
+
           # Set the env vars
           # Tags for straight CLI commands
           SetEnvVar2 -VarName "OE_TAGS_FOR_CLI" -VarValue "$tagsForAzureCli"
           # Tags for ARM template tags parameter
-          SetEnvVar2 -VarName "OE_TAGS_FOR_ARM" -VarValue $tagsForArm
+          SetEnvVar2 -VarName "OE_TAGS_FOR_ARM" -VarValue "$tagsForArm"
         shell: pwsh
 
       - name: Create Resource Groups
