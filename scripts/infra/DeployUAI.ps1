@@ -65,5 +65,5 @@ function DeployUAI()
     location="$Location" `
     tenantId="$TenantId" `
     identityName="$UAIName" `
-    tags=$Tags
+    tags="$Tags"
 }
