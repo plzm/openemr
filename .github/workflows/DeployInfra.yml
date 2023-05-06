@@ -77,7 +77,7 @@ jobs:
           $tagEnv = "env=${{ vars.OE_ENVIRONMENT }}"
           $tagFoo = "foo=bar"
 
-          $tagsForAzureCli = [String]::Join(' ', @($tagEnv, $tagFoo))
+          $tagsForAzureCli = @($tagEnv, $tagFoo)
 
           $tagsObject = @{}
           $tagsObject['env'] = '${{ vars.OE_ENVIRONMENT }}'

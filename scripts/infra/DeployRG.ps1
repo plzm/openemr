@@ -37,8 +37,8 @@ function DeployRG()
     [string]
     $ResourceGroupName,
     [Parameter(Mandatory = $false)]
-    [string]
-    $Tags = ""
+    [string[]]
+    $Tags
   )
 
   az group create --subscription "$SubscriptionId" -l "$Location" -n "$ResourceGroupName" --tags $Tags
