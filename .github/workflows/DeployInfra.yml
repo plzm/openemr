@@ -106,36 +106,36 @@ jobs:
             --tags ${{ env.OE_TAGS_FOR_CLI }}
         shell: pwsh
 
-      #- name: Deploy User Assigned Identity
-      #  if: success()
-      #  run: |
-      #    . ./scripts/infra/DeployUAI.ps1
+      - name: Deploy User Assigned Identity
+        if: success()
+        run: |
+          . ./scripts/infra/DeployUAI.ps1
 
-      #    DeployUAI `
-      #    -SubscriptionID "${{ vars.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #    -Location "${{ matrix.location }}" `
-      #    -ResourceGroupName "${{ env.OE_RG_NAME }}" `
-      #    -TemplateUri "${{ vars.OE_ARM_TEMPLATE_URI_PREFIX }}identity.user-assigned-mi.json" `
-      #    -TenantId "${{ vars.OE_AZURE_TENANT_ID }}" `
-      #    -UAIName "${{ env.OE_UAI_NAME }}" `
-      #    -Tags ${{ env.OE_TAGS_FOR_ARM }}
-      #  shell: pwsh
+          DeployUAI `
+          -SubscriptionID "${{ vars.OE_AZURE_SUBSCRIPTION_ID }}" `
+          -Location "${{ matrix.location }}" `
+          -ResourceGroupName "${{ env.OE_RG_NAME }}" `
+          -TemplateUri "${{ vars.OE_ARM_TEMPLATE_URI_PREFIX }}identity.user-assigned-mi.json" `
+          -TenantId "${{ vars.OE_AZURE_TENANT_ID }}" `
+          -UAIName "${{ env.OE_UAI_NAME }}" `
+          -Tags ${{ env.OE_TAGS_FOR_ARM }}
+        shell: pwsh
 
-      #- name: Deploy Network
-      #  if: success()
-      #  run: |
-      #    . ./scripts/infra/DeployNetwork.ps1
+      - name: Deploy Network
+        if: success()
+        run: |
+          . ./scripts/infra/DeployNetwork.ps1
 
-      #    DeployVNet `
-      #    -SubscriptionID "${{ vars.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #    -Location "${{ matrix.location }}" `
-      #    -ResourceGroupName "${{ env.OE_RG_NAME }}" `
-      #    -TemplateUri "${{ vars.OE_ARM_TEMPLATE_URI_PREFIX }}net.vnet.json" `
-      #    -VNetName "${{ env.OE_VNET_NAME }}" `
-      #    -VNetPrefix "${{ env.OE_VNET_ADDRESS_SPACE }}" `
-      #    -EnableDdosProtection $false `
-      #    -Tags ${{ env.OE_TAGS_FOR_ARM }}
-      #  shell: pwsh
+          DeployVNet `
+          -SubscriptionID "${{ vars.OE_AZURE_SUBSCRIPTION_ID }}" `
+          -Location "${{ matrix.location }}" `
+          -ResourceGroupName "${{ env.OE_RG_NAME }}" `
+          -TemplateUri "${{ vars.OE_ARM_TEMPLATE_URI_PREFIX }}net.vnet.json" `
+          -VNetName "${{ env.OE_VNET_NAME }}" `
+          -VNetPrefix "${{ env.OE_VNET_ADDRESS_SPACE }}" `
+          -EnableDdosProtection $false `
+          -Tags ${{ env.OE_TAGS_FOR_ARM }}
+        shell: pwsh
 
       - name: Azure logout
         if: always()
