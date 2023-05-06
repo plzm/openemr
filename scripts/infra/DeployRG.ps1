@@ -41,5 +41,5 @@ function DeployRG()
     $Tags = ""
   )
 
-  az group create --subscription "$SubscriptionId" -l "$Location" -n "$ResourceGroupName" --tags "$Tags" --verbose
+  az group create --subscription "$SubscriptionId" -l "$Location" -n "$ResourceGroupName" --tags $Tags
 }

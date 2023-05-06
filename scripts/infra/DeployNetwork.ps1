@@ -72,6 +72,6 @@ function DeployVNet()
     vnetPrefix="$VNetPrefix" `
     enableDdosProtection="$EnableDdosProtection" `
     enableVmProtection="$EnableVmProtection" `
-    tags="$Tags"
+    tags=$Tags
 }
 
