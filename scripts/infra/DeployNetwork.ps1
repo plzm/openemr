@@ -1,10 +1,10 @@
-function DeployUAI()
+function DeployVNet()
 {
   <#
     .SYNOPSIS
-    This command deploys an Azure User Assigned Identity.
+    This command deploys an Azure Virtual Network (VNet).
     .DESCRIPTION
-    This command deploys an Azure User Assigned Identity.
+    This command deploys an Azure Virtual Network (VNet).
     .PARAMETER SubscriptionId
     The Azure subscription ID
     .PARAMETER Location
@@ -24,8 +24,8 @@ function DeployUAI()
     .OUTPUTS
     None
     .EXAMPLE
-    PS> . ./DeployUAI.ps1
-    PS> DeployUAI -SubscriptionID "MyAzureSubscriptionId" -Location "westus" -ResourceGroupName "MyResourceGroupName" -TemplateUri "MyARMTemplateURI" -TenantId "MyTenantId" -UAIName "MyUAIName" -Tags "MyTags"
+    PS> . ./DeployVNet.ps1
+    PS> DeployNetwork -SubscriptionID "MyAzureSubscriptionId" -Location "westus" -ResourceGroupName "MyResourceGroupName" -TemplateUri "MyARMTemplateURI"
     .LINK
     None
   #>
@@ -47,23 +47,31 @@ function DeployUAI()
     $TemplateUri,
     [Parameter(Mandatory = $true)]
     [string]
-    $TenantId,
+    $VNetName,
     [Parameter(Mandatory = $true)]
     [string]
-    $UAIName,
+    $VNetPrefix,
+    [Parameter(Mandatory = $false)]
+    [bool]
+    $EnableDdosProtection = $false,
+    [Parameter(Mandatory = $false)]
+    [bool]
+    $EnableVmProtection = $false,
     [Parameter(Mandatory = $false)]
     [string]
     $Tags = ""
   )
-
   az deployment group create --verbose `
     --subscription "$SubscriptionId" `
-    -n "$UAIName" `
+    -n "$VNetName" `
     -g "$ResourceGroupName" `
     --template-uri "$TemplateUri" `
     --parameters `
     location="$Location" `
-    tenantId="$TenantId" `
-    identityName="$UAIName" `
+    vnetName="$VNetName" `
+    vnetPrefix="$VNetPrefix" `
+    enableDdosProtection="$EnableDdosProtection" `
+    enableVmProtection="$EnableVmProtection" `
     tags=$Tags
 }
+

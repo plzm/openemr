@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ${{fromJson(needs.prep_matrix.outputs.matrix)}}
+        ${{ fromJson(needs.prep_matrix.outputs.matrix) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -40,34 +40,73 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: true
 
-      - name: Set Environment Variables
+      - name: Set Dynamic Environment Variables
         if: success()
         run: |
           . ./scripts/SetEnvVar.ps1
 
-          # Resource Group Names
-          SetEnvVar2 `
-          -VarName "OE_RG_NAME" `
-          -VarValue "${{ vars.OE_NAME_PREFIX }}-${{ vars.OE_NAME_INFIX }}-${{ matrix.location }}"
+          # Resource Group Name (eventually Names)
+          $rgName = "${{ vars.OE_NAME_PREFIX }}-${{ vars.OE_NAME_INFIX }}-${{ matrix.location }}"
+          SetEnvVar2 -VarName "OE_RG_NAME" -VarValue $rgName
 
           # UAI Name
-          SetEnvVar2 `
-          -VarName "OE_UAI_NAME" `
-          -VarValue "mid-${{ vars.OE_NAME_PREFIX }}-${{ vars.OE_NAME_INFIX }}-${{ matrix.location }}-01"
+          $uaiName = "mid-${{ vars.OE_NAME_PREFIX }}-${{ vars.OE_NAME_INFIX }}-${{ matrix.location }}-01"
+          SetEnvVar2 -VarName "OE_UAI_NAME" -VarValue $uaiName
+
+          # VNet Name
+          $vnetName = "vnt-${{ vars.OE_NAME_PREFIX }}-${{ vars.OE_NAME_INFIX }}-${{ matrix.location }}-01"
+          SetEnvVar2 -VarName "OE_VNET_NAME" -VarValue $vnetName
+        shell: pwsh
+
+      - name: Set Config-Driven Environment Variables
+        if: success()
+        run: |
+          . ./scripts/SetEnvVar.ps1
+
+          $json = '${{ vars.OE_AZURE_LOCATIONS_CONFIG }}' | ConvertFrom-Json
+          $region = ($json | Where-Object { $_.location -eq "${{ matrix.location }}" })
+
+          SetEnvVar2 -VarName "OE_VNET_ADDRESS_SPACE" -VarValue "$region.vnetAddressSpace"
+        shell: pwsh
+
+      - name: Set Tags
+        if: success()
+        run: |
+          . ./scripts/SetEnvVar.ps1
+
+          $tagEnv = "env=${{ vars.OE_ENVIRONMENT }}"
+          $tagFoo = "foo=bar"
+
+          $tagsForAzureCli = @($tagEnv, $tagFoo)
+
+          $tagsObject = @{}
+          $tagsObject['env'] = '${{ vars.OE_ENVIRONMENT }}'
+          $tagsObject['foo'] = 'bar'
+
+          # The following manipulations are needed to get through separate un-escaping by Powershell AND by Azure CLI, 
+          # and to get CLI to correctly see the tags as a JSON string passed into ARM templates as an object type.
+          $tagsForArm = ConvertTo-Json -InputObject $tagsObject -Compress
+          $tagsForArm = $tagsForArm.Replace('"', '''')
+          $tagsForArm = "`"$tagsForArm`""
+
+          # Set the env vars
+          # Tags for straight CLI commands
+          SetEnvVar2 -VarName "OE_TAGS_FOR_CLI" -VarValue "$tagsForAzureCli"
+          # Tags for ARM template tags parameter
+          SetEnvVar2 -VarName "OE_TAGS_FOR_ARM" -VarValue $tagsForArm
         shell: pwsh
 
       - name: Create Resource Groups
         if: success()
         run: |
-          . ./scripts/infra/DeployRG.ps1
-
-          DeployRG `
-          -SubscriptionID "${{ vars.OE_AZURE_SUBSCRIPTION_ID }}" `
-          -Location "${{ matrix.location }}" `
-          -ResourceGroupName "${{ env.OE_RG_NAME }}"
+          az group create `
+            --subscription "${{ vars.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -l "${{ matrix.location }}" `
+            -n "${{ env.OE_RG_NAME }}" `
+            --tags ${{ env.OE_TAGS_FOR_CLI }}
         shell: pwsh
 
-      - name: Create User Assigned Identity
+      - name: Deploy User Assigned Identity
         if: success()
         run: |
           . ./scripts/infra/DeployUAI.ps1
@@ -78,9 +117,25 @@ jobs:
           -ResourceGroupName "${{ env.OE_RG_NAME }}" `
           -TemplateUri "${{ vars.OE_ARM_TEMPLATE_URI_PREFIX }}identity.user-assigned-mi.json" `
           -TenantId "${{ vars.OE_AZURE_TENANT_ID }}" `
-          -UAIName "${{ env.OE_UAI_NAME }}"
+          -UAIName "${{ env.OE_UAI_NAME }}" `
+          -Tags ${{ env.OE_TAGS_FOR_ARM }}
         shell: pwsh
 
+      - name: Deploy Network
+        if: success()
+        run: |
+          . ./scripts/infra/DeployNetwork.ps1
+
+          DeployVNet `
+          -SubscriptionID "${{ vars.OE_AZURE_SUBSCRIPTION_ID }}" `
+          -Location "${{ matrix.location }}" `
+          -ResourceGroupName "${{ env.OE_RG_NAME }}" `
+          -TemplateUri "${{ vars.OE_ARM_TEMPLATE_URI_PREFIX }}net.vnet.json" `
+          -VNetName "${{ env.OE_VNET_NAME }}" `
+          -VNetPrefix "${{ env.OE_VNET_ADDRESS_SPACE }}" `
+          -EnableDdosProtection $false `
+          -Tags ${{ env.OE_TAGS_FOR_ARM }}
+        shell: pwsh
 
       - name: Azure logout
         if: always()
@@ -90,17 +145,6 @@ jobs:
             az logout
             az cache purge
             az account clear
-
-
-      #- name: Deploy Network
-      #  if: success()
-      #  run: |
-      #    ./scripts/01-deploy-infra/03-deploy-network.sh
-
-      #- name: Make scripts executable
-      #  run: |
-      #    find ./scripts -type f -exec chmod +x {} \;
-
 
       #- name: Test Env Var in pwsh
       #  if: success()
