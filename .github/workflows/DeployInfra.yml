@@ -99,14 +99,11 @@ jobs:
       - name: Create Resource Groups
         if: success()
         run: |
-          az group create --subscription "${{ vars.OE_AZURE_SUBSCRIPTION_ID }}" -l "${{ matrix.location }}" -n "${{ env.OE_RG_NAME }}" --tags ${{ env.OE_TAGS_FOR_CLI }}
-          #. ./scripts/infra/DeployRG.ps1
-
-          #DeployRG `
-          #-SubscriptionID "${{ vars.OE_AZURE_SUBSCRIPTION_ID }}" `
-          #-Location "${{ matrix.location }}" `
-          #-ResourceGroupName "${{ env.OE_RG_NAME }}" `
-          #-Tags "${{ env.OE_TAGS_FOR_CLI }}"
+          az group create `
+            --subscription "${{ vars.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -l "${{ matrix.location }}" `
+            -n "${{ env.OE_RG_NAME }}" `
+            --tags ${{ env.OE_TAGS_FOR_CLI }}
         shell: pwsh
 
       #- name: Deploy User Assigned Identity
