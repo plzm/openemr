@@ -64,9 +64,10 @@ jobs:
           . ./scripts/SetEnvVar.ps1
 
           $json = '${{ vars.OE_AZURE_LOCATIONS_CONFIG }}' | ConvertFrom-Json
-          $region = ($json | Where-Object { $_.location -eq "${{ matrix.location }}" })
+          $location = ($json | Where-Object { $_.location -eq "${{ matrix.location }}" })
+          $vnetAddressSpace = $location.vnetAddressSpace
 
-          SetEnvVar2 -VarName "OE_VNET_ADDRESS_SPACE" -VarValue "$region.vnetAddressSpace"
+          SetEnvVar2 -VarName "OE_VNET_ADDRESS_SPACE" -VarValue $vnetAddressSpace
         shell: pwsh
 
       - name: Set Tags
