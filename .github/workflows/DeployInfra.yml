@@ -136,6 +136,17 @@ jobs:
           -VNetPrefix "${{ env.OE_VNET_ADDRESS_SPACE }}" `
           -EnableDdosProtection $false `
           -Tags ${{ env.OE_TAGS_FOR_ARM }}
+
+          DeploySubnet `
+          -SubscriptionID "${{ vars.OE_AZURE_SUBSCRIPTION_ID }}" `
+          -ResourceGroupName "${{ env.OE_RG_NAME }}" `
+          -TemplateUri "${{ vars.OE_ARM_TEMPLATE_URI_PREFIX }}net.vnet.subnet.json" `
+          -VNetName "${{ env.OE_VNET_NAME }}" `
+          -SubnetName "subnet01" `
+          -SubnetPrefix "" `
+          -NsgResourceId "" `
+          -RouteTableResourceId "" `
+          -DelegationService ""
         shell: pwsh
 
       - name: Azure logout

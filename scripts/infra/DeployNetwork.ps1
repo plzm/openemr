@@ -1,35 +1,5 @@
 function DeployVNet()
 {
-  <#
-    .SYNOPSIS
-    This command deploys an Azure Virtual Network (VNet).
-    .DESCRIPTION
-    This command deploys an Azure Virtual Network (VNet).
-    .PARAMETER SubscriptionId
-    The Azure subscription ID
-    .PARAMETER Location
-    The Azure region
-    .PARAMETER ResourceGroupName
-    The Resource Group name
-    .PARAMETER TemplateUri
-    The ARM template URI
-    .PARAMETER TenantId
-    The Azure tenant ID
-    .PARAMETER UAIName
-    The User Assigned Identity name
-    .PARAMETER Tags
-    Tags
-    .INPUTS
-    None
-    .OUTPUTS
-    None
-    .EXAMPLE
-    PS> . ./DeployVNet.ps1
-    PS> DeployNetwork -SubscriptionID "MyAzureSubscriptionId" -Location "westus" -ResourceGroupName "MyResourceGroupName" -TemplateUri "MyARMTemplateURI"
-    .LINK
-    None
-  #>
-
   [CmdletBinding()]
   param
   (
@@ -61,6 +31,9 @@ function DeployVNet()
     [string]
     $Tags = ""
   )
+
+  Write-Debug -Debug:$true -Message "Deploy VNet"
+
   az deployment group create --verbose `
     --subscription "$SubscriptionId" `
     -n "$VNetName" `
@@ -75,3 +48,52 @@ function DeployVNet()
     tags=$Tags
 }
 
+function DeploySubnet()
+{
+  [CmdletBinding()]
+  param
+  (
+    [Parameter(Mandatory = $true)]
+    [string]
+    $SubscriptionId,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $ResourceGroupName,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $TemplateUri,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $VNetName,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $SubnetName,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $SubnetPrefix,
+    [Parameter(Mandatory = $false)]
+    [string]
+    $NsgResourceId = "",
+    [Parameter(Mandatory = $false)]
+    [string]
+    $RouteTableResourceId = $false,
+    [Parameter(Mandatory = $false)]
+    [string]
+    $DelegationService = ""
+  )
+
+  Write-Debug -Debug:$true -Message "Deploy Subnet"
+
+  az deployment group create --verbose `
+    --subscription "$SubscriptionId" `
+    -n "$(vnetName)"
+    -g "$ResourceGroupName" `
+    --template-uri "$TemplateUri" `
+    --parameters `
+    vnetName="$VNetName" `
+    subnetName="$SubnetName" `
+    subnetPrefix="$SubnetPrefix" `
+    nsgResourceId="$NsgResourceId" `
+    routeTableResourceId="$RouteTableResourceId" `
+    delegationService="$DelegationService"
+}
