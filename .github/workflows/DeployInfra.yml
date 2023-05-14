@@ -57,7 +57,7 @@ jobs:
             -ConfigAll $configAll `
             -ConfigMatrix $configMatrix
 
-          SetEnvVar Tags `
+          SetEnvVarTags `
             -Environment "${{ inputs.environment }}"
         shell: pwsh
 

@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  call-infra:
+  deploy-infra-env:
     uses: ./.github/workflows/DeployInfra.yml
     with:
       environment: development
