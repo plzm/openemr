@@ -143,7 +143,7 @@ function SetEnvVarTags()
   $tagsForAzureCli = @($tagEnv, $tagFoo)
 
   $tagsObject = @{}
-  $tagsObject['env'] = "'" + $Environment + "'"
+  $tagsObject['env'] = $Environment
   $tagsObject['foo'] = 'bar'
 
   # The following manipulations are needed to get through separate un-escaping by Powershell AND by Azure CLI, 
