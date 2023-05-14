@@ -8,6 +8,6 @@ jobs:
   call-infra:
     uses: ./.github/workflows/DeployInfra.yml
     with:
-      environment: dev
+      environment: development
     secrets: inherit
 ...
