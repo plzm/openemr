@@ -110,13 +110,14 @@ function SetEnvVarsMatrix()
     $ConfigMatrix
   )
 
-  $suffix = "-" + $ConfigAll.NamePrefix + "-" + $ConfigAll.NameInfix + "-" + $ConfigMatrix.Location + "-01"
+  $infix = $ConfigAll.NamePrefix + "-" + $ConfigAll.NameInfix + "-" + $ConfigMatrix.Location
+  $suffix = "-" + $infix + "-01"
 
   # ARM Template URI Prefix
   SetEnvVar2 -VarName "OE_ARM_TEMPLATE_URI_PREFIX" -VarValue $ConfigAll.TemplateUriPrefix
 
   # Resource Group Name
-  SetEnvVar2 -VarName "OE_RG_NAME" -VarValue $suffix
+  SetEnvVar2 -VarName "OE_RG_NAME" -VarValue $infix
 
   # UAI Name
   SetEnvVar2 -VarName "OE_UAI_NAME" -VarValue ("mid" + $suffix)
@@ -136,13 +137,13 @@ function SetEnvVarTags()
     $Environment
   )
 
-  $tagEnv = "env=$Environment"
+  $tagEnv = "env=" + $Environment
   $tagFoo = "foo=bar"
 
   $tagsForAzureCli = @($tagEnv, $tagFoo)
 
   $tagsObject = @{}
-  $tagsObject['env'] = '$Environment'
+  $tagsObject['env'] = "'" + $Environment + "'"
   $tagsObject['foo'] = 'bar'
 
   # The following manipulations are needed to get through separate un-escaping by Powershell AND by Azure CLI, 
