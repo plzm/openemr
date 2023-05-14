@@ -1,0 +1,54 @@
+[
+  {
+    "Location": "westus",
+    "Network":
+    {
+      "AddressSpace": "10.0.1.0/24",
+      "Subnets":
+      [
+        {
+          "Name": "subnet01",
+          "AddressSpace": "10.0.1.0/25",
+          "Delegation": "Microsoft.Web",
+          "ServiceEndpoints": "",
+          "Nsg": "",
+          "Udr": ""
+        },
+        {
+          "Name": "subnet02",
+          "AddressSpace": "10.0.1.128/25",
+          "Delegation": "",
+          "ServiceEndpoints": "Microsoft.KeyVault",
+          "Nsg": "",
+          "Udr": ""
+        }
+      ]
+    }
+  },
+  {
+    "Location": "westus2",
+    "Network":
+    {
+      "AddressSpace": "10.0.2.0/24",
+      "Subnets":
+      [
+        {
+          "Name": "subnet01",
+          "AddressSpace": "10.0.2.0/25",
+          "Delegation": "Microsoft.Web",
+          "ServiceEndpoints": "",
+          "Nsg": "",
+          "Udr": ""
+        },
+        {
+          "Name": "subnet02",
+          "AddressSpace": "10.0.2.128/25",
+          "Delegation": "",
+          "ServiceEndpoints": "Microsoft.KeyVault",
+          "Nsg": "",
+          "Udr": ""
+        }
+      ]
+    }
+  }
+]

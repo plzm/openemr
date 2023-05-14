@@ -1,0 +1,12 @@
+---
+name: Deploy Infrastructure-Dev
+
+on: 
+  workflow_dispatch:
+
+jobs:
+  call-infra:
+    uses: ./.github/workflows/DeployInfra.yml
+    with:
+      environment: dev
+...
