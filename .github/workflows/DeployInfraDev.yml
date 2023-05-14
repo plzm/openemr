@@ -9,4 +9,5 @@ jobs:
     uses: ./.github/workflows/DeployInfra.yml
     with:
       environment: dev
+    secrets: inherit
 ...
