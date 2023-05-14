@@ -50,7 +50,7 @@ jobs:
           . ./scripts/EnvVars.ps1
 
           $configAll = Get-Content -Path "./config/infra_all.json" | ConvertFrom-Json
-          $configEnv = Get-Content -Path ("./config/infra_" + ${{ inputs.environment }} + ".json") | ConvertFrom-Json
+          $configEnv = Get-Content -Path ("./config/infra_" + "${{ inputs.environment }}" + ".json") | ConvertFrom-Json
           $configMatrix = ($configEnv | Where-Object { $_.Location -eq "${{ matrix.location }}" })
 
           SetEnvVarsMatrix `

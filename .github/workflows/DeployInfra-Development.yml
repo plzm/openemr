@@ -1,5 +1,5 @@
 ---
-name: Deploy Infrastructure-Dev
+name: Deploy Infrastructure-Development
 
 on: 
   workflow_dispatch:
@@ -8,5 +8,6 @@ jobs:
   call-infra:
     uses: ./.github/workflows/DeployInfra.yml
     with:
-      environment: dev
+      environment: development
+    secrets: inherit
 ...
