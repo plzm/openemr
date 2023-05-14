@@ -96,3 +96,64 @@ function Get-EnvironmentVariables()
 {
   Get-ChildItem env:
 }
+
+function SetEnvVarsMatrix()
+{
+  [CmdletBinding()]
+  param
+  (
+    [Parameter(Mandatory = $true)]
+    [object]
+    $ConfigAll,
+    [Parameter(Mandatory = $true)]
+    [object]
+    $ConfigMatrix
+  )
+
+  $suffix = "-" + $ConfigAll.NamePrefix + "-" + $ConfigAll.NameInfix + "-" + $ConfigMatrix.Location + "-01"
+
+  # ARM Template URI Prefix
+  SetEnvVar2 -VarName "OE_ARM_TEMPLATE_URI_PREFIX" -VarValue $ConfigAll.TemplateUriPrefix
+
+  # Resource Group Name
+  SetEnvVar2 -VarName "OE_RG_NAME" -VarValue $suffix
+
+  # UAI Name
+  SetEnvVar2 -VarName "OE_UAI_NAME" -VarValue ("mid" + $suffix)
+
+  # VNet Name
+  SetEnvVar2 -VarName "OE_VNET_NAME" -VarValue ("vnt" + $suffix)
+
+}
+
+function SetEnvVarTags()
+{
+  [CmdletBinding()]
+  param
+  (
+    [Parameter(Mandatory = $true)]
+    [string]
+    $Environment
+  )
+
+  $tagEnv = "env=$Environment"
+  $tagFoo = "foo=bar"
+
+  $tagsForAzureCli = @($tagEnv, $tagFoo)
+
+  $tagsObject = @{}
+  $tagsObject['env'] = '$Environment'
+  $tagsObject['foo'] = 'bar'
+
+  # The following manipulations are needed to get through separate un-escaping by Powershell AND by Azure CLI, 
+  # and to get CLI to correctly see the tags as a JSON string passed into ARM templates as an object type.
+  $tagsForArm = ConvertTo-Json -InputObject $tagsObject -Compress
+  $tagsForArm = $tagsForArm.Replace('"', '''')
+  $tagsForArm = "`"$tagsForArm`""
+
+  # Set the env vars
+  # Tags for straight CLI commands
+  SetEnvVar2 -VarName "OE_TAGS_FOR_CLI" -VarValue "$tagsForAzureCli"
+  # Tags for ARM template tags parameter - do not quote the variable for this, breaks ARM template tags
+  SetEnvVar2 -VarName "OE_TAGS_FOR_ARM" -VarValue $tagsForArm
+}
