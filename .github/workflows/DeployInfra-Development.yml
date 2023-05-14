@@ -1,5 +1,5 @@
 ---
-name: Deploy Infrastructure-Dev
+name: Deploy Infrastructure-Development
 
 on: 
   workflow_dispatch:
