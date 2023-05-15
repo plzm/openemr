@@ -28,9 +28,7 @@ jobs:
           echo "::debug::$configEnv"
           $matrix = ($configEnv | Select-Object DeployUnit | ConvertTo-Json -Depth 100 -Compress).Replace("`"", "'")
           echo "::debug::$matrix"
-          $include = "`"" + "matrix={'include':" + $matrix + "}" + "`""
-          echo "::debug::$include"
-          echo $include >> "$GITHUB_OUTPUT"
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
         shell: pwsh
 
   deploy_matrix:
