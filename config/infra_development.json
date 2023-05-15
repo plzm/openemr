@@ -1,5 +1,6 @@
 [
   {
+    "ScaleUnit": "01",
     "Location": "westus",
     "Network":
     {
@@ -26,7 +27,8 @@
     }
   },
   {
-    "Location": "westus2",
+    "ScaleUnit": "02",
+    "Location": "westus",
     "Network":
     {
       "AddressSpace": "10.0.2.0/24",
