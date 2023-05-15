@@ -22,11 +22,14 @@ jobs:
       - name: Write matrix string to output
         id: set-matrix
         run: |
-          #$path = "./config/infra_" + "${{ inputs.environment }}" + ".json"
-          $path = "./config/infra_development.json"
+          $path = "./config/infra_" + "${{ inputs.environment }}" + ".json"
+          echo "::debug::$path"
           $configEnv = Get-Content -Path $path | ConvertFrom-Json
+          echo "::debug::$configEnv"
           $matrix = ($configEnv | Select-Object DeployUnit | ConvertTo-Json -Depth 100 -Compress).Replace("`"", "'")
+          echo "::debug::$matrix"
           $include = "matrix={'include':" + $matrix + "}"
+          echo "::debug::$include"
           echo "$include" >> "$GITHUB_OUTPUT"
         shell: pwsh
 
