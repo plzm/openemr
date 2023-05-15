@@ -19,7 +19,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - id: set-matrix
+      - name: Write matrix string to output
+        id: set-matrix
         run: |
           $path = "./config/infra_" + "${{ inputs.environment }}" + ".json"
           $configEnv = Get-Content -Path $path | ConvertFrom-Json
@@ -35,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ${{ fromJson(needs.prep_matrix.outputs.matrix) }}
+        ${{ needs.prep_matrix.outputs.matrix }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
