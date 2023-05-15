@@ -99,32 +99,32 @@ jobs:
           -Tags ${{ env.OE_TAGS_FOR_ARM }}
         shell: pwsh
 
-      #- name: Deploy Network
-      #  if: success()
-      #  run: |
-      #    . ./scripts/infra/DeployNetwork.ps1
+      - name: Deploy Network
+        if: success()
+        run: |
+          . ./scripts/infra/DeployNetwork.ps1
 
-      #    DeployVNet `
-      #    -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #    -Location "${{ env.OE_LOCATION }}" `
-      #    -ResourceGroupName "${{ env.OE_RG_NAME }}" `
-      #    -TemplateUri "${{ env.OE_ARM_TEMPLATE_URI_PREFIX }}net.vnet.json" `
-      #    -VNetName "${{ env.OE_VNET_NAME }}" `
-      #    -VNetPrefix "${{ env.OE_VNET_ADDRESS_SPACE }}" `
-      #    -EnableDdosProtection $false `
-      #    -Tags ${{ env.OE_TAGS_FOR_ARM }}
+          DeployVNet `
+          -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+          -Location "${{ env.OE_LOCATION }}" `
+          -ResourceGroupName "${{ env.OE_RG_NAME }}" `
+          -TemplateUri "${{ env.OE_ARM_TEMPLATE_URI_PREFIX }}net.vnet.json" `
+          -VNetName "${{ env.OE_VNET_NAME }}" `
+          -VNetPrefix "${{ env.OE_VNET_ADDRESS_SPACE }}" `
+          -EnableDdosProtection $false `
+          -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
-      #    DeploySubnet `
-      #    -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #    -ResourceGroupName "${{ env.OE_RG_NAME }}" `
-      #    -TemplateUri "${{ env.OE_ARM_TEMPLATE_URI_PREFIX }}net.vnet.subnet.json" `
-      #    -VNetName "${{ env.OE_VNET_NAME }}" `
-      #    -SubnetName "subnet01" `
-      #    -SubnetPrefix "" `
-      #    -NsgResourceId "" `
-      #    -RouteTableResourceId "" `
-      #    -DelegationService ""
-      #  shell: pwsh
+          DeploySubnet `
+          -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+          -ResourceGroupName "${{ env.OE_RG_NAME }}" `
+          -TemplateUri "${{ env.OE_ARM_TEMPLATE_URI_PREFIX }}net.vnet.subnet.json" `
+          -VNetName "${{ env.OE_VNET_NAME }}" `
+          -SubnetName "subnet01" `
+          -SubnetPrefix "" `
+          -NsgResourceId "" `
+          -RouteTableResourceId "" `
+          -DelegationService ""
+        shell: pwsh
 
       - name: Azure logout
         if: always()
