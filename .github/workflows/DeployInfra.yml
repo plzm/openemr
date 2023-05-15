@@ -64,7 +64,7 @@ jobs:
 
           $configAll = Get-Content -Path "./config/infra_all.json" | ConvertFrom-Json
           $configEnv = Get-Content -Path ("./config/infra_" + "${{ inputs.environment }}" + ".json") | ConvertFrom-Json
-          $configMatrix = ($configEnv | Where-Object { $_.Location -eq "${{ matrix.location }}" })
+          $configMatrix = ($configEnv | Where-Object { $_.DeployUnit -eq "${{ matrix.DeployUnit }}" })
 
           SetEnvVarsMatrix `
             -ConfigAll $configAll `
@@ -79,7 +79,7 @@ jobs:
         run: |
           az group create `
             --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -l "${{ matrix.location }}" `
+            -l "${{ env.OE_LOCATION }}" `
             -n "${{ env.OE_RG_NAME }}" `
             --tags ${{ env.OE_TAGS_FOR_CLI }}
         shell: pwsh
@@ -91,7 +91,7 @@ jobs:
 
           DeployUAI `
           -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          -Location "${{ matrix.location }}" `
+          -Location "${{ env.OE_LOCATION }}" `
           -ResourceGroupName "${{ env.OE_RG_NAME }}" `
           -TemplateUri "${{ env.OE_ARM_TEMPLATE_URI_PREFIX }}identity.user-assigned-mi.json" `
           -TenantId "${{ secrets.OE_AZURE_TENANT_ID }}" `
@@ -106,7 +106,7 @@ jobs:
 
       #    DeployVNet `
       #    -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #    -Location "${{ matrix.location }}" `
+      #    -Location "${{ env.OE_LOCATION }}" `
       #    -ResourceGroupName "${{ env.OE_RG_NAME }}" `
       #    -TemplateUri "${{ env.OE_ARM_TEMPLATE_URI_PREFIX }}net.vnet.json" `
       #    -VNetName "${{ env.OE_VNET_NAME }}" `

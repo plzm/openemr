@@ -116,6 +116,9 @@ function SetEnvVarsMatrix()
   # ARM Template URI Prefix
   SetEnvVar2 -VarName "OE_ARM_TEMPLATE_URI_PREFIX" -VarValue $ConfigAll.TemplateUriPrefix
 
+  # Azure region
+  SetEnvVar2 -VarName "OE_LOCATION" -VarValue $ConfigMatrix.Location
+
   # Resource Group Name
   SetEnvVar2 -VarName "OE_RG_NAME" -VarValue $infix
 
