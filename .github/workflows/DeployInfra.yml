@@ -26,7 +26,7 @@ jobs:
           $configEnv = Get-Content -Path $path | ConvertFrom-Json
           $matrix = ($configEnv | Select-Object DeployUnit | ConvertTo-Json -Depth 100 -Compress).Replace("`"", "'")
           $include = "matrix={'include':" + $matrix + "}"
-          echo $include >> "$GITHUB_OUTPUT"
+          echo "$include" >> "$GITHUB_OUTPUT"
         shell: pwsh
 
   deploy_matrix:
