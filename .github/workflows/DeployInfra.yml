@@ -23,12 +23,12 @@ jobs:
         id: set-matrix
         run: |
           $path = "./config/infra_" + "${{ inputs.environment }}" + ".json"
-          echo "::debug::$path"
+          echo "::debug::path=$path"
           $configEnv = Get-Content -Path $path | ConvertFrom-Json
-          echo "::debug::$configEnv"
+          echo "::debug::configEnv=$configEnv"
           $matrix = ($configEnv | Select-Object DeployUnit | ConvertTo-Json -Depth 100 -Compress).Replace("`"", "'")
           echo "::debug::$matrix"
-          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+          echo "matrix=$matrix" >> $env:$GITHUB_OUTPUT
         shell: pwsh
 
   deploy_matrix:
