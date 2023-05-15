@@ -16,9 +16,21 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - id: set-matrix
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Write matrix string to output
+        id: set-matrix
         run: |
-          echo "matrix={'include':[{'location':'westus'},{'location':'westus2'}]}" >> "$GITHUB_OUTPUT"
+          $path = "./config/infra_" + "${{ inputs.environment }}" + ".json"
+          echo "::debug::path=$path"
+          $configEnv = Get-Content -Path $path | ConvertFrom-Json
+          echo "::debug::configEnv=$configEnv"
+          $matrix = ($configEnv | Select-Object DeployUnit | ConvertTo-Json -Depth 100 -Compress).Replace("`"", "'")
+          echo "::debug::matrix=$matrix"
+          $matrix = "{'include':" + $matrix + "}"
+          echo "matrix=$matrix" >> $env:GITHUB_OUTPUT
+        shell: pwsh
 
   deploy_matrix:
     needs: prep_matrix
@@ -36,6 +48,7 @@ jobs:
         if: success()
         run: |
           az config set extension.use_dynamic_install=yes_without_prompt
+        shell: pwsh
 
       - name: Azure login
         if: success()
@@ -51,13 +64,13 @@ jobs:
 
           $configAll = Get-Content -Path "./config/infra_all.json" | ConvertFrom-Json
           $configEnv = Get-Content -Path ("./config/infra_" + "${{ inputs.environment }}" + ".json") | ConvertFrom-Json
-          $configMatrix = ($configEnv | Where-Object { $_.Location -eq "${{ matrix.location }}" })
+          $configMatrix = ($configEnv | Where-Object { $_.DeployUnit -eq "${{ matrix.DeployUnit }}" })
 
           SetEnvVarsMatrix `
             -ConfigAll $configAll `
             -ConfigMatrix $configMatrix
 
-          SetEnvVar Tags `
+          SetEnvVarTags `
             -Environment "${{ inputs.environment }}"
         shell: pwsh
 
@@ -66,7 +79,7 @@ jobs:
         run: |
           az group create `
             --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -l "${{ matrix.location }}" `
+            -l "${{ env.OE_LOCATION }}" `
             -n "${{ env.OE_RG_NAME }}" `
             --tags ${{ env.OE_TAGS_FOR_CLI }}
         shell: pwsh
@@ -78,7 +91,7 @@ jobs:
 
           DeployUAI `
           -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          -Location "${{ matrix.location }}" `
+          -Location "${{ env.OE_LOCATION }}" `
           -ResourceGroupName "${{ env.OE_RG_NAME }}" `
           -TemplateUri "${{ env.OE_ARM_TEMPLATE_URI_PREFIX }}identity.user-assigned-mi.json" `
           -TenantId "${{ secrets.OE_AZURE_TENANT_ID }}" `
@@ -93,7 +106,7 @@ jobs:
 
       #    DeployVNet `
       #    -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #    -Location "${{ matrix.location }}" `
+      #    -Location "${{ env.OE_LOCATION }}" `
       #    -ResourceGroupName "${{ env.OE_RG_NAME }}" `
       #    -TemplateUri "${{ env.OE_ARM_TEMPLATE_URI_PREFIX }}net.vnet.json" `
       #    -VNetName "${{ env.OE_VNET_NAME }}" `

@@ -1,6 +1,7 @@
 [
   {
-    "Location": "westus",
+    "DeployUnit": "01",
+    "Location": "eastus",
     "Network":
     {
       "AddressSpace": "10.0.1.0/24",
@@ -26,7 +27,8 @@
     }
   },
   {
-    "Location": "westus2",
+    "DeployUnit": "02",
+    "Location": "eastus2",
     "Network":
     {
       "AddressSpace": "10.0.2.0/24",
