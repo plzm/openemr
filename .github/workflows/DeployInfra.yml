@@ -18,13 +18,11 @@ jobs:
     steps:
       - id: set-matrix
         run: |
-          $configEnv = Get-Content -Path ("./config/infra_" + "${{ inputs.environment }}" + ".json") | ConvertFrom-Json
+          $path = "./config/infra_" + "${{ inputs.environment }}" + ".json"
+          $configEnv = Get-Content -Path $path | ConvertFrom-Json
           $matrix = ($configEnv | Select-Object DeployUnit | ConvertTo-Json -Depth 100 -Compress).Replace("`"", "'")
-          echo $matrix
           $include = "matrix={'include':" + $matrix + "}"
-          echo $include
           echo $include >> "$GITHUB_OUTPUT"
-          #echo "matrix={'include':[{'location':'westus'},{'location':'westus2'}]}" >> "$GITHUB_OUTPUT"
 
   deploy_matrix:
     needs: prep_matrix
