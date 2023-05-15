@@ -23,6 +23,7 @@ jobs:
           $matrix = ($configEnv | Select-Object DeployUnit | ConvertTo-Json -Depth 100 -Compress).Replace("`"", "'")
           $include = "matrix={'include':" + $matrix + "}"
           echo $include >> "$GITHUB_OUTPUT"
+        shell: pwsh
 
   deploy_matrix:
     needs: prep_matrix
@@ -40,6 +41,7 @@ jobs:
         if: success()
         run: |
           az config set extension.use_dynamic_install=yes_without_prompt
+        shell: pwsh
 
       - name: Azure login
         if: success()
