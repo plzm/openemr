@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ${{ needs.prep_matrix.outputs.matrix }}
+        ${{ fromJson(needs.prep_matrix.outputs.matrix) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
