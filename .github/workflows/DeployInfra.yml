@@ -72,8 +72,8 @@ jobs:
           . ./scripts/Config.ps1
           . ./scripts/EnvVars.ps1
 
-          $configAll = GetConfig -ConfigFilePath "./config/infra_all.json" # "{{ env.OE_CONFIG_FILE_ALL }}"
-          $configMatrix = GetConfigMatrix -ConfigFilePath "{{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+          $configAll = GetConfig -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = GetConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
           SetEnvVarsMatrix `
             -ConfigAll $configAll `
