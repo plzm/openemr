@@ -142,7 +142,7 @@ jobs:
           -ResourceGroupName $rgName `
           -TemplateUri ($configAll.TemplateUriPrefix + "net.vnet.json") `
           -VNetName $vnetName `
-          -VNetPrefix "$configMatrix.Network.AddressSpace" `
+          -VNetPrefix $configMatrix.Network.AddressSpace `
           -EnableDdosProtection $false `
           -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
