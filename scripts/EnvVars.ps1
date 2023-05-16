@@ -110,7 +110,7 @@ function SetEnvVarsMatrix()
     $ConfigMatrix
   )
   # 
-  SetEnvVar2 -VarName "" -VarValue ""
+  #SetEnvVar2 -VarName "" -VarValue ""
 }
 
 function SetEnvVarTags()
