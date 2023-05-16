@@ -85,81 +85,81 @@ jobs:
             -ConfigMatrix $configMatrix
         shell: pwsh
 
-      #- name: Create Resource Groups
-      #  if: success()
-      #  run: |
-      #    . ./scripts/Config.ps1
+      - name: Create Resource Groups
+        if: success()
+        run: |
+          . ./scripts/Config.ps1
 
-      #    $configAll = GetConfig -ConfigFilePath "{{ env.OE_CONFIG_FILE_ALL }}"
-      #    $configMatrix = GetConfigMatrix -ConfigFilePath "{{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+          $configAll = GetConfig -ConfigFilePath "{{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = GetConfigMatrix -ConfigFilePath "{{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
-      #    $rgName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence "01"
+          $rgName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence "01"
 
-      #    az group create `
-      #      --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #      -l "$configMatrix.Location" `
-      #      -n "$rgName" `
-      #      --tags ${{ env.OE_TAGS_FOR_CLI }}
-      #  shell: pwsh
+          az group create `
+            --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -l "$configMatrix.Location" `
+            -n "$rgName" `
+            --tags ${{ env.OE_TAGS_FOR_CLI }}
+        shell: pwsh
 
-      #- name: Deploy User Assigned Identity
-      #  if: success()
-      #  run: |
-      #    . ./scripts/Config.ps1
-      #    . ./scripts/infra/DeployUAI.ps1
+      - name: Deploy User Assigned Identity
+        if: success()
+        run: |
+          . ./scripts/Config.ps1
+          . ./scripts/infra/DeployUAI.ps1
 
-      #    $configAll = GetConfig -ConfigFilePath "{{ env.OE_CONFIG_FILE_ALL }}"
-      #    $configMatrix = GetConfigMatrix -ConfigFilePath "{{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+          $configAll = GetConfig -ConfigFilePath "{{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = GetConfigMatrix -ConfigFilePath "{{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
-      #    $rgName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence "01"
-      #    $uaiName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "mid" -Sequence "01"
+          $rgName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence "01"
+          $uaiName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "mid" -Sequence "01"
 
-      #    DeployUAI `
-      #    -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #    -Location "$configMatrix.Location" `
-      #    -ResourceGroupName "$rgName" `
-      #    -TemplateUri ($configAll.TemplateUriPrefix + "identity.user-assigned-mi.json") `
-      #    -TenantId "${{ secrets.OE_AZURE_TENANT_ID }}" `
-      #    -UAIName "$uaiName" `
-      #    -Tags ${{ env.OE_TAGS_FOR_ARM }}
-      #  shell: pwsh
+          DeployUAI `
+          -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+          -Location "$configMatrix.Location" `
+          -ResourceGroupName "$rgName" `
+          -TemplateUri ($configAll.TemplateUriPrefix + "identity.user-assigned-mi.json") `
+          -TenantId "${{ secrets.OE_AZURE_TENANT_ID }}" `
+          -UAIName "$uaiName" `
+          -Tags ${{ env.OE_TAGS_FOR_ARM }}
+        shell: pwsh
 
-      #- name: Deploy Network
-      #  if: success()
-      #  run: |
-      #    . ./scripts/Config.ps1
-      #    . ./scripts/infra/DeployNetwork.ps1
+      - name: Deploy Network
+        if: success()
+        run: |
+          . ./scripts/Config.ps1
+          . ./scripts/infra/DeployNetwork.ps1
 
-      #    $configAll = GetConfig -ConfigFilePath "{{ env.OE_CONFIG_FILE_ALL }}"
-      #    $configMatrix = GetConfigMatrix -ConfigFilePath "{{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+          $configAll = GetConfig -ConfigFilePath "{{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = GetConfigMatrix -ConfigFilePath "{{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
-      #    $rgName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence "01"
-      #    $vnetName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "vnt" -Sequence "01"
+          $rgName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence "01"
+          $vnetName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "vnt" -Sequence "01"
 
-      #    DeployVNet `
-      #    -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #    -Location "$configMatrix.Location" `
-      #    -ResourceGroupName "$rgName" `
-      #    -TemplateUri ("$configAll.TemplateUriPrefix" + "net.vnet.json") `
-      #    -VNetName "$vnetName" `
-      #    -VNetPrefix "$configMatrix.Network.AddressSpace" `
-      #    -EnableDdosProtection $false `
-      #    -Tags ${{ env.OE_TAGS_FOR_ARM }}
+          DeployVNet `
+          -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+          -Location "$configMatrix.Location" `
+          -ResourceGroupName "$rgName" `
+          -TemplateUri ("$configAll.TemplateUriPrefix" + "net.vnet.json") `
+          -VNetName "$vnetName" `
+          -VNetPrefix "$configMatrix.Network.AddressSpace" `
+          -EnableDdosProtection $false `
+          -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
-      #    foreach ($subnet in $configMatrix.Network.Subnets)
-      #    {
-      #      DeploySubnet `
-      #      -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #      -ResourceGroupName "$rgName" `
-      #      -TemplateUri ("$configAll.TemplateUriPrefix" + "net.vnet.subnet.json") `
-      #      -VNetName "$vnetName" `
-      #      -SubnetName "$subnet.Name" `
-      #      -SubnetPrefix "$subnet.AddressSpace" `
-      #      -NsgResourceId "" `
-      #      -RouteTableResourceId "" `
-      #      -DelegationService "$subnet.Delegation"
-      #    }
-      #  shell: pwsh
+          foreach ($subnet in $configMatrix.Network.Subnets)
+          {
+            DeploySubnet `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName "$rgName" `
+            -TemplateUri ("$configAll.TemplateUriPrefix" + "net.vnet.subnet.json") `
+            -VNetName "$vnetName" `
+            -SubnetName "$subnet.Name" `
+            -SubnetPrefix "$subnet.AddressSpace" `
+            -NsgResourceId "" `
+            -RouteTableResourceId "" `
+            -DelegationService "$subnet.Delegation"
+          }
+        shell: pwsh
 
       - name: Azure logout
         if: always()
