@@ -90,8 +90,8 @@ jobs:
         run: |
           . ./scripts/Config.ps1
 
-          $configAll = GetConfig -ConfigFilePath "{{ env.OE_CONFIG_FILE_ALL }}"
-          $configMatrix = GetConfigMatrix -ConfigFilePath "{{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+          $configAll = GetConfig -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = GetConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
           $rgName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence "01"
 
@@ -108,8 +108,8 @@ jobs:
           . ./scripts/Config.ps1
           . ./scripts/infra/DeployUAI.ps1
 
-          $configAll = GetConfig -ConfigFilePath "{{ env.OE_CONFIG_FILE_ALL }}"
-          $configMatrix = GetConfigMatrix -ConfigFilePath "{{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+          $configAll = GetConfig -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = GetConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
           $rgName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence "01"
           $uaiName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "mid" -Sequence "01"
@@ -130,8 +130,8 @@ jobs:
           . ./scripts/Config.ps1
           . ./scripts/infra/DeployNetwork.ps1
 
-          $configAll = GetConfig -ConfigFilePath "{{ env.OE_CONFIG_FILE_ALL }}"
-          $configMatrix = GetConfigMatrix -ConfigFilePath "{{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+          $configAll = GetConfig -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = GetConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
           $rgName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence "01"
           $vnetName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "vnt" -Sequence "01"
