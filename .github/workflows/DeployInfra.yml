@@ -97,8 +97,8 @@ jobs:
 
           az group create `
             --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -l "$configMatrix.Location" `
-            -n "$rgName" `
+            -l $configMatrix.Location `
+            -n $rgName `
             --tags ${{ env.OE_TAGS_FOR_CLI }}
         shell: pwsh
 
@@ -116,11 +116,11 @@ jobs:
 
           DeployUAI `
           -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          -Location "$configMatrix.Location" `
-          -ResourceGroupName "$rgName" `
+          -Location $configMatrix.Location `
+          -ResourceGroupName $rgName `
           -TemplateUri ($configAll.TemplateUriPrefix + "identity.user-assigned-mi.json") `
           -TenantId "${{ secrets.OE_AZURE_TENANT_ID }}" `
-          -UAIName "$uaiName" `
+          -UAIName $uaiName `
           -Tags ${{ env.OE_TAGS_FOR_ARM }}
         shell: pwsh
 
@@ -138,10 +138,10 @@ jobs:
 
           DeployVNet `
           -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          -Location "$configMatrix.Location" `
-          -ResourceGroupName "$rgName" `
-          -TemplateUri ("$configAll.TemplateUriPrefix" + "net.vnet.json") `
-          -VNetName "$vnetName" `
+          -Location $configMatrix.Location `
+          -ResourceGroupName $rgName `
+          -TemplateUri ($configAll.TemplateUriPrefix + "net.vnet.json") `
+          -VNetName $vnetName `
           -VNetPrefix "$configMatrix.Network.AddressSpace" `
           -EnableDdosProtection $false `
           -Tags ${{ env.OE_TAGS_FOR_ARM }}
@@ -150,14 +150,14 @@ jobs:
           {
             DeploySubnet `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -ResourceGroupName "$rgName" `
-            -TemplateUri ("$configAll.TemplateUriPrefix" + "net.vnet.subnet.json") `
-            -VNetName "$vnetName" `
-            -SubnetName "$subnet.Name" `
-            -SubnetPrefix "$subnet.AddressSpace" `
+            -ResourceGroupName $rgName `
+            -TemplateUri ($configAll.TemplateUriPrefix + "net.vnet.subnet.json") `
+            -VNetName $vnetName `
+            -SubnetName $subnet.Name `
+            -SubnetPrefix $subnet.AddressSpace `
             -NsgResourceId "" `
             -RouteTableResourceId "" `
-            -DelegationService "$subnet.Delegation"
+            -DelegationService $subnet.Delegation
           }
         shell: pwsh
 
