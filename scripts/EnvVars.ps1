@@ -92,7 +92,7 @@ function SetEnvVar1()
   }
 }
 
-function Get-EnvironmentVariables()
+function Get-EnvVars()
 {
   Get-ChildItem env:
 }
@@ -109,25 +109,8 @@ function SetEnvVarsMatrix()
     [object]
     $ConfigMatrix
   )
-
-  $infix = $ConfigAll.NamePrefix + "-" + $ConfigAll.NameInfix + "-" + $ConfigMatrix.Location
-  $suffix = "-" + $infix + "-01"
-
-  # ARM Template URI Prefix
-  SetEnvVar2 -VarName "OE_ARM_TEMPLATE_URI_PREFIX" -VarValue $ConfigAll.TemplateUriPrefix
-
-  # Azure region
-  SetEnvVar2 -VarName "OE_LOCATION" -VarValue $ConfigMatrix.Location
-
-  # Resource Group Name
-  SetEnvVar2 -VarName "OE_RG_NAME" -VarValue $infix
-
-  # UAI Name
-  SetEnvVar2 -VarName "OE_UAI_NAME" -VarValue ("mid" + $suffix)
-
-  # VNet Name
-  SetEnvVar2 -VarName "OE_VNET_NAME" -VarValue ("vnt" + $suffix)
-
+  # 
+  SetEnvVar2 -VarName "" -VarValue ""
 }
 
 function SetEnvVarTags()
@@ -137,7 +120,13 @@ function SetEnvVarTags()
   (
     [Parameter(Mandatory = $true)]
     [string]
-    $Environment
+    $Environment,
+    [Parameter(Mandatory = $true)]
+    [object]
+    $ConfigAll,
+    [Parameter(Mandatory = $true)]
+    [object]
+    $ConfigMatrix
   )
 
   $tagEnv = "env=" + $Environment
