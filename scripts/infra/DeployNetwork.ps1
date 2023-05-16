@@ -86,7 +86,7 @@ function DeploySubnet()
 
   az deployment group create --verbose `
     --subscription "$SubscriptionId" `
-    -n "$SubnetName"
+    -n "$SubnetName" `
     -g "$ResourceGroupName" `
     --template-uri "$TemplateUri" `
     --parameters `
