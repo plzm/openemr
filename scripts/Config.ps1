@@ -48,7 +48,7 @@ function GetResourceName()
     $Sequence = ""
   )
 
-  $result = $ConfigAll.NamePrefix + "-" + $ConfigAll.NameInfix + "-" + $ConfigMatrix.Location
+  $result = $ConfigAll.NamePrefix + "-" + $ConfigAll.NameInfix + "-" + $ConfigMatrix.DeployUnit + "-" + $ConfigMatrix.Location
 
   if ($Prefix)
   {
