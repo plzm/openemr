@@ -76,7 +76,7 @@ function DeploySubnet()
     $NsgResourceId = "",
     [Parameter(Mandatory = $false)]
     [string]
-    $RouteTableResourceId = $false,
+    $RouteTableResourceId = "",
     [Parameter(Mandatory = $false)]
     [string]
     $DelegationService = ""
