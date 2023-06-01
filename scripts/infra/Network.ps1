@@ -1,3 +1,65 @@
+function DeployNetwork()
+{
+  [CmdletBinding()]
+  param
+  (
+    [Parameter(Mandatory = $true)]
+    [string]
+    $Environment,
+    [Parameter(Mandatory = $true)]
+    [object]
+    $ConfigAll,
+    [Parameter(Mandatory = $true)]
+    [object]
+    $ConfigMatrix,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $SubscriptionId,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $ResourceGroupName,
+    [Parameter(Mandatory = $false)]
+    [string]
+    $Tags = ""
+  )
+
+  Write-Debug -Debug:$true -Message "Deploy Network"
+
+  $vnetIndex = 1
+
+  foreach ($vnet in $configMatrix.Network.VNets)
+  {
+    $vnetName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "vnt" -Sequence ($vnetIndex.ToString().PadLeft(2, "0"))
+
+    DeployVNet `
+    -SubscriptionID "$SubscriptionId" `
+    -Location $configMatrix.Location `
+    -ResourceGroupName $rgName `
+    -TemplateUri ($configAll.TemplateUriPrefix + "net.vnet.json") `
+    -VNetName $vnetName `
+    -VNetPrefix $configMatrix.Network.AddressSpace `
+    -EnableDdosProtection $false `
+    -Tags $Tags
+
+    foreach ($subnet in $vnet.Subnets)
+    {
+      DeploySubnet `
+      -SubscriptionID "$SubscriptionId" `
+      -ResourceGroupName $rgName `
+      -TemplateUri ($configAll.TemplateUriPrefix + "net.vnet.subnet.json") `
+      -VNetName $vnetName `
+      -SubnetName $subnet.Name `
+      -SubnetPrefix $subnet.AddressSpace `
+      -NsgResourceId "" `
+      -RouteTableResourceId "" `
+      -DelegationService $subnet.Delegation
+    }
+
+    $vnetIndex++
+  }
+
+}
+
 function DeployVNet()
 {
   [CmdletBinding()]
