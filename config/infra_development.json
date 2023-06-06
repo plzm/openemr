@@ -4,6 +4,12 @@
     "Location": "eastus2",
     "Network":
     {
+      "NSGs":
+      [
+        {
+          "Id": "nsg1"
+        }
+      ],
       "VNets":
       [
         {
@@ -23,8 +29,8 @@
               "AddressSpace": "10.0.1.128/25",
               "Delegation": "",
               "ServiceEndpoints": "Microsoft.KeyVault",
-              "Nsg": "",
-              "Udr": ""
+              "NsgId": "nsg1",
+              "UdrId": ""
             }
           ]
         }
@@ -55,8 +61,8 @@
               "AddressSpace": "10.0.2.128/25",
               "Delegation": "",
               "ServiceEndpoints": "Microsoft.KeyVault",
-              "Nsg": "",
-              "Udr": ""
+              "NsgId": "",
+              "UdrId": ""
             }
           ]
         }
