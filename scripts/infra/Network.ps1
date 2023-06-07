@@ -28,6 +28,10 @@ function DeployNetwork() {
 
   foreach ($nsg in $configMatrix.Network.NSGs) {
     $nsgName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "nsg" -Sequence ($nsgIndex.ToString().PadLeft(2, "0"))
+    $nsgResourceId = "/subscriptions/" + $SubscriptionId + "/resourceGroups/" + $ResourceGroupName + "/providers/Microsoft.Network/networkSecurityGroups/" + $nsgName
+
+    $nsg.Name = $nsgName
+    $nsg.ResourceId = $nsgResourceId
 
     DeployNSG `
       -SubscriptionID "$SubscriptionId" `
@@ -44,6 +48,7 @@ function DeployNetwork() {
       -ResourceGroupName $rgName `
       -TemplateUri ($configAll.TemplateUriPrefix + "net.nsg.rule.json") `
       -NSGName $nsgName `
+      
       -Tags $Tags
     }
   }
@@ -143,6 +148,33 @@ function DeployNSGRule() {
     $NSGRuleName,
     [Parameter(Mandatory = $false)]
     [string]
+    $Description = "",
+    [Parameter(Mandatory = $false)]
+    [int]
+    $Priority = 200,
+    [Parameter(Mandatory = $false)]
+    [string]
+    $Direction = "Inbound",
+    [Parameter(Mandatory = $false)]
+    [string]
+    $Access = "Deny",
+    [Parameter(Mandatory = $false)]
+    [string]
+    $Protocol = "Tcp",
+    [Parameter(Mandatory = $true)]
+    [string]
+    $SourceAddressPrefix,
+    [Parameter(Mandatory = $false)]
+    [string]
+    $SourcePortRange = "*",
+    [Parameter(Mandatory = $true)]
+    [string]
+    $DestinationAddressPrefix,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $DestinationPortRange,
+    [Parameter(Mandatory = $false)]
+    [string]
     $Tags = ""
   )
 
@@ -162,13 +194,9 @@ function DeployNSGRule() {
     access="$Access" `
     protocol="$Protocol" `
     sourceAddressPrefix="$SourceAddressPrefix" `
-    sourceAddressPrefixes="$SourceAddressPrefixes" `
     sourcePortRange="$SourcePortRange" `
-    sourcePortRanges="$SourcePortRanges" `
     destinationAddressPrefix="$DestinationAddressPrefix" `
-    destinationAddressPrefixes="$DestinationAddressPrefixes" `
-    destinationPortRange="$DestinationPortRange" `
-    destinationPortRanges="$DestinationPortRanges"
+    destinationPortRange="$DestinationPortRange"
 }
 
 function DeployVNet() {
