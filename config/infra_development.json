@@ -31,7 +31,7 @@
             {
               "Name": "subnet01",
               "AddressSpace": "10.0.1.0/25",
-              "Delegation": "Microsoft.Web",
+              "Delegation": "Microsoft.Web/serverFarms",
               "ServiceEndpoints": "",
               "NsgId": "",
               "UdrId": ""
@@ -81,7 +81,7 @@
             {
               "Name": "subnet01",
               "AddressSpace": "10.0.2.0/25",
-              "Delegation": "Microsoft.Web",
+              "Delegation": "Microsoft.Web/serverFarms",
               "ServiceEndpoints": "",
               "NsgId": "",
               "UdrId": ""
