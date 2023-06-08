@@ -36,7 +36,7 @@ function DeployNetwork() {
     DeployNSG `
       -SubscriptionID "$SubscriptionId" `
       -Location $configMatrix.Location `
-      -ResourceGroupName $rgName `
+      -ResourceGroupName $ResourceGroupName `
       -TemplateUri ($configAll.TemplateUriPrefix + "net.nsg.json") `
       -NSGName $nsgName `
       -Tags $Tags
@@ -45,7 +45,7 @@ function DeployNetwork() {
       DeployNSGRule `
       -SubscriptionID "$SubscriptionId" `
       -Location $configMatrix.Location `
-      -ResourceGroupName $rgName `
+      -ResourceGroupName $ResourceGroupName `
       -TemplateUri ($configAll.TemplateUriPrefix + "net.nsg.rule.json") `
       -NSGName $nsgName `
       -NSGRuleName $nsgRule.Name `
@@ -72,7 +72,7 @@ function DeployNetwork() {
     DeployVNet `
       -SubscriptionID "$SubscriptionId" `
       -Location $configMatrix.Location `
-      -ResourceGroupName $rgName `
+      -ResourceGroupName $ResourceGroupName `
       -TemplateUri ($configAll.TemplateUriPrefix + "net.vnet.json") `
       -VNetName $vnetName `
       -VNetPrefix $configMatrix.Network.AddressSpace `
@@ -85,7 +85,7 @@ function DeployNetwork() {
 
       DeploySubnet `
         -SubscriptionID "$SubscriptionId" `
-        -ResourceGroupName $rgName `
+        -ResourceGroupName $ResourceGroupName `
         -TemplateUri ($configAll.TemplateUriPrefix + "net.vnet.subnet.json") `
         -VNetName $vnetName `
         -SubnetName $subnet.Name `
