@@ -48,9 +48,19 @@ function DeployNetwork() {
       -ResourceGroupName $rgName `
       -TemplateUri ($configAll.TemplateUriPrefix + "net.nsg.rule.json") `
       -NSGName $nsgName `
-      
-      -Tags $Tags
+      -NSGRuleName $nsgRule.Name `
+      -Description $nsgRule.Description `
+      -Priority $nsgRule.Priority `
+      -Direction $nsgRule.Direction `
+      -Access $nsgRule.Access `
+      -Protocol $nsgRule.Protocol `
+      -SourceAddressPrefix $nsgRule.SourceAddressPrefix `
+      -SourcePortRange $nsgRule.SourcePortRange `
+      -DestinationAddressPrefix $nsgRule.DestinationAddressPrefix `
+      -DestinationPortRange $nsgRule.DestinationPortRange
     }
+
+    $nsgIndex++
   }
 
 
@@ -70,6 +80,9 @@ function DeployNetwork() {
       -Tags $Tags
 
     foreach ($subnet in $vnet.Subnets) {
+
+      $nsg = $configMatrix.Network.NSGs | Where-Object {$_.NsgId -eq $subnet.NsgId}
+
       DeploySubnet `
         -SubscriptionID "$SubscriptionId" `
         -ResourceGroupName $rgName `
@@ -77,7 +90,7 @@ function DeployNetwork() {
         -VNetName $vnetName `
         -SubnetName $subnet.Name `
         -SubnetPrefix $subnet.AddressSpace `
-        -NsgResourceId "" `
+        -NsgResourceId $nsg.ResourceId `
         -RouteTableResourceId "" `
         -DelegationService $subnet.Delegation
     }
@@ -172,10 +185,7 @@ function DeployNSGRule() {
     $DestinationAddressPrefix,
     [Parameter(Mandatory = $true)]
     [string]
-    $DestinationPortRange,
-    [Parameter(Mandatory = $false)]
-    [string]
-    $Tags = ""
+    $DestinationPortRange
   )
 
   Write-Debug -Debug:$true -Message "Deploy NSG Rule"

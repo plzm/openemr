@@ -7,7 +7,17 @@
       "NSGs":
       [
         {
-          "Id": "nsg1"
+          "NsgId": "nsg1",
+          "Name": "Patrick-Home",
+          "Description": "Patrick Home Public IP Address",
+          "Priority": 110,
+          "Direction": "Inbound",
+          "Access": "Allow",
+          "Protocol": "*",
+          "SourceAddressPrefix": "75.68.47.183",
+          "SourcePortRange": "*",
+          "DestinationAddressPrefix": "VirtualNetwork",
+          "DestinationPortRange": "*"
         }
       ],
       "VNets":
@@ -21,8 +31,8 @@
               "AddressSpace": "10.0.1.0/25",
               "Delegation": "Microsoft.Web",
               "ServiceEndpoints": "",
-              "Nsg": "",
-              "Udr": ""
+              "NsgId": "nsg1",
+              "UdrId": ""
             },
             {
               "Name": "subnet02",
@@ -42,6 +52,22 @@
     "Location": "westus2",
     "Network":
     {
+      "NSGs":
+      [
+        {
+          "NsgId": "nsg1",
+          "Name": "Patrick-Home",
+          "Description": "Patrick Home Public IP Address",
+          "Priority": 110,
+          "Direction": "Inbound",
+          "Access": "Allow",
+          "Protocol": "*",
+          "SourceAddressPrefix": "75.68.47.183",
+          "SourcePortRange": "*",
+          "DestinationAddressPrefix": "VirtualNetwork",
+          "DestinationPortRange": "*"
+        }
+      ],
       "VNets":
       [
         {
@@ -53,15 +79,15 @@
               "AddressSpace": "10.0.2.0/25",
               "Delegation": "Microsoft.Web",
               "ServiceEndpoints": "",
-              "Nsg": "",
-              "Udr": ""
+              "NsgId": "nsg1",
+              "UdrId": ""
             },
             {
               "Name": "subnet02",
               "AddressSpace": "10.0.2.128/25",
               "Delegation": "",
               "ServiceEndpoints": "Microsoft.KeyVault",
-              "NsgId": "",
+              "NsgId": "nsg1",
               "UdrId": ""
             }
           ]
