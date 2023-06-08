@@ -41,7 +41,7 @@ function DeployNetwork() {
       -NSGName $nsgName `
       -Tags $Tags
 
-    foreach ($nsgRule in $nsg) {
+    foreach ($nsgRule in $nsg.Rules) {
       DeployNSGRule `
       -SubscriptionID "$SubscriptionId" `
       -Location $configMatrix.Location `
