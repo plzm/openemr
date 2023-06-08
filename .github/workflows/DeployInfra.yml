@@ -57,6 +57,12 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: true
 
+      - name: Register RPs
+        if: success()
+        run: |
+          az provider register --namespace "Microsoft.ChangeAnalysis" --accept-terms --consent-to-permissions --wait
+        shell: pwsh
+
       - name: Set Config File Paths to Environment
         if: success()
         run: |
