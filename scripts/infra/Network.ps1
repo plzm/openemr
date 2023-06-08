@@ -75,7 +75,7 @@ function DeployNetwork() {
       -ResourceGroupName $ResourceGroupName `
       -TemplateUri ($configAll.TemplateUriPrefix + "net.vnet.json") `
       -VNetName $vnetName `
-      -VNetPrefix $configMatrix.Network.AddressSpace `
+      -VNetPrefix $vnet.AddressSpace `
       -EnableDdosProtection $false `
       -Tags $Tags
 
