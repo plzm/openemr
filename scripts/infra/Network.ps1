@@ -80,6 +80,7 @@ function DeployNetwork() {
       -Tags $Tags
 
     foreach ($subnet in $vnet.Subnets) {
+      Write-Debug -Debug:$true -Message $subnet.Name
 
       $nsg = $configMatrix.Network.NSGs | Where-Object {$_.NsgId -eq $subnet.NsgId}
 
