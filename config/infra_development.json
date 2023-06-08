@@ -26,11 +26,11 @@
       ],
       "VNets": [
         {
-          "AddressSpace": "192.168.1.0/24",
+          "AddressSpace": "10.0.1.0/24",
           "Subnets": [
             {
               "Name": "subnet01",
-              "AddressSpace": "192.168.1.0/25",
+              "AddressSpace": "10.0.1.0/25",
               "Delegation": "Microsoft.Web",
               "ServiceEndpoints": "",
               "NsgId": "",
@@ -38,7 +38,7 @@
             },
             {
               "Name": "subnet02",
-              "AddressSpace": "192.168.1.128/25",
+              "AddressSpace": "10.0.1.128/25",
               "Delegation": "",
               "ServiceEndpoints": "Microsoft.KeyVault",
               "NsgId": "",
@@ -76,11 +76,11 @@
       ],
       "VNets": [
         {
-          "AddressSpace": "192.168.2.0/24",
+          "AddressSpace": "10.0.2.0/24",
           "Subnets": [
             {
               "Name": "subnet01",
-              "AddressSpace": "192.168.2.0/25",
+              "AddressSpace": "10.0.2.0/25",
               "Delegation": "Microsoft.Web",
               "ServiceEndpoints": "",
               "NsgId": "",
@@ -88,7 +88,7 @@
             },
             {
               "Name": "subnet02",
-              "AddressSpace": "192.168.2.128/25",
+              "AddressSpace": "10.0.2.128/25",
               "Delegation": "",
               "ServiceEndpoints": "Microsoft.KeyVault",
               "NsgId": "",

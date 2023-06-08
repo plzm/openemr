@@ -92,7 +92,8 @@ function DeployNetwork() {
         -SubnetPrefix $subnet.AddressSpace `
         -NsgResourceId $nsg.ResourceId `
         -RouteTableResourceId "" `
-        -DelegationService $subnet.Delegation
+        -DelegationService $subnet.Delegation `
+        -ServiceEndpoints $subnet.ServiceEndpoints
     }
 
     $vnetIndex++
@@ -288,7 +289,10 @@ function DeploySubnet() {
     $RouteTableResourceId = "",
     [Parameter(Mandatory = $false)]
     [string]
-    $DelegationService = ""
+    $DelegationService = "",
+    [Parameter(Mandatory = $false)]
+    [string]
+    $ServiceEndpoints = ""
   )
 
   Write-Debug -Debug:$true -Message "Deploy Subnet"
@@ -304,5 +308,6 @@ function DeploySubnet() {
     subnetPrefix="$SubnetPrefix" `
     nsgResourceId="$NsgResourceId" `
     routeTableResourceId="$RouteTableResourceId" `
-    delegationService="$DelegationService"
+    delegationService="$DelegationService" `
+    serviceEndpoints="$ServiceEndpoints"
 }
