@@ -1,54 +1,100 @@
 [
   {
     "DeployUnit": "01",
-    "Location": "eastus",
-    "Network":
-    {
-      "AddressSpace": "10.0.1.0/24",
-      "Subnets":
-      [
+    "Location": "eastus2",
+    "Network": {
+      "NSGs": [
         {
-          "Name": "subnet01",
-          "AddressSpace": "10.0.1.0/25",
-          "Delegation": "Microsoft.Web",
-          "ServiceEndpoints": "",
-          "Nsg": "",
-          "Udr": ""
-        },
+          "NsgId": "nsg1",
+          "Name": "",
+          "ResourceId": "",
+          "Rules": [
+            {
+              "Name": "Patrick-Home",
+              "Description": "Patrick Home Public IP Address",
+              "Priority": 110,
+              "Direction": "Inbound",
+              "Access": "Allow",
+              "Protocol": "*",
+              "SourceAddressPrefix": "75.68.47.183",
+              "SourcePortRange": "*",
+              "DestinationAddressPrefix": "VirtualNetwork",
+              "DestinationPortRange": "*"
+            }
+          ]
+        }
+      ],
+      "VNets": [
         {
-          "Name": "subnet02",
-          "AddressSpace": "10.0.1.128/25",
-          "Delegation": "",
-          "ServiceEndpoints": "Microsoft.KeyVault",
-          "Nsg": "",
-          "Udr": ""
+          "AddressSpace": "10.0.1.0/24",
+          "Subnets": [
+            {
+              "Name": "subnet01",
+              "AddressSpace": "10.0.1.0/25",
+              "Delegation": "Microsoft.Web/serverFarms",
+              "ServiceEndpoints": "",
+              "NsgId": "nsg1",
+              "UdrId": ""
+            },
+            {
+              "Name": "subnet02",
+              "AddressSpace": "10.0.1.128/25",
+              "Delegation": "",
+              "ServiceEndpoints": "Microsoft.KeyVault",
+              "NsgId": "nsg1",
+              "UdrId": ""
+            }
+          ]
         }
       ]
     }
   },
   {
     "DeployUnit": "02",
-    "Location": "eastus2",
-    "Network":
-    {
-      "AddressSpace": "10.0.2.0/24",
-      "Subnets":
-      [
+    "Location": "westus2",
+    "Network": {
+      "NSGs": [
         {
-          "Name": "subnet01",
-          "AddressSpace": "10.0.2.0/25",
-          "Delegation": "Microsoft.Web",
-          "ServiceEndpoints": "",
-          "Nsg": "",
-          "Udr": ""
-        },
+          "NsgId": "nsg1",
+          "Name": "",
+          "ResourceId": "",
+          "Rules": [
+            {
+              "Name": "Patrick-Home",
+              "Description": "Patrick Home Public IP Address",
+              "Priority": 110,
+              "Direction": "Inbound",
+              "Access": "Allow",
+              "Protocol": "*",
+              "SourceAddressPrefix": "75.68.47.183",
+              "SourcePortRange": "*",
+              "DestinationAddressPrefix": "VirtualNetwork",
+              "DestinationPortRange": "*"
+            }
+          ]
+        }
+      ],
+      "VNets": [
         {
-          "Name": "subnet02",
-          "AddressSpace": "10.0.2.128/25",
-          "Delegation": "",
-          "ServiceEndpoints": "Microsoft.KeyVault",
-          "Nsg": "",
-          "Udr": ""
+          "AddressSpace": "10.0.2.0/24",
+          "Subnets": [
+            {
+              "Name": "subnet01",
+              "AddressSpace": "10.0.2.0/25",
+              "Delegation": "Microsoft.Web/serverFarms",
+              "ServiceEndpoints": "",
+              "NsgId": "nsg1",
+              "UdrId": ""
+            },
+            {
+              "Name": "subnet02",
+              "AddressSpace": "10.0.2.128/25",
+              "Delegation": "",
+              "ServiceEndpoints": "Microsoft.KeyVault",
+              "NsgId": "nsg1",
+              "UdrId": ""
+            }
+          ]
         }
       ]
     }

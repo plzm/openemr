@@ -57,74 +57,102 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: true
 
+      - name: Register RPs
+        if: success()
+        run: |
+          az provider register --namespace "Microsoft.ChangeAnalysis" --accept-terms --consent-to-permissions --wait
+        shell: pwsh
+
+      - name: Set Config File Paths to Environment
+        if: success()
+        run: |
+          . ./scripts/infra/Utility.ps1
+
+          Set-EnvVar2 -VarName "OE_CONFIG_FILE_ALL" -VarValue "./config/infra_all.json"
+          Set-EnvVar2 -VarName "OE_CONFIG_FILE_ENV" -VarValue ("./config/infra_" + "${{ inputs.environment }}" + ".json")
+        shell: pwsh
+
       - name: Set Environment Variables
         if: success()
         run: |
-          . ./scripts/EnvVars.ps1
+          . ./scripts/infra/Utility.ps1
 
-          $configAll = Get-Content -Path "./config/infra_all.json" | ConvertFrom-Json
-          $configEnv = Get-Content -Path ("./config/infra_" + "${{ inputs.environment }}" + ".json") | ConvertFrom-Json
-          $configMatrix = ($configEnv | Where-Object { $_.DeployUnit -eq "${{ matrix.DeployUnit }}" })
+          $configAll = GetConfig -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = GetConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
-          SetEnvVarsMatrix `
+          Set-EnvVars `
+            -Environment "${{ inputs.environment }}" `
             -ConfigAll $configAll `
             -ConfigMatrix $configMatrix
-
-          SetEnvVarTags `
-            -Environment "${{ inputs.environment }}"
         shell: pwsh
 
       - name: Create Resource Groups
         if: success()
         run: |
+          . ./scripts/infra/Utility.ps1
+
+          $configAll = GetConfig -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = GetConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+
+          $rgNameMain = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence "01"
+          $rgNameNetwork = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence "02"
+
+          Set-EnvVar2 -VarName "OE_RG_NAME_MAIN" -VarValue "$rgNameMain"
+          Set-EnvVar2 -VarName "OE_RG_NAME_NETWORK" -VarValue "$rgNameNetwork"
+
           az group create `
             --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -l "${{ env.OE_LOCATION }}" `
-            -n "${{ env.OE_RG_NAME }}" `
+            -l $configMatrix.Location `
+            -n $rgNameMain `
+            --tags ${{ env.OE_TAGS_FOR_CLI }}
+
+          az group create `
+            --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -l $configMatrix.Location `
+            -n $rgNameNetwork `
             --tags ${{ env.OE_TAGS_FOR_CLI }}
         shell: pwsh
 
       - name: Deploy User Assigned Identity
         if: success()
         run: |
-          . ./scripts/infra/DeployUAI.ps1
+          . ./scripts/infra/Utility.ps1
+          . ./scripts/infra/Security.ps1
+
+          $configAll = GetConfig -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = GetConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+
+          $uaiName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "mid" -Sequence "01"
+
+          Set-EnvVar2 -VarName "OE_UAI_NAME" -VarValue "$uaiName"
 
           DeployUAI `
           -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          -Location "${{ env.OE_LOCATION }}" `
-          -ResourceGroupName "${{ env.OE_RG_NAME }}" `
-          -TemplateUri "${{ env.OE_ARM_TEMPLATE_URI_PREFIX }}identity.user-assigned-mi.json" `
+          -Location $configMatrix.Location `
+          -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+          -TemplateUri ($configAll.TemplateUriPrefix + "identity.user-assigned-mi.json") `
           -TenantId "${{ secrets.OE_AZURE_TENANT_ID }}" `
-          -UAIName "${{ env.OE_UAI_NAME }}" `
+          -UAIName $uaiName `
           -Tags ${{ env.OE_TAGS_FOR_ARM }}
         shell: pwsh
 
-      #- name: Deploy Network
-      #  if: success()
-      #  run: |
-      #    . ./scripts/infra/DeployNetwork.ps1
+      - name: Deploy Network
+        if: success()
+        run: |
+          . ./scripts/infra/Utility.ps1
+          . ./scripts/infra/Network.ps1
 
-      #    DeployVNet `
-      #    -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #    -Location "${{ env.OE_LOCATION }}" `
-      #    -ResourceGroupName "${{ env.OE_RG_NAME }}" `
-      #    -TemplateUri "${{ env.OE_ARM_TEMPLATE_URI_PREFIX }}net.vnet.json" `
-      #    -VNetName "${{ env.OE_VNET_NAME }}" `
-      #    -VNetPrefix "${{ env.OE_VNET_ADDRESS_SPACE }}" `
-      #    -EnableDdosProtection $false `
-      #    -Tags ${{ env.OE_TAGS_FOR_ARM }}
+          $configAll = GetConfig -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = GetConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
-      #    DeploySubnet `
-      #    -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #    -ResourceGroupName "${{ env.OE_RG_NAME }}" `
-      #    -TemplateUri "${{ env.OE_ARM_TEMPLATE_URI_PREFIX }}net.vnet.subnet.json" `
-      #    -VNetName "${{ env.OE_VNET_NAME }}" `
-      #    -SubnetName "subnet01" `
-      #    -SubnetPrefix "" `
-      #    -NsgResourceId "" `
-      #    -RouteTableResourceId "" `
-      #    -DelegationService ""
-      #  shell: pwsh
+          DeployNetwork `
+            -Environment ${{ inputs.environment }} `
+            -ConfigAll $configAll `
+            -ConfigMatrix $configMatrix `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_NETWORK }} `
+            -Tags ${{ env.OE_TAGS_FOR_ARM }}
+        shell: pwsh
 
       - name: Azure logout
         if: always()
@@ -134,18 +162,4 @@ jobs:
             az logout
             az cache purge
             az account clear
-
-      #- name: Test Env Var in pwsh
-      #  if: success()
-      #  run: |
-      #    Write-Output ${{ env.FOO }}
-      #    Write-Output $env:FOO
-      #  shell: pwsh
-
-      #- name: Test Env Var in bash
-      #  if: success()
-      #  run: |
-      #    echo ${{ env.FOO }}
-      #    echo $FOO
-      #  shell: bash
 ...
