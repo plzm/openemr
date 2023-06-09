@@ -30,8 +30,12 @@ function DeployNetwork() {
     $nsgName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "nsg" -Sequence ($nsgIndex.ToString().PadLeft(2, "0"))
     $nsgResourceId = "/subscriptions/" + $SubscriptionId + "/resourceGroups/" + $ResourceGroupName + "/providers/Microsoft.Network/networkSecurityGroups/" + $nsgName
 
-    $nsg.Name = $nsgName
+    Write-Debug -Debug:$true -Message ("NSG Resource ID: " + $nsg.ResourceId)
+
     $nsg.ResourceId = $nsgResourceId
+
+    Write-Debug -Debug:$true -Message ("NSG Resource ID string: " + $nsgResourceId)
+    Write-Debug -Debug:$true -Message ("NSG object Resource ID: " + $nsg.ResourceId)
 
     DeployNSG `
       -SubscriptionID "$SubscriptionId" `
@@ -83,6 +87,7 @@ function DeployNetwork() {
       Write-Debug -Debug:$true -Message $subnet.Name
 
       $nsg = $configMatrix.Network.NSGs | Where-Object {$_.NsgId -eq $subnet.NsgId}
+      Write-Debug -Debug:$true -Message ("NSG Resource ID: " + $nsg.ResourceId)
 
       DeploySubnet `
         -SubscriptionID "$SubscriptionId" `
