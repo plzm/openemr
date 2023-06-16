@@ -113,6 +113,28 @@ jobs:
             --tags ${{ env.OE_TAGS_FOR_CLI }}
         shell: pwsh
 
+      - name: Deploy Observability
+        if: success()
+        run: |
+          . ./scripts/infra/Utility.ps1
+          . ./scripts/infra/Observability.ps1
+
+          $configAll = GetConfig -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = GetConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+
+          $workspaceName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "law" -Sequence "01"
+
+          Set-EnvVar2 -VarName "OE_LAW_NAME" -VarValue "$workspaceName"
+
+          DeployLogAnalyticsWorkspace `
+          -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+          -Location $configMatrix.Location `
+          -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+          -TemplateUri ($configAll.TemplateUriPrefix + "monitor.log-analytics-workspace.json") `
+          -WorkspaceName $workspaceName `
+          -Tags ${{ env.OE_TAGS_FOR_ARM }}
+        shell: pwsh
+
       - name: Deploy User Assigned Identity
         if: success()
         run: |
@@ -140,6 +162,7 @@ jobs:
         if: success()
         run: |
           . ./scripts/infra/Utility.ps1
+          . ./scripts/infra/Observability.ps1
           . ./scripts/infra/Network.ps1
 
           $configAll = GetConfig -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
