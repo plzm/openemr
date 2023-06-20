@@ -44,11 +44,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Powershell error action
+        if: success()
+        run: |
+          $global:ErrorActionPreference = "Stop"
+        shell: pwsh
+
       - name: Set Azure CLI extensions to auto-install
         if: success()
         run: |
-          $ErrorActionPreference = "Stop"
-
           az config set extension.use_dynamic_install=yes_without_prompt
         shell: pwsh
 
@@ -62,16 +66,12 @@ jobs:
       - name: Register RPs
         if: success()
         run: |
-          $ErrorActionPreference = "Stop"
-
           az provider register --namespace "Microsoft.ChangeAnalysis" --accept-terms --consent-to-permissions --wait
         shell: pwsh
 
       - name: Set Config File Paths to Environment
         if: success()
         run: |
-          $ErrorActionPreference = "Stop"
-
           . ./scripts/infra/Utility.ps1
 
           Set-EnvVar2 -VarName "OE_CONFIG_FILE_ALL" -VarValue "./config/infra_all.json"
@@ -81,8 +81,6 @@ jobs:
       - name: Set Environment Variables
         if: success()
         run: |
-          $ErrorActionPreference = "Stop"
-
           . ./scripts/infra/Utility.ps1
 
           $configAll = GetConfig -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
@@ -97,8 +95,6 @@ jobs:
       - name: Create Resource Groups
         if: success()
         run: |
-          $ErrorActionPreference = "Stop"
-
           . ./scripts/infra/Utility.ps1
 
           $configAll = GetConfig -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
@@ -126,8 +122,6 @@ jobs:
       - name: Deploy Observability
         if: success()
         run: |
-          $ErrorActionPreference = "Stop"
-
           . ./scripts/infra/Utility.ps1
           . ./scripts/infra/Observability.ps1
 
@@ -164,8 +158,6 @@ jobs:
       - name: Deploy User Assigned Identity
         if: success()
         run: |
-          $ErrorActionPreference = "Stop"
-
           . ./scripts/infra/Utility.ps1
           . ./scripts/infra/Security.ps1
 
@@ -189,8 +181,6 @@ jobs:
       - name: Deploy Network
         if: success()
         run: |
-          $ErrorActionPreference = "Stop"
-
           . ./scripts/infra/Utility.ps1
           . ./scripts/infra/Observability.ps1
           . ./scripts/infra/Network.ps1

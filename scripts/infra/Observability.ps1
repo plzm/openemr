@@ -91,6 +91,6 @@ function DeployDiagnosticsSetting()
     resourceId="$ResourceId" `
     diagnosticsSettingName="$DiagnosticsSettingName" `
     logAnalyticsWorkspaceResourceId="$LogAnalyticsWorkspaceResourceId" `
-    sendLogs=$true `
-    sendMetrics=$true
+    sendLogs=$SendLogs `
+    sendMetrics=$SendMetrics
 }
