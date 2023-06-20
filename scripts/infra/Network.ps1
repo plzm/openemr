@@ -19,6 +19,12 @@ function DeployNetwork() {
     $ResourceGroupName,
     [Parameter(Mandatory = $false)]
     [string]
+    $LogAnalyticsWorkspaceName = "",
+    [Parameter(Mandatory = $false)]
+    [string]
+    $LogAnalyticsWorkspaceResourceId = "",
+    [Parameter(Mandatory = $false)]
+    [string]
     $Tags = ""
   )
 
@@ -44,6 +50,20 @@ function DeployNetwork() {
       -TemplateUri ($configAll.TemplateUriPrefix + "net.nsg.json") `
       -NSGName $nsgName `
       -Tags $Tags
+
+    if ($LogAnalyticsWorkspaceName -and $LogAnalyticsWorkspaceResourceId)
+    {
+      DeployDiagnosticsSetting `
+        -SubscriptionID "$SubscriptionId" `
+        -Location $configMatrix.Location `
+        -ResourceGroupName $ResourceGroupName `
+        -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
+        -ResourceId $nsgResourceId `
+        -DiagnosticsSettingName ("diag-" + "$LogAnalyticsWorkspaceName") `
+        -LogAnalyticsWorkspaceResourceId $LogAnalyticsWorkspaceResourceId `
+        -SendLogs $true `
+        -SendMetrics $false
+    }
 
     foreach ($nsgRule in $nsg.Rules) {
       DeployNSGRule `
@@ -72,6 +92,7 @@ function DeployNetwork() {
 
   foreach ($vnet in $configMatrix.Network.VNets) {
     $vnetName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "vnt" -Sequence ($vnetIndex.ToString().PadLeft(2, "0"))
+    $vnetResourceId = "/subscriptions/" + $SubscriptionId + "/resourceGroups/" + $ResourceGroupName + "/providers/Microsoft.Network/virtualNetworks/" + $vnetName
 
     DeployVNet `
       -SubscriptionID "$SubscriptionId" `
@@ -80,9 +101,23 @@ function DeployNetwork() {
       -TemplateUri ($configAll.TemplateUriPrefix + "net.vnet.json") `
       -VNetName $vnetName `
       -VNetPrefix $vnet.AddressSpace `
-      -EnableDdosProtection $false `
+      -EnableDdosProtection $vnet.EnableDdosProtection `
       -Tags $Tags
 
+    if ($LogAnalyticsWorkspaceName -and $LogAnalyticsWorkspaceResourceId)
+    {
+      DeployDiagnosticsSetting `
+        -SubscriptionID "$SubscriptionId" `
+        -Location $configMatrix.Location `
+        -ResourceGroupName $ResourceGroupName `
+        -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
+        -ResourceId $vnetResourceId `
+        -DiagnosticsSettingName ("diag-" + "$LogAnalyticsWorkspaceName") `
+        -LogAnalyticsWorkspaceResourceId $LogAnalyticsWorkspaceResourceId `
+        -SendLogs $true `
+        -SendMetrics $true
+    }
+  
     foreach ($subnet in $vnet.Subnets) {
       Write-Debug -Debug:$true -Message $subnet.Name
 

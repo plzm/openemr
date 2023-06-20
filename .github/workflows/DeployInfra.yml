@@ -44,6 +44,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Powershell error action
+        if: success()
+        run: |
+          $global:ErrorActionPreference = "Stop"
+        shell: pwsh
+
       - name: Set Azure CLI extensions to auto-install
         if: success()
         run: |
@@ -113,6 +119,42 @@ jobs:
             --tags ${{ env.OE_TAGS_FOR_CLI }}
         shell: pwsh
 
+      - name: Deploy Observability
+        if: success()
+        run: |
+          . ./scripts/infra/Utility.ps1
+          . ./scripts/infra/Observability.ps1
+
+          $configAll = GetConfig -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = GetConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+
+          $workspaceName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "law" -Sequence "01"
+          $workspaceResourceId = "/subscriptions/" + "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" + "/resourceGroups/" + "${{ env.OE_RG_NAME_MAIN }}" + "/providers/microsoft.operationalinsights/workspaces/" + "$workspaceName"
+
+          Set-EnvVar2 -VarName "OE_LAW_NAME" -VarValue "$workspaceName"
+          Set-EnvVar2 -VarName "OE_LAW_RESOURCE_ID" -VarValue "$workspaceResourceId"
+
+          DeployLogAnalyticsWorkspace `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -Location $configMatrix.Location `
+            -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "monitor.log-analytics-workspace.json") `
+            -WorkspaceName $workspaceName `
+            -Tags ${{ env.OE_TAGS_FOR_ARM }}
+
+          DeployDiagnosticsSetting `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -Location $configMatrix.Location `
+            -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
+            -ResourceId $workspaceResourceId `
+            -DiagnosticsSettingName ("diag-" + "$workspaceName") `
+            -LogAnalyticsWorkspaceResourceId $workspaceResourceId `
+            -SendLogs $true `
+            -SendMetrics $true
+
+        shell: pwsh
+
       - name: Deploy User Assigned Identity
         if: success()
         run: |
@@ -140,6 +182,7 @@ jobs:
         if: success()
         run: |
           . ./scripts/infra/Utility.ps1
+          . ./scripts/infra/Observability.ps1
           . ./scripts/infra/Network.ps1
 
           $configAll = GetConfig -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
@@ -151,6 +194,8 @@ jobs:
             -ConfigMatrix $configMatrix `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -ResourceGroupName ${{ env.OE_RG_NAME_NETWORK }} `
+            -LogAnalyticsWorkspaceName "${{ env.OE_LAW_NAME }}" `
+            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
             -Tags ${{ env.OE_TAGS_FOR_ARM }}
         shell: pwsh
 
