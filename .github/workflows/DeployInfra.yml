@@ -123,8 +123,10 @@ jobs:
           $configMatrix = GetConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
           $workspaceName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "law" -Sequence "01"
+          $workspaceResourceId = "/subscriptions/" + "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" + "/resourceGroups/" + "${{ env.OE_RG_NAME_MAIN }}" + "/providers/microsoft.operationalinsights/workspaces/" + "$workspaceName"
 
           Set-EnvVar2 -VarName "OE_LAW_NAME" -VarValue "$workspaceName"
+          Set-EnvVar2 -VarName "OE_LAW_RESOURCE_ID" -VarValue "$workspaceResourceId"
 
           DeployLogAnalyticsWorkspace `
           -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
@@ -174,6 +176,8 @@ jobs:
             -ConfigMatrix $configMatrix `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -ResourceGroupName ${{ env.OE_RG_NAME_NETWORK }} `
+            -LogAnalyticsWorkspaceName "${{ env.OE_LAW_NAME }}" `
+            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
             -Tags ${{ env.OE_TAGS_FOR_ARM }}
         shell: pwsh
 
