@@ -71,7 +71,13 @@ function DeployDiagnosticsSetting()
     $DiagnosticsSettingName,
     [Parameter(Mandatory = $true)]
     [string]
-    $LogAnalyticsWorkspaceResourceId
+    $LogAnalyticsWorkspaceResourceId,
+    [Parameter(Mandatory = $false)]
+    [bool]
+    $SendLogs = $true,
+    [Parameter(Mandatory = $false)]
+    [bool]
+    $SendMetrics = $true
   )
 
   Write-Debug -Debug:$true -Message "Deploy Diagnostics Setting $DiagnosticsSettingName"

@@ -60,7 +60,9 @@ function DeployNetwork() {
         -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
         -ResourceId $nsgResourceId `
         -DiagnosticsSettingName ("diag-" + "$LogAnalyticsWorkspaceName") `
-        -LogAnalyticsWorkspaceResourceId $LogAnalyticsWorkspaceResourceId
+        -LogAnalyticsWorkspaceResourceId $LogAnalyticsWorkspaceResourceId `
+        -SendLogs $true `
+        -SendMetrics $false
     }
 
     foreach ($nsgRule in $nsg.Rules) {
@@ -111,7 +113,9 @@ function DeployNetwork() {
         -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
         -ResourceId $vnetResourceId `
         -DiagnosticsSettingName ("diag-" + "$LogAnalyticsWorkspaceName") `
-        -LogAnalyticsWorkspaceResourceId $LogAnalyticsWorkspaceResourceId
+        -LogAnalyticsWorkspaceResourceId $LogAnalyticsWorkspaceResourceId `
+        -SendLogs $true `
+        -SendMetrics $true
     }
   
     foreach ($subnet in $vnet.Subnets) {
