@@ -35,12 +35,14 @@ function DeployLogAnalyticsWorkspace() {
 
   az deployment group create --verbose `
     --subscription "$SubscriptionId" `
-    -n "$NSGName" `
+    -n "$WorkspaceName" `
     -g "$ResourceGroupName" `
     --template-uri "$TemplateUri" `
     --parameters `
     location="$Location" `
-    nsgName="$NSGName" `
+    workspaceName="$WorkspaceName" `
+    publicNetworkAccessForIngestion="$PublicNetworkAccessForIngestion" `
+    publicNetworkAccessForQuery="$PublicNetworkAccessForQuery" `
     tags=$Tags
 }
 
