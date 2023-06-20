@@ -129,12 +129,12 @@ jobs:
           Set-EnvVar2 -VarName "OE_LAW_RESOURCE_ID" -VarValue "$workspaceResourceId"
 
           DeployLogAnalyticsWorkspace `
-          -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          -Location $configMatrix.Location `
-          -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
-          -TemplateUri ($configAll.TemplateUriPrefix + "monitor.log-analytics-workspace.json") `
-          -WorkspaceName $workspaceName `
-          -Tags ${{ env.OE_TAGS_FOR_ARM }}
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -Location $configMatrix.Location `
+            -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "monitor.log-analytics-workspace.json") `
+            -WorkspaceName $workspaceName `
+            -Tags ${{ env.OE_TAGS_FOR_ARM }}
         shell: pwsh
 
       - name: Deploy User Assigned Identity

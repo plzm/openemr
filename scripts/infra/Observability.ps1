@@ -21,11 +21,11 @@ function DeployLogAnalyticsWorkspace() {
     [string]
     $WorkspaceName,
     [Parameter(Mandatory = $false)]
-    [bool]
-    $PublicNetworkAccessForIngestion = $true,
+    [string]
+    $PublicNetworkAccessForIngestion = "Enabled",
     [Parameter(Mandatory = $false)]
-    [bool]
-    $PublicNetworkAccessForQuery = $false,
+    [string]
+    $PublicNetworkAccessForQuery = "Enabled",
     [Parameter(Mandatory = $false)]
     [string]
     $Tags = ""
