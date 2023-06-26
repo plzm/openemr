@@ -197,8 +197,8 @@ jobs:
 
           $uai = "$(az identity show -g ${{ env.OE_RG_NAME_MAIN }} -n $uaiName)" | ConvertFrom-Json
 
-          Set-EnvVar2 -VarName "OE_UAI_CLIENT_ID" -VarValue "$uai.clientId"
-          Set-EnvVar2 -VarName "OE_UAI_PRINCIPAL_ID" -VarValue "$uai.principalId"
+          Set-EnvVar2 -VarName "OE_UAI_CLIENT_ID" -VarValue $uai.clientId
+          Set-EnvVar2 -VarName "OE_UAI_PRINCIPAL_ID" -VarValue $uai.principalId
         shell: pwsh
 
       - name: Deploy Role Assignments
