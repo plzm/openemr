@@ -253,16 +253,19 @@ jobs:
             -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
 
           Write-Debug -Debug:$true -Message "Deploy Role Assignment | App Services RP App Reg | Key Vault Secrets User"
-          DeployRoleAssignmentSubToName `
-            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -AssigneeName "Microsoft.Azure.WebSites" `
-            -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultSecretsUser
+          $appSvcRpObjectId = "$(az ad sp show --id 'Microsoft.Azure.WebSites' -o tsv --query 'id')"
+          DeployRoleAssignmentSubToPrincipalId `
+            -Location $configMatrix.Location `
+            -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
+            -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultSecretsUser `
+            -PrincipalId "$appSvcRpObjectId"
 
-          Write-Debug -Debug:$true -Message "Deploy Role Assignment | Diagnostics Services | Storage Blob Data Contributor"
-          DeployRoleAssignmentSubToName `
-            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -AssigneeName "Diagnostic Services Trusted Storage Access" `
-            -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultSecretsUser
+          Write-Debug -Debug:$true -Message "Deploy Role Assignment | Diagnostic Services Trusted Storage Access | Storage Blob Data Contributor"
+          DeployRoleAssignmentSubToPrincipalId `
+            -Location $configMatrix.Location `
+            -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
+            -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultSecretsUser `
+            -PrincipalId $configAll.PrincipalIdDiagnosticServicesTrustedStorageAccess
         shell: pwsh
 
       - name: Deploy Network
