@@ -187,7 +187,7 @@ jobs:
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -Location $configMatrix.Location `
             -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
-            -TemplateUri ($configAll.TemplateUriPrefix + "identity.user-assigned-mi.json") `
+            -TemplateUri ($configAll.TemplateUriPrefix + "identity.user-assigned-identity.json") `
             -TenantId "${{ secrets.OE_AZURE_TENANT_ID }}" `
             -UAIName $uaiName `
             -Tags ${{ env.OE_TAGS_FOR_ARM }}
@@ -212,48 +212,56 @@ jobs:
 
           Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | KV Certificates Officer"
           DeployRoleAssignmentSub `
+            -Location $configMatrix.Location `
             -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
             -RoleDefinitionId "$configAll.RoleDefinitionIdKeyVaultCertificatesOfficer" `
             -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
 
           Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | KV Crypto Officer"
           DeployRoleAssignmentSub `
+            -Location $configMatrix.Location `
             -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
             -RoleDefinitionId "$configAll.RoleDefinitionIdKeyVaultCryptoOfficer" `
             -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
 
           Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | KV Secrets Officer"
           DeployRoleAssignmentSub `
+            -Location $configMatrix.Location `
             -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
             -RoleDefinitionId "$configAll.RoleDefinitionIdKeyVaultSecretsOfficer" `
             -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
 
           Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | Monitoring Metrics Publisher"
           DeployRoleAssignmentSub `
+            -Location $configMatrix.Location `
             -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
             -RoleDefinitionId "$configAll.RoleDefinitionIdMonitoringMetricsPublisher" `
             -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
 
           Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | Storage Blob Data Contributor"
           DeployRoleAssignmentSub `
+            -Location $configMatrix.Location `
             -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
             -RoleDefinitionId "$configAll.RoleDefinitionIdStorageBlobDataContributor" `
             -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
 
           Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | Storage Blob Queue Contributor"
           DeployRoleAssignmentSub `
+            -Location $configMatrix.Location `
             -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
             -RoleDefinitionId "$configAll.RoleDefinitionIdStorageQueueDataContributor" `
             -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
 
           Write-Debug -Debug:$true -Message "Deploy Role Assignment | App Services RP App Reg | Key Vault Secrets User"
           DeployRoleAssignmentSub `
+            -Location $configMatrix.Location `
             -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
             -RoleDefinitionId "$configAll.RoleDefinitionIdKeyVaultSecretsUser" `
             -PrincipalId "$configAll.PrincipalIdAzureAppServicesResourceProvider"
 
           Write-Debug -Debug:$true -Message "Deploy Role Assignment | Diagnostics Services | Storage Blob Data Contributor"
           DeployRoleAssignmentSub `
+            -Location $configMatrix.Location `
             -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
             -RoleDefinitionId "$configAll.RoleDefinitionIdStorageBlobDataContributor" `
             -PrincipalId "$configAll.PrincipalIdDiagnosticServices"

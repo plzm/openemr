@@ -75,6 +75,9 @@ function DeployRoleAssignmentSub()
   (
     [Parameter(Mandatory = $true)]
     [string]
+    $Location,
+    [Parameter(Mandatory = $true)]
+    [string]
     $TemplateUri,
     [Parameter(Mandatory = $true)]
     [string]
@@ -89,6 +92,7 @@ function DeployRoleAssignmentSub()
 
   az deployment sub create --verbose `
     -n "rbac-$RoleDefinitionId-$PrincipalId" `
+    --location="$Location" `
     --template-uri "$TemplateUri" `
     --parameters `
     roleDefinitionId="$RoleDefinitionId" `
