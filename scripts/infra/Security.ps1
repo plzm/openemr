@@ -123,7 +123,7 @@ function DeployRoleAssignmentSubToName()
 
   az role assignment create --verbose `
     --role $RoleDefinitionId `
-    --scope $SubscriptionId `
+    --scope ("/subscriptions/" + $SubscriptionId) `
     --assignee $AssigneeName `
     --assignee-principal-type $PrincipalType `
 }
