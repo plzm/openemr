@@ -195,7 +195,7 @@ jobs:
           Write-Debug -Debug:$true -Message "Sleep to allow UAI deploy to complete"
           Start-Sleep -s 60
 
-          $uai = "$(az identity show -g ${{ env.OE_RG_NAME_MAIN }} -n $uaiName" | ConvertFrom-Json
+          $uai = "$(az identity show -g ${{ env.OE_RG_NAME_MAIN }} -n $uaiName)" | ConvertFrom-Json
 
           Set-EnvVar2 -VarName "OE_UAI_CLIENT_ID" -VarValue "$uai.clientId"
           Set-EnvVar2 -VarName "OE_UAI_PRINCIPAL_ID" -VarValue "$uai.principalId"
@@ -320,6 +320,8 @@ jobs:
             -DefaultAction "Deny" `
             -AllowedIpAddressRangesCsv "" `
             -AllowedSubnetResourceIdsCsv "$subnetResourceIdsCsv" `
+            -LogAnalyticsWorkspaceName "${{ env.OE_LAW_NAME }}" `
+            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
             -Tags ${{ env.OE_TAGS_FOR_ARM }}
         shell: pwsh
 
