@@ -213,50 +213,50 @@ jobs:
           Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | KV Certificates Officer"
           DeployRoleAssignmentSub `
             -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
-            -RoleDefinitionId "${{ configAll.RoleDefinitionIdKeyVaultCertificatesOfficer }}" `
+            -RoleDefinitionId "$configAll.RoleDefinitionIdKeyVaultCertificatesOfficer" `
             -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
 
           Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | KV Crypto Officer"
           DeployRoleAssignmentSub `
             -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
-            -RoleDefinitionId "${{ configAll.RoleDefinitionIdKeyVaultCryptoOfficer }}" `
+            -RoleDefinitionId "$configAll.RoleDefinitionIdKeyVaultCryptoOfficer" `
             -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
 
           Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | KV Secrets Officer"
           DeployRoleAssignmentSub `
             -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
-            -RoleDefinitionId "${{ configAll.RoleDefinitionIdKeyVaultSecretsOfficer }}" `
+            -RoleDefinitionId "$configAll.RoleDefinitionIdKeyVaultSecretsOfficer" `
             -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
 
           Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | Monitoring Metrics Publisher"
           DeployRoleAssignmentSub `
             -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
-            -RoleDefinitionId "${{ configAll.RoleDefinitionIdMonitoringMetricsPublisher }}" `
+            -RoleDefinitionId "$configAll.RoleDefinitionIdMonitoringMetricsPublisher" `
             -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
 
           Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | Storage Blob Data Contributor"
           DeployRoleAssignmentSub `
             -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
-            -RoleDefinitionId "${{ configAll.RoleDefinitionIdStorageBlobDataContributor }}" `
+            -RoleDefinitionId "$configAll.RoleDefinitionIdStorageBlobDataContributor" `
             -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
 
           Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | Storage Blob Queue Contributor"
           DeployRoleAssignmentSub `
             -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
-            -RoleDefinitionId "${{ configAll.RoleDefinitionIdStorageQueueDataContributor }}" `
+            -RoleDefinitionId "$configAll.RoleDefinitionIdStorageQueueDataContributor" `
             -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
 
           Write-Debug -Debug:$true -Message "Deploy Role Assignment | App Services RP App Reg | Key Vault Secrets User"
           DeployRoleAssignmentSub `
             -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
-            -RoleDefinitionId "${{ configAll.RoleDefinitionIdKeyVaultSecretsUser }}" `
-            -PrincipalId "${{ configAll.PrincipalIdAzureAppServicesResourceProvider }}"
+            -RoleDefinitionId "$configAll.RoleDefinitionIdKeyVaultSecretsUser" `
+            -PrincipalId "$configAll.PrincipalIdAzureAppServicesResourceProvider"
 
           Write-Debug -Debug:$true -Message "Deploy Role Assignment | Diagnostics Services | Storage Blob Data Contributor"
           DeployRoleAssignmentSub `
             -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
-            -RoleDefinitionId "${{ configAll.RoleDefinitionIdStorageBlobDataContributor }}" `
-            -PrincipalId "${{ configAll.PrincipalIdDiagnosticServices }}"
+            -RoleDefinitionId "$configAll.RoleDefinitionIdStorageBlobDataContributor" `
+            -PrincipalId "$configAll.PrincipalIdDiagnosticServices"
         shell: pwsh
 
       - name: Deploy Network
