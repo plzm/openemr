@@ -68,7 +68,7 @@ function DeployUAI()
     tags=$Tags
 }
 
-function DeployRoleAssignmentSub()
+function DeployRoleAssignmentSubToPrincipalId()
 {
   [CmdletBinding()]
   param
@@ -101,3 +101,30 @@ function DeployRoleAssignmentSub()
     principalId="$PrincipalId" `
     principalType="$PrincipalType"
 }
+
+function DeployRoleAssignmentSubToName()
+{
+  [CmdletBinding()]
+  param
+  (
+    [Parameter(Mandatory = $true)]
+    [string]
+    $SubscriptionId,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $AssigneeName,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $RoleDefinitionId,
+    [Parameter(Mandatory = $false)]
+    [string]
+    $PrincipalType = "ServicePrincipal"
+  )
+
+  az role assignment create --verbose `
+    -role $RoleDefinitionId `
+    --scope $SubscriptionId `
+    --assignee $AssigneeName `
+    --assignee-principal-type $PrincipalType `
+}
+
