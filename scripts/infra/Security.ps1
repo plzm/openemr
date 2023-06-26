@@ -67,3 +67,63 @@ function DeployUAI()
     identityName="$UAIName" `
     tags=$Tags
 }
+
+function DeployRoleAssignmentSubToPrincipalId()
+{
+  [CmdletBinding()]
+  param
+  (
+    [Parameter(Mandatory = $true)]
+    [string]
+    $Location,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $TemplateUri,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $RoleDefinitionId,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $PrincipalId,
+    [Parameter(Mandatory = $false)]
+    [string]
+    $PrincipalType = "ServicePrincipal"
+  )
+
+  $deploymentName = "rbac-" + (Get-Timestamp -MakeStringSafe $true)
+
+  az deployment sub create --verbose `
+    -n "$deploymentName" `
+    --location="$Location" `
+    --template-uri "$TemplateUri" `
+    --parameters `
+    roleDefinitionId="$RoleDefinitionId" `
+    principalId="$PrincipalId" `
+    principalType="$PrincipalType"
+}
+
+function DeployRoleAssignmentSubToName()
+{
+  [CmdletBinding()]
+  param
+  (
+    [Parameter(Mandatory = $true)]
+    [string]
+    $SubscriptionId,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $AssigneeName,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $RoleDefinitionId,
+    [Parameter(Mandatory = $false)]
+    [string]
+    $PrincipalType = "ServicePrincipal"
+  )
+
+  az role assignment create --verbose `
+    --role $RoleDefinitionId `
+    --scope ("/subscriptions/" + $SubscriptionId) `
+    --assignee $AssigneeName
+}
+

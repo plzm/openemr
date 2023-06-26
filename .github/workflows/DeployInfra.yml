@@ -90,6 +90,19 @@ jobs:
             -Environment "${{ inputs.environment }}" `
             -ConfigAll $configAll `
             -ConfigMatrix $configMatrix
+
+          # Env vars set below, listed here for convenience
+          # OE_RG_NAME_MAIN
+          # OE_RG_NAME_NETWORK
+          # OE_LAW_NAME
+          # OE_LAW_RESOURCE_ID
+          # OE_UAI_NAME
+          # OE_UAI_RESOURCE_ID
+          # OE_UAI_CLIENT_ID
+          # OE_UAI_PRINCIPAL_ID
+          # OE_KEYVAULT_NAME
+          # OE_KEYVAULT_RESOURCE_ID
+
         shell: pwsh
 
       - name: Create Resource Groups
@@ -165,17 +178,93 @@ jobs:
           $configMatrix = GetConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
           $uaiName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "mid" -Sequence "01"
+          $uaiResourceId = "/subscriptions/" + "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" + "/resourcegroups/" + "${{ env.OE_RG_NAME_MAIN }}" + "/providers/Microsoft.ManagedIdentity/userAssignedIdentities/" + "$uaiName"
 
           Set-EnvVar2 -VarName "OE_UAI_NAME" -VarValue "$uaiName"
+          Set-EnvVar2 -VarName "OE_UAI_RESOURCE_ID" -VarValue "$uaiResourceId"
 
           DeployUAI `
-          -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          -Location $configMatrix.Location `
-          -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
-          -TemplateUri ($configAll.TemplateUriPrefix + "identity.user-assigned-mi.json") `
-          -TenantId "${{ secrets.OE_AZURE_TENANT_ID }}" `
-          -UAIName $uaiName `
-          -Tags ${{ env.OE_TAGS_FOR_ARM }}
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -Location $configMatrix.Location `
+            -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "identity.user-assigned-identity.json") `
+            -TenantId "${{ secrets.OE_AZURE_TENANT_ID }}" `
+            -UAIName $uaiName `
+            -Tags ${{ env.OE_TAGS_FOR_ARM }}
+
+          Write-Debug -Debug:$true -Message "Sleep to allow UAI deploy to complete"
+          Start-Sleep -s 60
+
+          $uai = "$(az identity show -g ${{ env.OE_RG_NAME_MAIN }} -n $uaiName)" | ConvertFrom-Json
+
+          Set-EnvVar2 -VarName "OE_UAI_CLIENT_ID" -VarValue $uai.clientId
+          Set-EnvVar2 -VarName "OE_UAI_PRINCIPAL_ID" -VarValue $uai.principalId
+        shell: pwsh
+
+      - name: Deploy Role Assignments
+        if: success()
+        run: |
+          . ./scripts/infra/Utility.ps1
+          . ./scripts/infra/Security.ps1
+
+          $configAll = GetConfig -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = GetConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+
+          Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | KV Certificates Officer"
+          DeployRoleAssignmentSubToPrincipalId `
+            -Location $configMatrix.Location `
+            -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
+            -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultCertificatesOfficer `
+            -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
+
+          Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | KV Crypto Officer"
+          DeployRoleAssignmentSubToPrincipalId `
+            -Location $configMatrix.Location `
+            -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
+            -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultCryptoOfficer `
+            -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
+
+          Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | KV Secrets Officer"
+          DeployRoleAssignmentSubToPrincipalId `
+            -Location $configMatrix.Location `
+            -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
+            -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultSecretsOfficer `
+            -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
+
+          Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | Monitoring Metrics Publisher"
+          DeployRoleAssignmentSubToPrincipalId `
+            -Location $configMatrix.Location `
+            -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
+            -RoleDefinitionId $configAll.RoleDefinitionIdMonitoringMetricsPublisher `
+            -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
+
+          Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | Storage Blob Data Contributor"
+          DeployRoleAssignmentSubToPrincipalId `
+            -Location $configMatrix.Location `
+            -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
+            -RoleDefinitionId $configAll.RoleDefinitionIdStorageBlobDataContributor `
+            -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
+
+          Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | Storage Blob Queue Contributor"
+          DeployRoleAssignmentSubToPrincipalId `
+            -Location $configMatrix.Location `
+            -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
+            -RoleDefinitionId $configAll.RoleDefinitionIdStorageQueueDataContributor `
+            -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
+
+          Write-Debug -Debug:$true -Message "Deploy Role Assignment | App Services RP App Reg | Key Vault Secrets User"
+          DeployRoleAssignmentSubToPrincipalId `
+            -Location $configMatrix.Location `
+            -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
+            -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultSecretsUser `
+            -PrincipalId $configAll.PrincipalIdAppServicesRp
+
+          Write-Debug -Debug:$true -Message "Deploy Role Assignment | Diagnostic Services Trusted Storage Access | Storage Blob Data Contributor"
+          DeployRoleAssignmentSubToPrincipalId `
+            -Location $configMatrix.Location `
+            -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
+            -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultSecretsUser `
+            -PrincipalId $configAll.PrincipalIdDiagnosticServicesTrustedStorageAccess
         shell: pwsh
 
       - name: Deploy Network
@@ -189,11 +278,58 @@ jobs:
           $configMatrix = GetConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
           DeployNetwork `
-            -Environment ${{ inputs.environment }} `
             -ConfigAll $configAll `
             -ConfigMatrix $configMatrix `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -ResourceGroupName ${{ env.OE_RG_NAME_NETWORK }} `
+            -LogAnalyticsWorkspaceName "${{ env.OE_LAW_NAME }}" `
+            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+            -Tags ${{ env.OE_TAGS_FOR_ARM }}
+        shell: pwsh
+
+      - name: Deploy Key Vault
+        if: success()
+        run: |
+          . ./scripts/infra/Utility.ps1
+          . ./scripts/infra/Network.ps1
+          . ./scripts/infra/Observability.ps1
+          . ./scripts/infra/KeyVault.ps1
+
+          $configAll = GetConfig -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = GetConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+
+          $subnetResourceIds = Get-SubnetResourceIds `
+            -ConfigAll $configAll `
+            -ConfigMatrix $configMatrix `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_NETWORK }}
+
+          $subnetResourceIdsCsv = $($subnetResourceIds -join ",")
+          Write-Debug -Debug:$true -Message "$subnetResourceIdsCsv"
+
+          $keyVaultName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "kvt" -Sequence "01"
+          $keyVaultResourceId = "/subscriptions/" + "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" + "/resourcegroups/" + "${{ env.OE_RG_NAME_MAIN }}" + "/providers/Microsoft.KeyVault/vaults/" + "$keyVaultName"
+
+          Set-EnvVar2 -VarName "OE_KEYVAULT_NAME" -VarValue "$keyVaultName"
+          Set-EnvVar2 -VarName "OE_KEYVAULT_RESOURCE_ID" -VarValue "$keyVaultResourceId"
+
+          DeployKeyVault `
+            -TenantId "${{ secrets.OE_AZURE_TENANT_ID }}" `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -Location $configMatrix.Location `
+            -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "key-vault.json") `
+            -KeyVaultName "$keyVaultName" `
+            -EnabledForDeployment $false `
+            -EnabledForDiskEncryption $false `
+            -EnabledForTemplateDeployment $false `
+            -EnableSoftDelete $false `
+            -SoftDeleteRetentionInDays 7 `
+            -EnableRbacAuthorization $true `
+            -PublicNetworkAccess "Enabled" `
+            -DefaultAction "Deny" `
+            -AllowedIpAddressRangesCsv "" `
+            -AllowedSubnetResourceIdsCsv "$subnetResourceIdsCsv" `
             -LogAnalyticsWorkspaceName "${{ env.OE_LAW_NAME }}" `
             -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
             -Tags ${{ env.OE_TAGS_FOR_ARM }}

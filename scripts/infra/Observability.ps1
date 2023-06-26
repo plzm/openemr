@@ -1,6 +1,3 @@
-
-
-
 function DeployLogAnalyticsWorkspace() {
   [CmdletBinding()]
   param

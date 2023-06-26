@@ -1,3 +1,23 @@
+function Get-Timestamp()
+{
+  [CmdletBinding()]
+  param
+  (
+    [Parameter(Mandatory = $false)]
+    [bool]
+    $MakeStringSafe=$false
+  )
+
+  $result = (Get-Date -AsUTC -format s) + "Z"
+
+  if ($MakeStringSafe)
+  {
+    $result = $result.Replace(":", "-")
+  }
+
+  return $result
+}
+
 #region Configuration
 
 function GetConfig()
