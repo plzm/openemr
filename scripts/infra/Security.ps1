@@ -90,8 +90,10 @@ function DeployRoleAssignmentSub()
     $PrincipalType = "ServicePrincipal"
   )
 
+  $deploymentName = "rbac-" + (Get-Timestamp -MakeStringSafe $true)
+
   az deployment sub create --verbose `
-    -n "rbac-$RoleDefinitionId-$PrincipalId" `
+    -n "$deploymentName" `
     --location="$Location" `
     --template-uri "$TemplateUri" `
     --parameters `
