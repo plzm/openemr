@@ -174,11 +174,9 @@ function Get-SubnetResourceIds()
 
     foreach ($subnet in $vnet.Subnets)
     {
-      Write-Debug -Debug:$true -Message $subnet.Name
-
       $subnetResourceId = $vnetResourceId + "/subnets/" + $subnet.Name
 
-      $result.Add($subnetResourceId)
+      $result.Add($subnetResourceId) | Out-Null
     }
   }
 
