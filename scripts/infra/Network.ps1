@@ -1,10 +1,8 @@
-function DeployNetwork() {
+function DeployNetwork()
+{
   [CmdletBinding()]
   param
   (
-    [Parameter(Mandatory = $true)]
-    [string]
-    $Environment,
     [Parameter(Mandatory = $true)]
     [object]
     $ConfigAll,
@@ -65,7 +63,8 @@ function DeployNetwork() {
         -SendMetrics $false
     }
 
-    foreach ($nsgRule in $nsg.Rules) {
+    foreach ($nsgRule in $nsg.Rules)
+    {
       DeployNSGRule `
       -SubscriptionID "$SubscriptionId" `
       -Location $configMatrix.Location `
@@ -90,7 +89,8 @@ function DeployNetwork() {
 
   $vnetIndex = 1
 
-  foreach ($vnet in $configMatrix.Network.VNets) {
+  foreach ($vnet in $configMatrix.Network.VNets)
+  {
     $vnetName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "vnt" -Sequence ($vnetIndex.ToString().PadLeft(2, "0"))
     $vnetResourceId = "/subscriptions/" + $SubscriptionId + "/resourceGroups/" + $ResourceGroupName + "/providers/Microsoft.Network/virtualNetworks/" + $vnetName
 
@@ -118,7 +118,8 @@ function DeployNetwork() {
         -SendMetrics $true
     }
   
-    foreach ($subnet in $vnet.Subnets) {
+    foreach ($subnet in $vnet.Subnets)
+    {
       Write-Debug -Debug:$true -Message $subnet.Name
 
       $nsg = $configMatrix.Network.NSGs | Where-Object {$_.NsgId -eq $subnet.NsgId}
@@ -139,7 +140,49 @@ function DeployNetwork() {
 
     $vnetIndex++
   }
+}
 
+function Get-SubnetResourceIds()
+{
+  [CmdletBinding()]
+  param
+  (
+    [Parameter(Mandatory = $true)]
+    [object]
+    $ConfigAll,
+    [Parameter(Mandatory = $true)]
+    [object]
+    $ConfigMatrix,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $SubscriptionId,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $ResourceGroupName
+  )
+
+  Write-Debug -Debug:$true -Message "Get Subnet Resource IDs"
+
+  $result = [System.Collections.ArrayList]@()
+
+  $vnetIndex = 1
+
+  foreach ($vnet in $configMatrix.Network.VNets)
+  {
+    $vnetName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "vnt" -Sequence ($vnetIndex.ToString().PadLeft(2, "0"))
+    $vnetResourceId = "/subscriptions/" + $SubscriptionId + "/resourceGroups/" + $ResourceGroupName + "/providers/Microsoft.Network/virtualNetworks/" + $vnetName
+
+    foreach ($subnet in $vnet.Subnets)
+    {
+      Write-Debug -Debug:$true -Message $subnet.Name
+
+      $subnetResourceId = $vnetResourceId + "/subnets/" + $subnet.Name
+
+      $result.Add($subnetResourceId)
+    }
+  }
+
+  return $result
 }
 
 function DeployNSG() {

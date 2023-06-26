@@ -67,3 +67,31 @@ function DeployUAI()
     identityName="$UAIName" `
     tags=$Tags
 }
+
+function DeployRoleAssignmentSub()
+{
+  [CmdletBinding()]
+  param
+  (
+    [Parameter(Mandatory = $true)]
+    [string]
+    $TemplateUri,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $RoleDefinitionId,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $PrincipalId,
+    [Parameter(Mandatory = $false)]
+    [string]
+    $PrincipalType = "ServicePrincipal"
+  )
+
+  az deployment sub create --verbose `
+    -n "rbac-$RoleDefinitionId-$PrincipalId" `
+    --template-uri "$TemplateUri" `
+    --parameters `
+    roleDefinitionId="$RoleDefinitionId" `
+    principalId="$PrincipalId" `
+    principalType="$PrincipalType"
+}
