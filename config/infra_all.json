@@ -10,8 +10,6 @@
   "RoleDefinitionIdKeyVaultSecretsUser": "4633458b-17de-408a-b874-0445c86b69e6",
   "RoleDefinitionIdStorageBlobDataContributor": "ba92f5b4-2d11-453d-a403-e96b0029c9fe",
   "RoleDefinitionIdStorageQueueDataContributor": "974c5e8b-45b9-4653-ba55-5f855dd0fb88",
-  "RoleDefinitionIdMonitoringMetricsPublisher": "3913510d-42f4-4e42-8a64-420c390055eb",
-  "PrincipalIdAzureAppServicesResourceProvider": "25d3f85c-bba8-4ad3-81a4-76d85d3fc58c",
-  "PrincipalIdDiagnosticServices": "d75015c1-26be-4f7f-a473-0479035bf273"
+  "RoleDefinitionIdMonitoringMetricsPublisher": "3913510d-42f4-4e42-8a64-420c390055eb"
 }
 
