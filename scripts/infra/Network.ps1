@@ -406,7 +406,7 @@ function Deploy-PrivateDnsZones()
           --parameters `
           privateDnsZoneName="$zoneName" `
           vnetResourceId="$vnetResourceId" `
-          enableAutoRegistration=$true `
+          enableAutoRegistration=$false `
           tags=$Tags
   
         $vnetIndex++
