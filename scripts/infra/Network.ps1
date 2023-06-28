@@ -1,4 +1,4 @@
-function DeployNetwork()
+function Deploy-Network()
 {
   [CmdletBinding()]
   param
@@ -30,7 +30,8 @@ function DeployNetwork()
 
   $nsgIndex = 1
 
-  foreach ($nsg in $configMatrix.Network.NSGs) {
+  foreach ($nsg in $configMatrix.Network.NSGs)
+  {
     $nsgName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "nsg" -Sequence ($nsgIndex.ToString().PadLeft(2, "0"))
     $nsgResourceId = "/subscriptions/" + $SubscriptionId + "/resourceGroups/" + $ResourceGroupName + "/providers/Microsoft.Network/networkSecurityGroups/" + $nsgName
 
@@ -41,7 +42,7 @@ function DeployNetwork()
     Write-Debug -Debug:$true -Message ("NSG Resource ID string: " + $nsgResourceId)
     Write-Debug -Debug:$true -Message ("NSG object Resource ID: " + $nsg.ResourceId)
 
-    DeployNSG `
+    Deploy-NSG `
       -SubscriptionID "$SubscriptionId" `
       -Location $configMatrix.Location `
       -ResourceGroupName $ResourceGroupName `
@@ -65,7 +66,7 @@ function DeployNetwork()
 
     foreach ($nsgRule in $nsg.Rules)
     {
-      DeployNSGRule `
+      Deploy-NSGRule `
       -SubscriptionID "$SubscriptionId" `
       -Location $configMatrix.Location `
       -ResourceGroupName $ResourceGroupName `
@@ -94,7 +95,7 @@ function DeployNetwork()
     $vnetName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "vnt" -Sequence ($vnetIndex.ToString().PadLeft(2, "0"))
     $vnetResourceId = "/subscriptions/" + $SubscriptionId + "/resourceGroups/" + $ResourceGroupName + "/providers/Microsoft.Network/virtualNetworks/" + $vnetName
 
-    DeployVNet `
+    Deploy-VNet `
       -SubscriptionID "$SubscriptionId" `
       -Location $configMatrix.Location `
       -ResourceGroupName $ResourceGroupName `
@@ -125,7 +126,7 @@ function DeployNetwork()
       $nsg = $configMatrix.Network.NSGs | Where-Object {$_.NsgId -eq $subnet.NsgId}
       Write-Debug -Debug:$true -Message ("NSG Resource ID: " + $nsg.ResourceId)
 
-      DeploySubnet `
+      Deploy-Subnet `
         -SubscriptionID "$SubscriptionId" `
         -ResourceGroupName $ResourceGroupName `
         -TemplateUri ($configAll.TemplateUriPrefix + "net.vnet.subnet.json") `
@@ -142,48 +143,7 @@ function DeployNetwork()
   }
 }
 
-function Get-SubnetResourceIds()
-{
-  [CmdletBinding()]
-  param
-  (
-    [Parameter(Mandatory = $true)]
-    [object]
-    $ConfigAll,
-    [Parameter(Mandatory = $true)]
-    [object]
-    $ConfigMatrix,
-    [Parameter(Mandatory = $true)]
-    [string]
-    $SubscriptionId,
-    [Parameter(Mandatory = $true)]
-    [string]
-    $ResourceGroupName
-  )
-
-  Write-Debug -Debug:$true -Message "Get Subnet Resource IDs"
-
-  $result = [System.Collections.ArrayList]@()
-
-  $vnetIndex = 1
-
-  foreach ($vnet in $configMatrix.Network.VNets)
-  {
-    $vnetName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "vnt" -Sequence ($vnetIndex.ToString().PadLeft(2, "0"))
-    $vnetResourceId = "/subscriptions/" + $SubscriptionId + "/resourceGroups/" + $ResourceGroupName + "/providers/Microsoft.Network/virtualNetworks/" + $vnetName
-
-    foreach ($subnet in $vnet.Subnets)
-    {
-      $subnetResourceId = $vnetResourceId + "/subnets/" + $subnet.Name
-
-      $result.Add($subnetResourceId) | Out-Null
-    }
-  }
-
-  return $result
-}
-
-function DeployNSG() {
+function Deploy-NSG() {
   [CmdletBinding()]
   param
   (
@@ -220,7 +180,7 @@ function DeployNSG() {
     tags=$Tags
 }
 
-function DeployNSGRule() {
+function Deploy-NSGRule() {
   [CmdletBinding()]
   param
   (
@@ -292,7 +252,7 @@ function DeployNSGRule() {
     destinationPortRange="$DestinationPortRange"
 }
 
-function DeployVNet() {
+function Deploy-VNet() {
   [CmdletBinding()]
   param
   (
@@ -341,7 +301,7 @@ function DeployVNet() {
     tags=$Tags
 }
 
-function DeploySubnet() {
+function Deploy-Subnet() {
   [CmdletBinding()]
   param
   (
@@ -392,4 +352,105 @@ function DeploySubnet() {
     routeTableResourceId="$RouteTableResourceId" `
     delegationService="$DelegationService" `
     serviceEndpoints="$ServiceEndpoints"
+}
+
+function Deploy-PrivateDnsZones()
+{
+  [CmdletBinding()]
+  param
+  (
+    [Parameter(Mandatory = $true)]
+    [object]
+    $ConfigAll,
+    [Parameter(Mandatory = $true)]
+    [object]
+    $ConfigMatrix,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $SubscriptionId,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $ResourceGroupName,
+    [Parameter(Mandatory = $false)]
+    [string]
+    $Tags = ""
+  )
+
+  Write-Debug -Debug:$true -Message "Deploy Private DNS Zones and VNet links"
+
+  foreach ($privateDnsZone in $ConfigMatrix.Network.PrivateDnsZones)
+  {
+    $zoneName = $privateDnsZone.Name
+
+    az deployment group create --verbose `
+      --subscription "$SubscriptionId" `
+      -n "$zoneName" `
+      -g "$ResourceGroupName" `
+      --template-uri ($ConfigAll.TemplateUriPrefix + "net.private-dns-zone.json") `
+      --parameters `
+      privateDnsZoneName="$zoneName" `
+      tags=$Tags
+
+      $vnetIndex = 1
+
+      foreach ($vnet in $ConfigMatrix.Network.VNets)
+      {
+        $vnetName = GetResourceName -ConfigAll $ConfigAll -ConfigMatrix $ConfigMatrix -Prefix "vnt" -Sequence ($vnetIndex.ToString().PadLeft(2, "0"))
+        $vnetResourceId = "/subscriptions/" + $SubscriptionId + "/resourceGroups/" + $ResourceGroupName + "/providers/Microsoft.Network/virtualNetworks/" + $vnetName
+
+        az deployment group create --verbose `
+          --subscription "$SubscriptionId" `
+          -n "$zoneName" `
+          -g "$ResourceGroupName" `
+          --template-uri ($ConfigAll.TemplateUriPrefix + "net.private-dns-zone.vnet-link.json") `
+          --parameters `
+          privateDnsZoneName="$zoneName" `
+          vnetResourceId="$vnetResourceId" `
+          enableAutoRegistration=$true `
+          tags=$Tags
+  
+        $vnetIndex++
+      }
+  }
+}
+
+function Get-SubnetResourceIds()
+{
+  [CmdletBinding()]
+  param
+  (
+    [Parameter(Mandatory = $true)]
+    [object]
+    $ConfigAll,
+    [Parameter(Mandatory = $true)]
+    [object]
+    $ConfigMatrix,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $SubscriptionId,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $ResourceGroupName
+  )
+
+  Write-Debug -Debug:$true -Message "Get Subnet Resource IDs"
+
+  $result = [System.Collections.ArrayList]@()
+
+  $vnetIndex = 1
+
+  foreach ($vnet in $configMatrix.Network.VNets)
+  {
+    $vnetName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "vnt" -Sequence ($vnetIndex.ToString().PadLeft(2, "0"))
+    $vnetResourceId = "/subscriptions/" + $SubscriptionId + "/resourceGroups/" + $ResourceGroupName + "/providers/Microsoft.Network/virtualNetworks/" + $vnetName
+
+    foreach ($subnet in $vnet.Subnets)
+    {
+      $subnetResourceId = $vnetResourceId + "/subnets/" + $subnet.Name
+
+      $result.Add($subnetResourceId) | Out-Null
+    }
+  }
+
+  return $result
 }
