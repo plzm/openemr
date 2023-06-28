@@ -1,4 +1,4 @@
-function DeployKeyVault()
+function Deploy-KeyVault()
 {
   [CmdletBinding()]
   param
@@ -89,7 +89,7 @@ function DeployKeyVault()
   {
     $keyVaultResourceId = "/subscriptions/" + "$SubscriptionId" + "/resourcegroups/" + "$ResourceGroupName" + "/providers/Microsoft.KeyVault/vaults/" + "$KeyVaultName"
 
-    DeployDiagnosticsSetting `
+    Deploy-DiagnosticsSetting `
       -SubscriptionID "$SubscriptionId" `
       -Location $configMatrix.Location `
       -ResourceGroupName $ResourceGroupName `

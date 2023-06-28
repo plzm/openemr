@@ -83,8 +83,8 @@ jobs:
         run: |
           . ./scripts/infra/Utility.ps1
 
-          $configAll = GetConfig -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          $configMatrix = GetConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+          $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
           Set-EnvVars `
             -Environment "${{ inputs.environment }}" `
@@ -110,8 +110,8 @@ jobs:
         run: |
           . ./scripts/infra/Utility.ps1
 
-          $configAll = GetConfig -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          $configMatrix = GetConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+          $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
           $rgNameMain = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence "01"
           $rgNameNetwork = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence "02"
@@ -138,8 +138,8 @@ jobs:
           . ./scripts/infra/Utility.ps1
           . ./scripts/infra/Observability.ps1
 
-          $configAll = GetConfig -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          $configMatrix = GetConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+          $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
           $workspaceName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "law" -Sequence "01"
           $workspaceResourceId = "/subscriptions/" + "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" + "/resourceGroups/" + "${{ env.OE_RG_NAME_MAIN }}" + "/providers/microsoft.operationalinsights/workspaces/" + "$workspaceName"
@@ -147,7 +147,7 @@ jobs:
           Set-EnvVar2 -VarName "OE_LAW_NAME" -VarValue "$workspaceName"
           Set-EnvVar2 -VarName "OE_LAW_RESOURCE_ID" -VarValue "$workspaceResourceId"
 
-          DeployLogAnalyticsWorkspace `
+          Deploy-LogAnalyticsWorkspace `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -Location $configMatrix.Location `
             -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
@@ -155,7 +155,7 @@ jobs:
             -WorkspaceName $workspaceName `
             -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
-          DeployDiagnosticsSetting `
+          Deploy-DiagnosticsSetting `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -Location $configMatrix.Location `
             -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
@@ -174,8 +174,8 @@ jobs:
           . ./scripts/infra/Utility.ps1
           . ./scripts/infra/Security.ps1
 
-          $configAll = GetConfig -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          $configMatrix = GetConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+          $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
           $uaiName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "mid" -Sequence "01"
           $uaiResourceId = "/subscriptions/" + "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" + "/resourcegroups/" + "${{ env.OE_RG_NAME_MAIN }}" + "/providers/Microsoft.ManagedIdentity/userAssignedIdentities/" + "$uaiName"
@@ -183,7 +183,7 @@ jobs:
           Set-EnvVar2 -VarName "OE_UAI_NAME" -VarValue "$uaiName"
           Set-EnvVar2 -VarName "OE_UAI_RESOURCE_ID" -VarValue "$uaiResourceId"
 
-          DeployUAI `
+          Deploy-UAI `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -Location $configMatrix.Location `
             -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
@@ -207,60 +207,60 @@ jobs:
           . ./scripts/infra/Utility.ps1
           . ./scripts/infra/Security.ps1
 
-          $configAll = GetConfig -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          $configMatrix = GetConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+          $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
           Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | KV Certificates Officer"
-          DeployRoleAssignmentSubToPrincipalId `
+          Deploy-RoleAssignmentSub `
             -Location $configMatrix.Location `
             -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
             -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultCertificatesOfficer `
             -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
 
           Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | KV Crypto Officer"
-          DeployRoleAssignmentSubToPrincipalId `
+          Deploy-RoleAssignmentSub `
             -Location $configMatrix.Location `
             -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
             -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultCryptoOfficer `
             -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
 
           Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | KV Secrets Officer"
-          DeployRoleAssignmentSubToPrincipalId `
+          Deploy-RoleAssignmentSub `
             -Location $configMatrix.Location `
             -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
             -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultSecretsOfficer `
             -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
 
           Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | Monitoring Metrics Publisher"
-          DeployRoleAssignmentSubToPrincipalId `
+          Deploy-RoleAssignmentSub `
             -Location $configMatrix.Location `
             -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
             -RoleDefinitionId $configAll.RoleDefinitionIdMonitoringMetricsPublisher `
             -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
 
           Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | Storage Blob Data Contributor"
-          DeployRoleAssignmentSubToPrincipalId `
+          Deploy-RoleAssignmentSub `
             -Location $configMatrix.Location `
             -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
             -RoleDefinitionId $configAll.RoleDefinitionIdStorageBlobDataContributor `
             -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
 
           Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | Storage Blob Queue Contributor"
-          DeployRoleAssignmentSubToPrincipalId `
+          Deploy-RoleAssignmentSub `
             -Location $configMatrix.Location `
             -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
             -RoleDefinitionId $configAll.RoleDefinitionIdStorageQueueDataContributor `
             -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
 
           Write-Debug -Debug:$true -Message "Deploy Role Assignment | App Services RP App Reg | Key Vault Secrets User"
-          DeployRoleAssignmentSubToPrincipalId `
+          Deploy-RoleAssignmentSub `
             -Location $configMatrix.Location `
             -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
             -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultSecretsUser `
             -PrincipalId $configAll.PrincipalIdAppServicesRp
 
           Write-Debug -Debug:$true -Message "Deploy Role Assignment | Diagnostic Services Trusted Storage Access | Storage Blob Data Contributor"
-          DeployRoleAssignmentSubToPrincipalId `
+          Deploy-RoleAssignmentSub `
             -Location $configMatrix.Location `
             -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
             -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultSecretsUser `
@@ -274,16 +274,33 @@ jobs:
           . ./scripts/infra/Observability.ps1
           . ./scripts/infra/Network.ps1
 
-          $configAll = GetConfig -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          $configMatrix = GetConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+          $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
-          DeployNetwork `
+          Deploy-Network `
             -ConfigAll $configAll `
             -ConfigMatrix $configMatrix `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -ResourceGroupName ${{ env.OE_RG_NAME_NETWORK }} `
             -LogAnalyticsWorkspaceName "${{ env.OE_LAW_NAME }}" `
             -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+            -Tags ${{ env.OE_TAGS_FOR_ARM }}
+        shell: pwsh
+
+      - name: Deploy Private DNS zones
+        if: success()
+        run: |
+          . ./scripts/infra/Utility.ps1
+          . ./scripts/infra/Network.ps1
+
+          $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+
+          Deploy-PrivateDnsZones `
+            -ConfigAll $configAll `
+            -ConfigMatrix $configMatrix `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_NETWORK }} `
             -Tags ${{ env.OE_TAGS_FOR_ARM }}
         shell: pwsh
 
@@ -295,8 +312,8 @@ jobs:
           . ./scripts/infra/Observability.ps1
           . ./scripts/infra/KeyVault.ps1
 
-          $configAll = GetConfig -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          $configMatrix = GetConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+          $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
           $subnetResourceIds = Get-SubnetResourceIds `
             -ConfigAll $configAll `
@@ -313,7 +330,7 @@ jobs:
           Set-EnvVar2 -VarName "OE_KEYVAULT_NAME" -VarValue "$keyVaultName"
           Set-EnvVar2 -VarName "OE_KEYVAULT_RESOURCE_ID" -VarValue "$keyVaultResourceId"
 
-          DeployKeyVault `
+          Deploy-KeyVault `
             -TenantId "${{ secrets.OE_AZURE_TENANT_ID }}" `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -Location $configMatrix.Location `

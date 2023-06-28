@@ -47,6 +47,21 @@
             }
           ]
         }
+      ],
+      "PrivateDnsZones":
+      [
+        { "Name": "privatelink.azurewebsites.net" },
+        { "Name": "privatelink.mariadb.database.azure.com" },
+        { "Name": "privatelink.azconfig.io" },
+        { "Name": "privatelink.vaultcore.azure.net" },
+        { "Name": "privatelink.monitor.azure.com" },
+        { "Name": "privatelink.agentsvc.azure-automation.net" },
+        { "Name": "privatelink.ods.opinsights.azure.com" },
+        { "Name": "privatelink.oms.opinsights.azure.com" },
+        { "Name": "privatelink.blob.core.windows.net" },
+        { "Name": "privatelink.file.core.windows.net" },
+        { "Name": "privatelink.queue.core.windows.net" },
+        { "Name": "privatelink.table.core.windows.net" }
       ]
     }
   },
@@ -98,6 +113,21 @@
             }
           ]
         }
+      ],
+      "PrivateDnsZones":
+      [
+        { "Name": "privatelink.azurewebsites.net" },
+        { "Name": "privatelink.mariadb.database.azure.com" },
+        { "Name": "privatelink.azconfig.io" },
+        { "Name": "privatelink.vaultcore.azure.net" },
+        { "Name": "privatelink.monitor.azure.com" },
+        { "Name": "privatelink.agentsvc.azure-automation.net" },
+        { "Name": "privatelink.ods.opinsights.azure.com" },
+        { "Name": "privatelink.oms.opinsights.azure.com" },
+        { "Name": "privatelink.blob.core.windows.net" },
+        { "Name": "privatelink.file.core.windows.net" },
+        { "Name": "privatelink.queue.core.windows.net" },
+        { "Name": "privatelink.table.core.windows.net" }
       ]
     }
   }

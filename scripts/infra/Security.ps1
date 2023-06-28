@@ -1,4 +1,4 @@
-function DeployUAI()
+function Deploy-UAI()
 {
   <#
     .SYNOPSIS
@@ -24,8 +24,8 @@ function DeployUAI()
     .OUTPUTS
     None
     .EXAMPLE
-    PS> . ./DeployUAI.ps1
-    PS> DeployUAI -SubscriptionID "MyAzureSubscriptionId" -Location "westus" -ResourceGroupName "MyResourceGroupName" -TemplateUri "MyARMTemplateURI" -TenantId "MyTenantId" -UAIName "MyUAIName" -Tags "MyTags"
+    PS> . ./Deploy-UAI.ps1
+    PS> Deploy-UAI -SubscriptionID "MyAzureSubscriptionId" -Location "westus" -ResourceGroupName "MyResourceGroupName" -TemplateUri "MyARMTemplateURI" -TenantId "MyTenantId" -UAIName "MyUAIName" -Tags "MyTags"
     .LINK
     None
   #>
@@ -68,7 +68,7 @@ function DeployUAI()
     tags=$Tags
 }
 
-function DeployRoleAssignmentSubToPrincipalId()
+function Deploy-RoleAssignmentSub()
 {
   [CmdletBinding()]
   param
@@ -101,29 +101,3 @@ function DeployRoleAssignmentSubToPrincipalId()
     principalId="$PrincipalId" `
     principalType="$PrincipalType"
 }
-
-function DeployRoleAssignmentSubToName()
-{
-  [CmdletBinding()]
-  param
-  (
-    [Parameter(Mandatory = $true)]
-    [string]
-    $SubscriptionId,
-    [Parameter(Mandatory = $true)]
-    [string]
-    $AssigneeName,
-    [Parameter(Mandatory = $true)]
-    [string]
-    $RoleDefinitionId,
-    [Parameter(Mandatory = $false)]
-    [string]
-    $PrincipalType = "ServicePrincipal"
-  )
-
-  az role assignment create --verbose `
-    --role $RoleDefinitionId `
-    --scope ("/subscriptions/" + $SubscriptionId) `
-    --assignee $AssigneeName
-}
-

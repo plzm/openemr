@@ -20,7 +20,7 @@ function Get-Timestamp()
 
 #region Configuration
 
-function GetConfig()
+function Get-Config()
 {
   [CmdletBinding()]
   param
@@ -33,7 +33,7 @@ function GetConfig()
   Get-Content -Path "$ConfigFilePath" | ConvertFrom-Json
 }
 
-function GetConfigMatrix()
+function Get-ConfigMatrix()
 {
   [CmdletBinding()]
   param

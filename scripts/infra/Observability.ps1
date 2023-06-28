@@ -1,4 +1,4 @@
-function DeployLogAnalyticsWorkspace() {
+function Deploy-LogAnalyticsWorkspace() {
   [CmdletBinding()]
   param
   (
@@ -43,7 +43,7 @@ function DeployLogAnalyticsWorkspace() {
     tags=$Tags
 }
 
-function DeployDiagnosticsSetting()
+function Deploy-DiagnosticsSetting()
 {
   [CmdletBinding()]
   param
