@@ -52,7 +52,7 @@ function Deploy-Network()
 
     if ($LogAnalyticsWorkspaceName -and $LogAnalyticsWorkspaceResourceId)
     {
-      DeployDiagnosticsSetting `
+      Deploy-DiagnosticsSetting `
         -SubscriptionID "$SubscriptionId" `
         -Location $configMatrix.Location `
         -ResourceGroupName $ResourceGroupName `
@@ -107,7 +107,7 @@ function Deploy-Network()
 
     if ($LogAnalyticsWorkspaceName -and $LogAnalyticsWorkspaceResourceId)
     {
-      DeployDiagnosticsSetting `
+      Deploy-DiagnosticsSetting `
         -SubscriptionID "$SubscriptionId" `
         -Location $configMatrix.Location `
         -ResourceGroupName $ResourceGroupName `
