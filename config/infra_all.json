@@ -1,8 +1,9 @@
 {
-  "OrgName": "alfaadin",
   "NamePrefix": "aa",
   "NameInfix": "oe",
-  "TemplateUriPrefix": "https://raw.githubusercontent.com/plzm/azure-deploy/main/template/",
+  "OrgName": "alfaadin",
+  "PrincipalIdAppServicesRp": "13e036a3-a614-4e0a-b05b-b33b0c1beb01",
+  "PrincipalIdDiagnosticServicesTrustedStorageAccess": "dc59f5b7-6210-4357-9640-80c1875000f3",
   "RoleDefinitionIdKeyVaultCertificatesOfficer": "a4417e6f-fecd-4de8-b567-7b0420556985",
   "RoleDefinitionIdKeyVaultCryptoOfficer": "14b46e9e-c2b7-41b4-b07b-48a6ebf60603",
   "RoleDefinitionIdKeyVaultCryptoUser": "12338af0-0e69-4776-bea7-57ae8d297424",
@@ -11,7 +12,6 @@
   "RoleDefinitionIdStorageBlobDataContributor": "ba92f5b4-2d11-453d-a403-e96b0029c9fe",
   "RoleDefinitionIdStorageQueueDataContributor": "974c5e8b-45b9-4653-ba55-5f855dd0fb88",
   "RoleDefinitionIdMonitoringMetricsPublisher": "3913510d-42f4-4e42-8a64-420c390055eb",
-  "PrincipalIdAppServicesRp": "13e036a3-a614-4e0a-b05b-b33b0c1beb01",
-  "PrincipalIdDiagnosticServicesTrustedStorageAccess": "dc59f5b7-6210-4357-9640-80c1875000f3"
+  "TemplateUriPrefix": "https://raw.githubusercontent.com/plzm/azure-deploy/main/template/",
 }
 

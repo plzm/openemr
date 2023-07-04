@@ -55,7 +55,7 @@ function Get-ConfigMatrix()
 
 #region Resource
 
-function GetResourceName()
+function Get-ResourceName()
 {
   [CmdletBinding()]
   param
@@ -85,6 +85,64 @@ function GetResourceName()
   {
     $result = $result + "-" + $Sequence
   }
+
+  return $result
+}
+
+function Get-ResourceId()
+{
+  [CmdletBinding()]
+  param
+  (
+    [Parameter(Mandatory = $true)]
+    [string]
+    $SubscriptionId,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $ResourceGroupName,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $ResourceProviderName,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $ResourceTypeName,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $ResourceName,
+    [Parameter(Mandatory = $false)]
+    [string]
+    $ChildResourceTypeName = "",
+    [Parameter(Mandatory = $false)]
+    [string]
+    $ChildResourceName = ""
+  )
+
+  $result = "/subscriptions/" + $SubscriptionId + "/resourceGroups/" + $ResourceGroupName + "/providers/" + $ResourceProviderName + "/" + $ResourceTypeName + "/" + $ResourceName
+
+  if ($ChildResourceTypeName -and $ChildResourceName)
+  {
+    $result += "/" + $ChildResourceTypeName + "/" + $ChildResourceName
+  }
+
+  return $result
+}
+
+function Get-ChildResourceId()
+{
+  param
+  (
+    [Parameter(Mandatory = $true)]
+    [string]
+    $ParentResourceId,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $ChildResourceTypeName,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $ChildResourceName
+  )
+
+  $result = $ParentResourceId + "/" + $ChildResourceTypeName + "/" + $ChildResourceName
 
   return $result
 }

@@ -32,7 +32,7 @@
             {
               "Name": "subnet01",
               "AddressSpace": "10.0.1.0/25",
-              "Delegation": "Microsoft.Web/serverFarms",
+              "Delegation": "",
               "ServiceEndpoints": "Microsoft.KeyVault",
               "NsgId": "nsg1",
               "UdrId": ""
@@ -40,7 +40,7 @@
             {
               "Name": "subnet02",
               "AddressSpace": "10.0.1.128/25",
-              "Delegation": "",
+              "Delegation": "Microsoft.Web/serverFarms",
               "ServiceEndpoints": "Microsoft.KeyVault",
               "NsgId": "nsg1",
               "UdrId": ""
@@ -98,7 +98,7 @@
             {
               "Name": "subnet01",
               "AddressSpace": "10.0.2.0/25",
-              "Delegation": "Microsoft.Web/serverFarms",
+              "Delegation": "",
               "ServiceEndpoints": "Microsoft.KeyVault",
               "NsgId": "nsg1",
               "UdrId": ""
@@ -106,7 +106,7 @@
             {
               "Name": "subnet02",
               "AddressSpace": "10.0.2.128/25",
-              "Delegation": "",
+              "Delegation": "Microsoft.Web/serverFarms",
               "ServiceEndpoints": "Microsoft.KeyVault",
               "NsgId": "nsg1",
               "UdrId": ""
