@@ -304,6 +304,34 @@ jobs:
             -Tags ${{ env.OE_TAGS_FOR_ARM }}
         shell: pwsh
 
+      - name: Deploy Azure Monitor Private Link Scope
+        if: success()
+        run: |
+          . ./scripts/infra/Utility.ps1
+          . ./scripts/infra/Observability.ps1
+          . ./scripts/infra/Network.ps1
+
+          $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+
+          $privateLinkScopeName = GetResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "pls" -Sequence "01"
+
+          Deploy-Ampls `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "monitor.private-link-scope.json") `
+            -PrivateLinkScopeName $privateLinkScopeName `
+            -Tags ${{ env.OE_TAGS_FOR_ARM }}
+
+          Deploy-ConnectLawToAmpls `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "monitor.private-link-scope.scoped-resource.json") `
+            -PrivateLinkScopeName $privateLinkScopeName `
+            -ScopedResourceId "${{ env.OE_LAW_NAME }}" `
+            -ScopedResourceName "${{ env.OE_LAW_RESOURCE_ID }}" `
+            -Tags ${{ env.OE_TAGS_FOR_ARM }}
+
       - name: Deploy Key Vault
         if: success()
         run: |
