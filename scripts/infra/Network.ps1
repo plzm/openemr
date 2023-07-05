@@ -501,7 +501,7 @@ function Get-SubnetResourceIds()
 
     foreach ($subnet in $vnet.Subnets)
     {
-      $subnetResourceId = Get-ChildResourceId -ParentResourceId -ChildResourceTypeName "subnets" -ChildResourceName $subnet.Name
+      $subnetResourceId = Get-ChildResourceId -ParentResourceId $vnetResourceId -ChildResourceTypeName "subnets" -ChildResourceName $subnet.Name
 
       $result.Add($subnetResourceId) | Out-Null
     }
