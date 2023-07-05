@@ -423,8 +423,6 @@ jobs:
             -DefaultAction "Deny" `
             -AllowedIpAddressRangesCsv "" `
             -AllowedSubnetResourceIdsCsv "$subnetResourceIdsCsv" `
-            -LogAnalyticsWorkspaceName "${{ env.OE_LAW_NAME }}" `
-            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
             -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
           # Key Vault Diagnostics
