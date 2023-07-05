@@ -12,6 +12,12 @@
   "RoleDefinitionIdStorageBlobDataContributor": "ba92f5b4-2d11-453d-a403-e96b0029c9fe",
   "RoleDefinitionIdStorageQueueDataContributor": "974c5e8b-45b9-4653-ba55-5f855dd0fb88",
   "RoleDefinitionIdMonitoringMetricsPublisher": "3913510d-42f4-4e42-8a64-420c390055eb",
+  "SeqNumRgMain": "01",
+  "SeqNumRgNetwork": "02",
+  "SeqNumRgObservability": "03",
+  "SeqNumUai": "10",
+  "SeqNumLogAnalytics": "20",
+  "SeqNumAmpls": "21",
+  "SeqNumKeyVault": "30",
   "TemplateUriPrefix": "https://raw.githubusercontent.com/plzm/azure-deploy/main/template/"
 }
-

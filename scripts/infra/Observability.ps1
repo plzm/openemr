@@ -79,7 +79,7 @@ function Deploy-DiagnosticsSetting()
 
   Write-Debug -Debug:$true -Message "Deploy Diagnostics Setting $DiagnosticsSettingName"
 
-  az deployment group create --verbose `
+  az deployment group create --verbose --no-wait `
     --subscription "$SubscriptionId" `
     -n "$DiagnosticsSettingName" `
     -g "$ResourceGroupName" `

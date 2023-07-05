@@ -53,12 +53,6 @@ function Deploy-KeyVault()
     $AllowedSubnetResourceIdsCsv = "",
     [Parameter(Mandatory = $false)]
     [string]
-    $LogAnalyticsWorkspaceName = "",
-    [Parameter(Mandatory = $false)]
-    [string]
-    $LogAnalyticsWorkspaceResourceId = "",
-    [Parameter(Mandatory = $false)]
-    [string]
     $Tags = ""
   )
 
@@ -84,20 +78,4 @@ function Deploy-KeyVault()
     allowedIpAddressRanges="$AllowedIpAddressRangesCsv" `
     allowedSubnetResourceIds="$AllowedSubnetResourceIdsCsv" `
     tags=$Tags
-
-  if ($LogAnalyticsWorkspaceName -and $LogAnalyticsWorkspaceResourceId)
-  {
-    $keyVaultResourceId = "/subscriptions/" + "$SubscriptionId" + "/resourcegroups/" + "$ResourceGroupName" + "/providers/Microsoft.KeyVault/vaults/" + "$KeyVaultName"
-
-    Deploy-DiagnosticsSetting `
-      -SubscriptionID "$SubscriptionId" `
-      -Location $configMatrix.Location `
-      -ResourceGroupName $ResourceGroupName `
-      -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
-      -ResourceId $keyVaultResourceId `
-      -DiagnosticsSettingName ("diag-" + "$LogAnalyticsWorkspaceName") `
-      -LogAnalyticsWorkspaceResourceId $LogAnalyticsWorkspaceResourceId `
-      -SendLogs $true `
-      -SendMetrics $true
-  }
 }
