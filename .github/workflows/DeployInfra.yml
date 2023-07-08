@@ -288,14 +288,14 @@ jobs:
           $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
           $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
-          #Deploy-Network `
-          #  -ConfigAll $configAll `
-          #  -ConfigMatrix $configMatrix `
-          #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          #  -ResourceGroupName ${{ env.OE_RG_NAME_NETWORK }} `
-          #  -LogAnalyticsWorkspaceName "${{ env.OE_LAW_NAME }}" `
-          #  -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
-          #  -Tags ${{ env.OE_TAGS_FOR_ARM }}
+          Deploy-Network `
+            -ConfigAll $configAll `
+            -ConfigMatrix $configMatrix `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_NETWORK }} `
+            -LogAnalyticsWorkspaceName "${{ env.OE_LAW_NAME }}" `
+            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+            -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
           # TODO may need to nuance this a bit more than simply grabbing the first subnet
           $subnetResourceIds = Get-SubnetResourceIds -ConfigAll $configAll -ConfigMatrix $configMatrix -SubscriptionId ${{ secrets.OE_AZURE_SUBSCRIPTION_ID }} -ResourceGroupName ${{ env.OE_RG_NAME_NETWORK }}
