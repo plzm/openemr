@@ -19,5 +19,6 @@
   "SeqNumLogAnalytics": "20",
   "SeqNumAmpls": "21",
   "SeqNumKeyVault": "30",
+  "SeqNumStorage": "40",
   "TemplateUriPrefix": "https://raw.githubusercontent.com/plzm/azure-deploy/main/template/"
 }

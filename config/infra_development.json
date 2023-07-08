@@ -63,6 +63,9 @@
         { "Name": "privatelink.queue.core.windows.net" },
         { "Name": "privatelink.table.core.windows.net" }
       ]
+    },
+    "Storage": {
+      "SkuName": "Standard_LRS"
     }
   },
   {
@@ -129,6 +132,9 @@
         { "Name": "privatelink.queue.core.windows.net" },
         { "Name": "privatelink.table.core.windows.net" }
       ]
+    },
+    "Storage": {
+      "SkuName": "Standard_LRS"
     }
   }
 ]

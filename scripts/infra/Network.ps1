@@ -409,6 +409,52 @@ function Deploy-PrivateEndpointAndNic() {
     tags=$Tags
 }
 
+function Watch-NicUntilProvisionSuccess()
+{
+  [CmdletBinding()]
+  param
+  (
+    [Parameter(Mandatory = $true)]
+    [string]
+    $SubscriptionId,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $ResourceGroupName,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $NetworkInterfaceName
+  )
+
+  Write-Debug -Debug:$true -Message "Watch NIC until ProvisioningStage=Succeeded"
+
+  $limit = (Get-Date).AddMinutes(55)
+
+  $currentState = ""
+  $targetState = "Succeeded"
+
+  while ( ($currentState -ne $targetState) -and ((Get-Date) -le $limit) )
+  {
+    $currentState = "$(az network nic show --subscription $SubscriptionId -g $ResourceGroupName -n $NetworkInterfaceName -o tsv --query 'provisioningState')"
+
+    Write-Debug -Debug:$true -Message "currentState = $currentState"
+
+    if ($currentState -ne $targetState)
+    {
+      Start-Sleep -s 15
+    }
+  }
+
+
+  if ($currentState -eq $targetState)
+  {
+    exit 0
+  }
+  else
+  {
+    exit 1
+  }
+}
+
 function Deploy-PrivateDnsZones()
 {
   [CmdletBinding()]
