@@ -638,7 +638,7 @@ jobs:
             -NetworkInterfaceName $storageAccountNicNameTable
 
           # NIC Diagnostics - Table
-          Deploy-StorageDiagnosticsSetting `
+          Deploy-DiagnosticsSetting `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
             -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
