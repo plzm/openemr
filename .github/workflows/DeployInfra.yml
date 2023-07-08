@@ -472,6 +472,9 @@ jobs:
       - name: Deploy Storage
         if: success()
         run: |
+          Write-Debug -Debug:$true -Message "ErrorActionPreference = $ErrorActionPreference"
+          #$ErrorActionPreference = "Stop"
+
           . ./scripts/infra/Utility.ps1
           . ./scripts/infra/Network.ps1
           . ./scripts/infra/Observability.ps1
@@ -521,7 +524,7 @@ jobs:
             -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
             -TemplateUri ($configAll.TemplateUriPrefix + "storage.account.json") `
             -StorageAccountName "$storageAccountName" `
-            -SkuName "$configMatrix.Storage.SkuName" `
+            -SkuName $configMatrix.Storage.SkuName `
             -AllowedSubnetResourceIdsCsv "$subnetResourceIdsCsv" `
             -AllowedIpAddressRangesCsv "" `
             -DefaultAction "Deny" `
