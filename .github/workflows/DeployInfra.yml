@@ -641,7 +641,7 @@ jobs:
           Deploy-StorageDiagnosticsSetting `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
-            -TemplateUri ($configAll.TemplateUriPrefix + "storage.diagnostic-settings.json") `
+            -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
             -ResourceId $storageAccountNicResourceIdTable `
             -DiagnosticsSettingName ("diag-" + "$storageAccountNicNameTable") `
             -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
