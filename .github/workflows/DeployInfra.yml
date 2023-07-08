@@ -64,11 +64,11 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: true
 
-      - name: Register RPs
-        if: success()
-        run: |
-          az provider register --namespace "Microsoft.ChangeAnalysis" --accept-terms --consent-to-permissions --wait
-        shell: pwsh
+      #- name: Register RPs
+      #  if: success()
+      #  run: |
+      #    az provider register --namespace "Microsoft.ChangeAnalysis" --accept-terms --consent-to-permissions --wait
+      #  shell: pwsh
 
       - name: Set Config File Paths to Environment
         if: success()
@@ -321,61 +321,61 @@ jobs:
       #  shell: pwsh
 
       #- name: Deploy Azure Monitor Private Link Scope
-        if: success()
-        run: |
-          . ./scripts/infra/Utility.ps1
-          . ./scripts/infra/Observability.ps1
-          . ./scripts/infra/Network.ps1
+      #  if: success()
+      #  run: |
+      #    . ./scripts/infra/Utility.ps1
+      #    . ./scripts/infra/Observability.ps1
+      #    . ./scripts/infra/Network.ps1
 
-          $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+      #    $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+      #    $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
-          $privateLinkScopeName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "pls" -Sequence $configAll.SeqNumAmpls
-          $privateLinkScopeResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_OBSERVABILITY }}" -ResourceProviderName "microsoft.insights" -ResourceTypeName "privatelinkscopes" -ResourceName $privateLinkScopeName
+      #    $privateLinkScopeName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "pls" -Sequence $configAll.SeqNumAmpls
+      #    $privateLinkScopeResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_OBSERVABILITY }}" -ResourceProviderName "microsoft.insights" -ResourceTypeName "privatelinkscopes" -ResourceName $privateLinkScopeName
 
-          $privateEndpointName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "pep" -Sequence $configAll.SeqNumAmpls
+      #    $privateEndpointName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "pep" -Sequence $configAll.SeqNumAmpls
 
-          $privateLinkScopeNicName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "nic" -Sequence $configAll.SeqNumAmpls
-          $privateLinkScopeNicResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_OBSERVABILITY }}" -ResourceProviderName "Microsoft.Network" -ResourceTypeName "networkInterfaces" -ResourceName $privateLinkScopeNicName
+      #    $privateLinkScopeNicName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "nic" -Sequence $configAll.SeqNumAmpls
+      #    $privateLinkScopeNicResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_OBSERVABILITY }}" -ResourceProviderName "Microsoft.Network" -ResourceTypeName "networkInterfaces" -ResourceName $privateLinkScopeNicName
 
-          Deploy-Ampls `
-            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
-            -TemplateUri ($configAll.TemplateUriPrefix + "monitor.private-link-scope.json") `
-            -PrivateLinkScopeName $privateLinkScopeName `
-            -Tags ${{ env.OE_TAGS_FOR_ARM }}
+      #    Deploy-Ampls `
+      #      -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+      #      -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
+      #      -TemplateUri ($configAll.TemplateUriPrefix + "monitor.private-link-scope.json") `
+      #      -PrivateLinkScopeName $privateLinkScopeName `
+      #      -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
-          Deploy-ConnectLawToAmpls `
-            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
-            -TemplateUri ($configAll.TemplateUriPrefix + "monitor.private-link-scope.scoped-resource.json") `
-            -PrivateLinkScopeName $privateLinkScopeName `
-            -ScopedResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
-            -ScopedResourceName "${{ env.OE_LAW_NAME }}"
+      #    Deploy-ConnectLawToAmpls `
+      #      -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+      #      -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
+      #      -TemplateUri ($configAll.TemplateUriPrefix + "monitor.private-link-scope.scoped-resource.json") `
+      #      -PrivateLinkScopeName $privateLinkScopeName `
+      #      -ScopedResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+      #      -ScopedResourceName "${{ env.OE_LAW_NAME }}"
 
-          Deploy-PrivateEndpointAndNic `
-            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -Location $configMatrix.Location `
-            -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
-            -TemplateUri ($configAll.TemplateUriPrefix + "net.private-endpoint.json") `
-            -ProtectedWorkloadResourceId "$privateLinkScopeResourceId" `
-            -ProtectedWorkloadSubResource "azuremonitor" `
-            -PrivateEndpointName $privateEndpointName `
-            -NetworkInterfaceName $privateLinkScopeNicName `
-            -SubnetResourceId ${{ env.OE_PRIVATE_ENDPOINT_SUBNET_RESOURCE_ID }} `
-            -Tags ${{ env.OE_TAGS_FOR_ARM }}
+      #    Deploy-PrivateEndpointAndNic `
+      #      -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+      #      -Location $configMatrix.Location `
+      #      -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
+      #      -TemplateUri ($configAll.TemplateUriPrefix + "net.private-endpoint.json") `
+      #      -ProtectedWorkloadResourceId "$privateLinkScopeResourceId" `
+      #      -ProtectedWorkloadSubResource "azuremonitor" `
+      #      -PrivateEndpointName $privateEndpointName `
+      #      -NetworkInterfaceName $privateLinkScopeNicName `
+      #      -SubnetResourceId ${{ env.OE_PRIVATE_ENDPOINT_SUBNET_RESOURCE_ID }} `
+      #      -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
-          Deploy-DiagnosticsSetting `
-            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -Location $configMatrix.Location `
-            -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
-            -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
-            -ResourceId $privateLinkScopeNicResourceId `
-            -DiagnosticsSettingName ("diag-" + "$privateLinkScopeNicName") `
-            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
-            -SendLogs $false `
-            -SendMetrics $true
-        shell: pwsh
+      #    Deploy-DiagnosticsSetting `
+      #      -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+      #      -Location $configMatrix.Location `
+      #      -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
+      #      -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
+      #      -ResourceId $privateLinkScopeNicResourceId `
+      #      -DiagnosticsSettingName ("diag-" + "$privateLinkScopeNicName") `
+      #      -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+      #      -SendLogs $false `
+      #      -SendMetrics $true
+      #  shell: pwsh
 
       - name: Deploy Key Vault
         if: success()
