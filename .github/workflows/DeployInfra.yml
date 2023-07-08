@@ -524,7 +524,7 @@ jobs:
             -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
           # Storage Account Diagnostics
-          Deploy-DiagnosticsSetting `
+          Deploy-StorageDiagnosticsSetting `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
             -TemplateUri ($configAll.TemplateUriPrefix + "storage.diagnostic-settings.json") `
