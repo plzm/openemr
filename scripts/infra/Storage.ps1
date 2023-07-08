@@ -28,8 +28,8 @@ function Deploy-StorageAccount()
     [bool]
     $HierarchicalEnabled = $false,
     [Parameter(Mandatory = $false)]
-    [bool]
-    $PublicNetworkAccess = $false,
+    [string]
+    $PublicNetworkAccess = "Disabled",
     [Parameter(Mandatory = $false)]
     [string]
     $AllowedSubnetResourceIdsCsv = "",
@@ -57,7 +57,7 @@ function Deploy-StorageAccount()
     skuName=$SkuName `
     skuTier=$SkuTier `
     hierarchicalEnabled="$HierarchicalEnabled" `
-    publicNetworkAccess=$PublicNetworkAccess `
+    publicNetworkAccess="$PublicNetworkAccess" `
     allowedSubnetResourceIds="$AllowedSubnetResourceIdsCsv" `
     allowedIpAddressRanges="$AllowedIpAddressRangesCsv" `
     defaultAccessAction=$DefaultAction `

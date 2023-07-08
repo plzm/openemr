@@ -472,9 +472,6 @@ jobs:
       - name: Deploy Storage
         if: success()
         run: |
-          Write-Debug -Debug:$true -Message "ErrorActionPreference = $ErrorActionPreference"
-          #$ErrorActionPreference = "Stop"
-
           . ./scripts/infra/Utility.ps1
           . ./scripts/infra/Network.ps1
           . ./scripts/infra/Observability.ps1
