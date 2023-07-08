@@ -444,15 +444,7 @@ function Watch-NicUntilProvisionSuccess()
     }
   }
 
-
-  if ($currentState -eq $targetState)
-  {
-    exit 0
-  }
-  else
-  {
-    exit 1
-  }
+  return $currentState
 }
 
 function Deploy-PrivateDnsZones()
