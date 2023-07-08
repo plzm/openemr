@@ -54,7 +54,6 @@ function Deploy-Network()
     {
       Deploy-DiagnosticsSetting `
         -SubscriptionID "$SubscriptionId" `
-        -Location $configMatrix.Location `
         -ResourceGroupName $ResourceGroupName `
         -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
         -ResourceId $nsgResourceId `
@@ -109,7 +108,6 @@ function Deploy-Network()
     {
       Deploy-DiagnosticsSetting `
         -SubscriptionID "$SubscriptionId" `
-        -Location $configMatrix.Location `
         -ResourceGroupName $ResourceGroupName `
         -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
         -ResourceId $vnetResourceId `

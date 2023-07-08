@@ -63,3 +63,41 @@ function Deploy-StorageAccount()
     defaultAccessAction=$DefaultAction `
     tags=$Tags
 }
+
+function Deploy-StorageDiagnosticsSetting()
+{
+  [CmdletBinding()]
+  param
+  (
+    [Parameter(Mandatory = $true)]
+    [string]
+    $SubscriptionId,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $ResourceGroupName,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $TemplateUri,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $ResourceId,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $DiagnosticsSettingName,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $LogAnalyticsWorkspaceResourceId
+  )
+
+  Write-Debug -Debug:$true -Message "Deploy Diagnostics Setting $DiagnosticsSettingName"
+
+  az deployment group create --verbose --no-wait `
+    --subscription "$SubscriptionId" `
+    -n "$DiagnosticsSettingName" `
+    -g "$ResourceGroupName" `
+    --template-uri "$TemplateUri" `
+    --parameters `
+    resourceId="$ResourceId" `
+    diagnosticsSettingName="$DiagnosticsSettingName" `
+    logAnalyticsWorkspaceResourceId="$LogAnalyticsWorkspaceResourceId"
+}

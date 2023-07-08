@@ -169,7 +169,6 @@ jobs:
 
           #Deploy-DiagnosticsSetting `
           #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          #  -Location $configMatrix.Location `
           #  -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
           #  -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
           #  -ResourceId $workspaceResourceId `
@@ -367,7 +366,6 @@ jobs:
 
       #    Deploy-DiagnosticsSetting `
       #      -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #      -Location $configMatrix.Location `
       #      -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
       #      -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
       #      -ResourceId $privateLinkScopeNicResourceId `
@@ -430,7 +428,6 @@ jobs:
           ## Key Vault Diagnostics
           #Deploy-DiagnosticsSetting `
           #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          #  -Location $configMatrix.Location `
           #  -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
           #  -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
           #  -ResourceId "$keyVaultResourceId" `
@@ -459,7 +456,6 @@ jobs:
           ## NIC Diagnostics
           #Deploy-DiagnosticsSetting `
           #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          #  -Location $configMatrix.Location `
           #  -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
           #  -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
           #  -ResourceId $keyVaultNicResourceId `
@@ -530,14 +526,11 @@ jobs:
           # Storage Account Diagnostics
           Deploy-DiagnosticsSetting `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -Location $configMatrix.Location `
             -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
-            -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
+            -TemplateUri ($configAll.TemplateUriPrefix + "storage.diagnostic-settings.json") `
             -ResourceId "$storageAccountResourceId" `
             -DiagnosticsSettingName ("diag-" + "$storageAccountName") `
-            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
-            -SendLogs $true `
-            -SendMetrics $true
+            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}"
 
           # Deploy Storage Private Endpoint and NIC - Blob
           Deploy-PrivateEndpointAndNic `
@@ -560,7 +553,6 @@ jobs:
           # NIC Diagnostics - Blob
           Deploy-DiagnosticsSetting `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -Location $configMatrix.Location `
             -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
             -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
             -ResourceId $storageAccountNicResourceIdBlob `
@@ -590,7 +582,6 @@ jobs:
           # NIC Diagnostics - File
           Deploy-DiagnosticsSetting `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -Location $configMatrix.Location `
             -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
             -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
             -ResourceId $storageAccountNicResourceIdFile `
@@ -620,7 +611,6 @@ jobs:
           # NIC Diagnostics - Queue
           Deploy-DiagnosticsSetting `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -Location $configMatrix.Location `
             -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
             -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
             -ResourceId $storageAccountNicResourceIdQueue `
@@ -648,11 +638,10 @@ jobs:
             -NetworkInterfaceName $storageAccountNicNameTable
 
           # NIC Diagnostics - Table
-          Deploy-DiagnosticsSetting `
+          Deploy-StorageDiagnosticsSetting `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -Location $configMatrix.Location `
             -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
-            -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
+            -TemplateUri ($configAll.TemplateUriPrefix + "storage.diagnostic-settings.json") `
             -ResourceId $storageAccountNicResourceIdTable `
             -DiagnosticsSettingName ("diag-" + "$storageAccountNicNameTable") `
             -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `

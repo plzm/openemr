@@ -53,9 +53,6 @@ function Deploy-DiagnosticsSetting()
     $SubscriptionId,
     [Parameter(Mandatory = $true)]
     [string]
-    $Location,
-    [Parameter(Mandatory = $true)]
-    [string]
     $ResourceGroupName,
     [Parameter(Mandatory = $true)]
     [string]
