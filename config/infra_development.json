@@ -32,16 +32,16 @@
             {
               "Name": "subnet01",
               "AddressSpace": "10.0.1.0/25",
-              "Delegation": "Microsoft.Web/serverFarms",
-              "ServiceEndpoints": "Microsoft.KeyVault",
+              "Delegation": "",
+              "ServiceEndpoints": "Microsoft.KeyVault,Microsoft.Storage",
               "NsgId": "nsg1",
               "UdrId": ""
             },
             {
               "Name": "subnet02",
               "AddressSpace": "10.0.1.128/25",
-              "Delegation": "",
-              "ServiceEndpoints": "Microsoft.KeyVault",
+              "Delegation": "Microsoft.Web/serverFarms",
+              "ServiceEndpoints": "Microsoft.KeyVault,Microsoft.Storage",
               "NsgId": "nsg1",
               "UdrId": ""
             }
@@ -63,6 +63,9 @@
         { "Name": "privatelink.queue.core.windows.net" },
         { "Name": "privatelink.table.core.windows.net" }
       ]
+    },
+    "Storage": {
+      "SkuName": "Standard_LRS"
     }
   },
   {
@@ -98,16 +101,16 @@
             {
               "Name": "subnet01",
               "AddressSpace": "10.0.2.0/25",
-              "Delegation": "Microsoft.Web/serverFarms",
-              "ServiceEndpoints": "Microsoft.KeyVault",
+              "Delegation": "",
+              "ServiceEndpoints": "Microsoft.KeyVault,Microsoft.Storage",
               "NsgId": "nsg1",
               "UdrId": ""
             },
             {
               "Name": "subnet02",
               "AddressSpace": "10.0.2.128/25",
-              "Delegation": "",
-              "ServiceEndpoints": "Microsoft.KeyVault",
+              "Delegation": "Microsoft.Web/serverFarms",
+              "ServiceEndpoints": "Microsoft.KeyVault,Microsoft.Storage",
               "NsgId": "nsg1",
               "UdrId": ""
             }
@@ -129,6 +132,9 @@
         { "Name": "privatelink.queue.core.windows.net" },
         { "Name": "privatelink.table.core.windows.net" }
       ]
+    },
+    "Storage": {
+      "SkuName": "Standard_LRS"
     }
   }
 ]
