@@ -10,8 +10,8 @@
           "ResourceId": "",
           "Rules": [
             {
-              "Name": "Patrick-Home",
-              "Description": "Patrick Home Public IP Address",
+              "Name": "AA-Main",
+              "Description": "AA Main Public IP Address",
               "Priority": 110,
               "Direction": "Inbound",
               "Access": "Allow",
@@ -80,7 +80,7 @@
           "Rules": [
             {
               "Name": "Patrick-Home",
-              "Description": "Patrick Home Public IP Address",
+              "Description": "AA Main Public IP Address",
               "Priority": 110,
               "Direction": "Inbound",
               "Access": "Allow",

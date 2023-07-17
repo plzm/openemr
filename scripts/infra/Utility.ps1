@@ -89,22 +89,16 @@ function Get-ResourceName()
     $delimiter = ""
   }
 
-  $result = $ConfigAll.NamePrefix + $delimiter + $ConfigAll.NameInfix + $delimiter + $ConfigMatrix.DeployUnit + $delimiter + $ConfigMatrix.Location
+  $result = ""
 
-  if ($Prefix)
-  {
-    $result = $Prefix + $delimiter + $result
-  }
+  if ($ConfigAll.NamePrefix) { $result = $ConfigAll.NamePrefix }
+  if ($ConfigAll.NameInfix) { $result = $result + $delimiter + $ConfigAll.NameInfix }
+  if ($ConfigAll.DeployUnit) { $result = $result + $delimiter + $ConfigAll.DeployUnit }
+  if ($ConfigAll.Location) { $result = $result + $delimiter + $ConfigAll.Location }
 
-  if ($Sequence)
-  {
-    $result = $result + $delimiter + $Sequence
-  }
-
-  if ($Suffix)
-  {
-    $result = $result + $delimiter + $Suffix
-  }
+  if ($Prefix) { $result = $Prefix + $delimiter + $result }
+  if ($Sequence) { $result = $result + $delimiter + $Sequence }
+  if ($Suffix) { $result = $result + $delimiter + $Suffix }
 
   return $result
 }
