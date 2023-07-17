@@ -93,8 +93,8 @@ function Get-ResourceName()
 
   if ($ConfigAll.NamePrefix) { $result = $ConfigAll.NamePrefix }
   if ($ConfigAll.NameInfix) { $result = $result + $delimiter + $ConfigAll.NameInfix }
-  if ($ConfigAll.DeployUnit) { $result = $result + $delimiter + $ConfigAll.DeployUnit }
-  if ($ConfigAll.Location) { $result = $result + $delimiter + $ConfigAll.Location }
+  if ($ConfigMatrix.DeployUnit) { $result = $result + $delimiter + $ConfigMatrix.DeployUnit }
+  if ($ConfigMatrix.Location) { $result = $result + $delimiter + $ConfigMatrix.Location }
 
   if ($Prefix) { $result = $Prefix + $delimiter + $result }
   if ($Sequence) { $result = $result + $delimiter + $Sequence }
