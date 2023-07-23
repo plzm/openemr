@@ -221,70 +221,70 @@ jobs:
         shell: pwsh
 
       #- name: Deploy Role Assignments
-        if: success()
-        run: |
-          . ./scripts/infra/Utility.ps1
-          . ./scripts/infra/Security.ps1
+      #  if: success()
+      #  run: |
+      #    . ./scripts/infra/Utility.ps1
+      #    . ./scripts/infra/Security.ps1
 
-          $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+      #    $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+      #    $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
-          Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | KV Certificates Officer"
-          Deploy-RoleAssignmentSub `
-            -Location $configMatrix.Location `
-            -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
-            -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultCertificatesOfficer `
-            -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
+      #    Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | KV Certificates Officer"
+      #    Deploy-RoleAssignmentSub `
+      #      -Location $configMatrix.Location `
+      #      -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
+      #      -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultCertificatesOfficer `
+      #      -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
 
-          Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | KV Crypto Officer"
-          Deploy-RoleAssignmentSub `
-            -Location $configMatrix.Location `
-            -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
-            -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultCryptoOfficer `
-            -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
+      #    Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | KV Crypto Officer"
+      #    Deploy-RoleAssignmentSub `
+      #      -Location $configMatrix.Location `
+      #      -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
+      #      -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultCryptoOfficer `
+      #      -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
 
-          Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | KV Secrets Officer"
-          Deploy-RoleAssignmentSub `
-            -Location $configMatrix.Location `
-            -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
-            -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultSecretsOfficer `
-            -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
+      #    Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | KV Secrets Officer"
+      #    Deploy-RoleAssignmentSub `
+      #      -Location $configMatrix.Location `
+      #      -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
+      #      -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultSecretsOfficer `
+      #      -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
 
-          Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | Monitoring Metrics Publisher"
-          Deploy-RoleAssignmentSub `
-            -Location $configMatrix.Location `
-            -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
-            -RoleDefinitionId $configAll.RoleDefinitionIdMonitoringMetricsPublisher `
-            -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
+      #    Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | Monitoring Metrics Publisher"
+      #    Deploy-RoleAssignmentSub `
+      #      -Location $configMatrix.Location `
+      #      -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
+      #      -RoleDefinitionId $configAll.RoleDefinitionIdMonitoringMetricsPublisher `
+      #      -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
 
-          Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | Storage Blob Data Contributor"
-          Deploy-RoleAssignmentSub `
-            -Location $configMatrix.Location `
-            -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
-            -RoleDefinitionId $configAll.RoleDefinitionIdStorageBlobDataContributor `
-            -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
+      #    Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | Storage Blob Data Contributor"
+      #    Deploy-RoleAssignmentSub `
+      #      -Location $configMatrix.Location `
+      #      -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
+      #      -RoleDefinitionId $configAll.RoleDefinitionIdStorageBlobDataContributor `
+      #      -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
 
-          Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | Storage Blob Queue Contributor"
-          Deploy-RoleAssignmentSub `
-            -Location $configMatrix.Location `
-            -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
-            -RoleDefinitionId $configAll.RoleDefinitionIdStorageQueueDataContributor `
-            -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
+      #    Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | Storage Blob Queue Contributor"
+      #    Deploy-RoleAssignmentSub `
+      #      -Location $configMatrix.Location `
+      #      -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
+      #      -RoleDefinitionId $configAll.RoleDefinitionIdStorageQueueDataContributor `
+      #      -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
 
-          Write-Debug -Debug:$true -Message "Deploy Role Assignment | App Services RP App Reg | Key Vault Secrets User"
-          Deploy-RoleAssignmentSub `
-            -Location $configMatrix.Location `
-            -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
-            -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultSecretsUser `
-            -PrincipalId $configAll.PrincipalIdAppServicesRp
+      #    Write-Debug -Debug:$true -Message "Deploy Role Assignment | App Services RP App Reg | Key Vault Secrets User"
+      #    Deploy-RoleAssignmentSub `
+      #      -Location $configMatrix.Location `
+      #      -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
+      #      -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultSecretsUser `
+      #      -PrincipalId $configAll.PrincipalIdAppServicesRp
 
-          Write-Debug -Debug:$true -Message "Deploy Role Assignment | Diagnostic Services Trusted Storage Access | Storage Blob Data Contributor"
-          Deploy-RoleAssignmentSub `
-            -Location $configMatrix.Location `
-            -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
-            -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultSecretsUser `
-            -PrincipalId $configAll.PrincipalIdDiagnosticServicesTrustedStorageAccess
-        shell: pwsh
+      #    Write-Debug -Debug:$true -Message "Deploy Role Assignment | Diagnostic Services Trusted Storage Access | Storage Blob Data Contributor"
+      #    Deploy-RoleAssignmentSub `
+      #      -Location $configMatrix.Location `
+      #      -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
+      #      -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultSecretsUser `
+      #      -PrincipalId $configAll.PrincipalIdDiagnosticServicesTrustedStorageAccess
+      #  shell: pwsh
 
       - name: Deploy Network
         if: success()
