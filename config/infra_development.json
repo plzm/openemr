@@ -66,6 +66,20 @@
     },
     "Storage": {
       "SkuName": "Standard_LRS"
+    },
+    "Database": {
+      "SkuTier": "GeneralPurpose",
+      "SkuFamily": "Gen5",
+      "SkuName": "GP_Gen5_2",
+      "SkuCapacity": 2,
+      "SkuSizeMB": 102400,
+      "MariaDbVersion": "10.3",
+      "CreateMode": "Default",
+      "BackupRetentionDays": 7,
+      "GeoRedundantBackup": "Enabled",
+      "StorageAutogrow": "Enabled",
+      "MinimumTlsVersion": "TLS1_2",
+      "PublicNetworkAccess": "Disabled"
     }
   },
   {
@@ -135,6 +149,20 @@
     },
     "Storage": {
       "SkuName": "Standard_LRS"
+    },
+    "Database": {
+      "SkuTier": "GeneralPurpose",
+      "SkuFamily": "Gen5",
+      "SkuName": "GP_Gen5_2",
+      "SkuCapacity": 2,
+      "SkuSizeMB": 102400,
+      "MariaDbVersion": "10.3",
+      "CreateMode": "Default",
+      "BackupRetentionDays": 7,
+      "GeoRedundantBackup": "Enabled",
+      "StorageAutogrow": "Enabled",
+      "MinimumTlsVersion": "TLS1_2",
+      "PublicNetworkAccess": "Disabled"
     }
   }
 ]
