@@ -168,23 +168,23 @@ jobs:
           Set-EnvVar2 -VarName "OE_LAW_NAME" -VarValue "$workspaceName"
           Set-EnvVar2 -VarName "OE_LAW_RESOURCE_ID" -VarValue "$workspaceResourceId"
 
-          #Deploy-LogAnalyticsWorkspace `
-          #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          #  -Location $configMatrix.Location `
-          #  -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
-          #  -TemplateUri ($configAll.TemplateUriPrefix + "monitor.log-analytics-workspace.json") `
-          #  -WorkspaceName $workspaceName `
-          #  -Tags ${{ env.OE_TAGS_FOR_ARM }}
+          Deploy-LogAnalyticsWorkspace `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -Location $configMatrix.Location `
+            -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "monitor.log-analytics-workspace.json") `
+            -WorkspaceName $workspaceName `
+            -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
-          #Deploy-DiagnosticsSetting `
-          #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          #  -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
-          #  -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
-          #  -ResourceId $workspaceResourceId `
-          #  -DiagnosticsSettingName ("diag-" + "$workspaceName") `
-          #  -LogAnalyticsWorkspaceResourceId $workspaceResourceId `
-          #  -SendLogs $true `
-          #  -SendMetrics $true
+          Deploy-DiagnosticsSetting `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
+            -ResourceId $workspaceResourceId `
+            -DiagnosticsSettingName ("diag-" + "$workspaceName") `
+            -LogAnalyticsWorkspaceResourceId $workspaceResourceId `
+            -SendLogs $true `
+            -SendMetrics $true
         shell: pwsh
 
       - name: Deploy User Assigned Identity
@@ -202,17 +202,17 @@ jobs:
           Set-EnvVar2 -VarName "OE_UAI_NAME" -VarValue "$uaiName"
           Set-EnvVar2 -VarName "OE_UAI_RESOURCE_ID" -VarValue "$uaiResourceId"
 
-          #Deploy-UAI `
-          #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          #  -Location $configMatrix.Location `
-          #  -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
-          #  -TemplateUri ($configAll.TemplateUriPrefix + "identity.user-assigned-identity.json") `
-          #  -TenantId "${{ secrets.OE_AZURE_TENANT_ID }}" `
-          #  -UAIName $uaiName `
-          #  -Tags ${{ env.OE_TAGS_FOR_ARM }}
+          Deploy-UAI `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -Location $configMatrix.Location `
+            -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "identity.user-assigned-identity.json") `
+            -TenantId "${{ secrets.OE_AZURE_TENANT_ID }}" `
+            -UAIName $uaiName `
+            -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
-          #Write-Debug -Debug:$true -Message "Sleep to allow UAI deploy to complete"
-          #Start-Sleep -s 60
+          Write-Debug -Debug:$true -Message "Sleep to allow UAI deploy to complete"
+          Start-Sleep -s 60
 
           $uai = "$(az identity show -g ${{ env.OE_RG_NAME_MAIN }} -n $uaiName)" | ConvertFrom-Json
 
@@ -220,71 +220,71 @@ jobs:
           Set-EnvVar2 -VarName "OE_UAI_PRINCIPAL_ID" -VarValue $uai.principalId
         shell: pwsh
 
-      #- name: Deploy Role Assignments
-      #  if: success()
-      #  run: |
-      #    . ./scripts/infra/Utility.ps1
-      #    . ./scripts/infra/Security.ps1
+      - name: Deploy Role Assignments
+        if: success()
+        run: |
+          . ./scripts/infra/Utility.ps1
+          . ./scripts/infra/Security.ps1
 
-      #    $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-      #    $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+          $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
-      #    Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | KV Certificates Officer"
-      #    Deploy-RoleAssignmentSub `
-      #      -Location $configMatrix.Location `
-      #      -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
-      #      -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultCertificatesOfficer `
-      #      -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
+          Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | KV Certificates Officer"
+          Deploy-RoleAssignmentSub `
+            -Location $configMatrix.Location `
+            -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
+            -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultCertificatesOfficer `
+            -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
 
-      #    Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | KV Crypto Officer"
-      #    Deploy-RoleAssignmentSub `
-      #      -Location $configMatrix.Location `
-      #      -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
-      #      -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultCryptoOfficer `
-      #      -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
+          Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | KV Crypto Officer"
+          Deploy-RoleAssignmentSub `
+            -Location $configMatrix.Location `
+            -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
+            -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultCryptoOfficer `
+            -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
 
-      #    Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | KV Secrets Officer"
-      #    Deploy-RoleAssignmentSub `
-      #      -Location $configMatrix.Location `
-      #      -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
-      #      -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultSecretsOfficer `
-      #      -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
+          Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | KV Secrets Officer"
+          Deploy-RoleAssignmentSub `
+            -Location $configMatrix.Location `
+            -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
+            -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultSecretsOfficer `
+            -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
 
-      #    Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | Monitoring Metrics Publisher"
-      #    Deploy-RoleAssignmentSub `
-      #      -Location $configMatrix.Location `
-      #      -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
-      #      -RoleDefinitionId $configAll.RoleDefinitionIdMonitoringMetricsPublisher `
-      #      -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
+          Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | Monitoring Metrics Publisher"
+          Deploy-RoleAssignmentSub `
+            -Location $configMatrix.Location `
+            -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
+            -RoleDefinitionId $configAll.RoleDefinitionIdMonitoringMetricsPublisher `
+            -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
 
-      #    Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | Storage Blob Data Contributor"
-      #    Deploy-RoleAssignmentSub `
-      #      -Location $configMatrix.Location `
-      #      -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
-      #      -RoleDefinitionId $configAll.RoleDefinitionIdStorageBlobDataContributor `
-      #      -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
+          Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | Storage Blob Data Contributor"
+          Deploy-RoleAssignmentSub `
+            -Location $configMatrix.Location `
+            -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
+            -RoleDefinitionId $configAll.RoleDefinitionIdStorageBlobDataContributor `
+            -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
 
-      #    Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | Storage Blob Queue Contributor"
-      #    Deploy-RoleAssignmentSub `
-      #      -Location $configMatrix.Location `
-      #      -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
-      #      -RoleDefinitionId $configAll.RoleDefinitionIdStorageQueueDataContributor `
-      #      -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
+          Write-Debug -Debug:$true -Message "Deploy Role Assignment | UAI | Storage Blob Queue Contributor"
+          Deploy-RoleAssignmentSub `
+            -Location $configMatrix.Location `
+            -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
+            -RoleDefinitionId $configAll.RoleDefinitionIdStorageQueueDataContributor `
+            -PrincipalId "${{ env.OE_UAI_PRINCIPAL_ID }}"
 
-      #    Write-Debug -Debug:$true -Message "Deploy Role Assignment | App Services RP App Reg | Key Vault Secrets User"
-      #    Deploy-RoleAssignmentSub `
-      #      -Location $configMatrix.Location `
-      #      -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
-      #      -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultSecretsUser `
-      #      -PrincipalId $configAll.PrincipalIdAppServicesRp
+          Write-Debug -Debug:$true -Message "Deploy Role Assignment | App Services RP App Reg | Key Vault Secrets User"
+          Deploy-RoleAssignmentSub `
+            -Location $configMatrix.Location `
+            -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
+            -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultSecretsUser `
+            -PrincipalId $configAll.PrincipalIdAppServicesRp
 
-      #    Write-Debug -Debug:$true -Message "Deploy Role Assignment | Diagnostic Services Trusted Storage Access | Storage Blob Data Contributor"
-      #    Deploy-RoleAssignmentSub `
-      #      -Location $configMatrix.Location `
-      #      -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
-      #      -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultSecretsUser `
-      #      -PrincipalId $configAll.PrincipalIdDiagnosticServicesTrustedStorageAccess
-      #  shell: pwsh
+          Write-Debug -Debug:$true -Message "Deploy Role Assignment | Diagnostic Services Trusted Storage Access | Storage Blob Data Contributor"
+          Deploy-RoleAssignmentSub `
+            -Location $configMatrix.Location `
+            -TemplateUri ($configAll.TemplateUriPrefix + "authorization.role-assignment.sub.json") `
+            -RoleDefinitionId $configAll.RoleDefinitionIdKeyVaultSecretsUser `
+            -PrincipalId $configAll.PrincipalIdDiagnosticServicesTrustedStorageAccess
+        shell: pwsh
 
       - name: Deploy Network
         if: success()
@@ -296,14 +296,14 @@ jobs:
           $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
           $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
-          #Deploy-Network `
-          #  -ConfigAll $configAll `
-          #  -ConfigMatrix $configMatrix `
-          #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          #  -ResourceGroupName ${{ env.OE_RG_NAME_NETWORK }} `
-          #  -LogAnalyticsWorkspaceName "${{ env.OE_LAW_NAME }}" `
-          #  -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
-          #  -Tags ${{ env.OE_TAGS_FOR_ARM }}
+          Deploy-Network `
+            -ConfigAll $configAll `
+            -ConfigMatrix $configMatrix `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_NETWORK }} `
+            -LogAnalyticsWorkspaceName "${{ env.OE_LAW_NAME }}" `
+            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+            -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
           # TODO may need to nuance this a bit more than simply grabbing the first subnet
           $subnetResourceIds = Get-SubnetResourceIds -ConfigAll $configAll -ConfigMatrix $configMatrix -SubscriptionId ${{ secrets.OE_AZURE_SUBSCRIPTION_ID }} -ResourceGroupName ${{ env.OE_RG_NAME_NETWORK }}
@@ -311,78 +311,78 @@ jobs:
           Set-EnvVar2 -VarName "OE_PRIVATE_ENDPOINT_SUBNET_RESOURCE_ID" -VarValue $subnetResourceId
         shell: pwsh
 
-      #- name: Deploy Private DNS zones
-        #if: success()
-        #run: |
-        #  . ./scripts/infra/Utility.ps1
-        #  . ./scripts/infra/Network.ps1
+      - name: Deploy Private DNS zones
+        if: success()
+        run: |
+          . ./scripts/infra/Utility.ps1
+          . ./scripts/infra/Network.ps1
 
-        #  $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-        #  $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+          $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
-        #  Deploy-PrivateDnsZones `
-        #    -ConfigAll $configAll `
-        #    -ConfigMatrix $configMatrix `
-        #    -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-        #    -ResourceGroupName ${{ env.OE_RG_NAME_NETWORK }} `
-        #    -Tags ${{ env.OE_TAGS_FOR_ARM }}
-        #shell: pwsh
+          Deploy-PrivateDnsZones `
+            -ConfigAll $configAll `
+            -ConfigMatrix $configMatrix `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_NETWORK }} `
+            -Tags ${{ env.OE_TAGS_FOR_ARM }}
+        shell: pwsh
 
-      #- name: Deploy Azure Monitor Private Link Scope
-      #  if: success()
-      #  run: |
-      #    . ./scripts/infra/Utility.ps1
-      #    . ./scripts/infra/Observability.ps1
-      #    . ./scripts/infra/Network.ps1
+      - name: Deploy Azure Monitor Private Link Scope
+        if: success()
+        run: |
+          . ./scripts/infra/Utility.ps1
+          . ./scripts/infra/Observability.ps1
+          . ./scripts/infra/Network.ps1
 
-      #    $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-      #    $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+          $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
-      #    $privateLinkScopeName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "pls" -Sequence $configAll.SeqNumAmpls
-      #    $privateLinkScopeResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_OBSERVABILITY }}" -ResourceProviderName "microsoft.insights" -ResourceTypeName "privatelinkscopes" -ResourceName $privateLinkScopeName
+          $privateLinkScopeName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "pls" -Sequence $configAll.SeqNumAmpls
+          $privateLinkScopeResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_OBSERVABILITY }}" -ResourceProviderName "microsoft.insights" -ResourceTypeName "privatelinkscopes" -ResourceName $privateLinkScopeName
 
-      #    $privateEndpointName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "pep" -Sequence $configAll.SeqNumAmpls
+          $privateEndpointName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "pep" -Sequence $configAll.SeqNumAmpls
 
-      #    $privateLinkScopeNicName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "nic" -Sequence $configAll.SeqNumAmpls
-      #    $privateLinkScopeNicResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_OBSERVABILITY }}" -ResourceProviderName "Microsoft.Network" -ResourceTypeName "networkInterfaces" -ResourceName $privateLinkScopeNicName
+          $privateLinkScopeNicName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "nic" -Sequence $configAll.SeqNumAmpls
+          $privateLinkScopeNicResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_OBSERVABILITY }}" -ResourceProviderName "Microsoft.Network" -ResourceTypeName "networkInterfaces" -ResourceName $privateLinkScopeNicName
 
-      #    Deploy-Ampls `
-      #      -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #      -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
-      #      -TemplateUri ($configAll.TemplateUriPrefix + "monitor.private-link-scope.json") `
-      #      -PrivateLinkScopeName $privateLinkScopeName `
-      #      -Tags ${{ env.OE_TAGS_FOR_ARM }}
+          Deploy-Ampls `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "monitor.private-link-scope.json") `
+            -PrivateLinkScopeName $privateLinkScopeName `
+            -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
-      #    Deploy-ConnectLawToAmpls `
-      #      -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #      -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
-      #      -TemplateUri ($configAll.TemplateUriPrefix + "monitor.private-link-scope.scoped-resource.json") `
-      #      -PrivateLinkScopeName $privateLinkScopeName `
-      #      -ScopedResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
-      #      -ScopedResourceName "${{ env.OE_LAW_NAME }}"
+          Deploy-ConnectLawToAmpls `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "monitor.private-link-scope.scoped-resource.json") `
+            -PrivateLinkScopeName $privateLinkScopeName `
+            -ScopedResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+            -ScopedResourceName "${{ env.OE_LAW_NAME }}"
 
-      #    Deploy-PrivateEndpointAndNic `
-      #      -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #      -Location $configMatrix.Location `
-      #      -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
-      #      -TemplateUri ($configAll.TemplateUriPrefix + "net.private-endpoint.json") `
-      #      -ProtectedWorkloadResourceId "$privateLinkScopeResourceId" `
-      #      -ProtectedWorkloadSubResource "azuremonitor" `
-      #      -PrivateEndpointName $privateEndpointName `
-      #      -NetworkInterfaceName $privateLinkScopeNicName `
-      #      -SubnetResourceId ${{ env.OE_PRIVATE_ENDPOINT_SUBNET_RESOURCE_ID }} `
-      #      -Tags ${{ env.OE_TAGS_FOR_ARM }}
+          Deploy-PrivateEndpointAndNic `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -Location $configMatrix.Location `
+            -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "net.private-endpoint.json") `
+            -ProtectedWorkloadResourceId "$privateLinkScopeResourceId" `
+            -ProtectedWorkloadSubResource "azuremonitor" `
+            -PrivateEndpointName $privateEndpointName `
+            -NetworkInterfaceName $privateLinkScopeNicName `
+            -SubnetResourceId ${{ env.OE_PRIVATE_ENDPOINT_SUBNET_RESOURCE_ID }} `
+            -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
-      #    Deploy-DiagnosticsSetting `
-      #      -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #      -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
-      #      -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
-      #      -ResourceId $privateLinkScopeNicResourceId `
-      #      -DiagnosticsSettingName ("diag-" + "$privateLinkScopeNicName") `
-      #      -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
-      #      -SendLogs $false `
-      #      -SendMetrics $true
-      #  shell: pwsh
+          Deploy-DiagnosticsSetting `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
+            -ResourceId $privateLinkScopeNicResourceId `
+            -DiagnosticsSettingName ("diag-" + "$privateLinkScopeNicName") `
+            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+            -SendLogs $false `
+            -SendMetrics $true
+        shell: pwsh
 
       - name: Deploy Key Vault
         if: success()
@@ -415,63 +415,63 @@ jobs:
           Set-EnvVar2 -VarName "OE_KEYVAULT_NAME" -VarValue "$keyVaultName"
           Set-EnvVar2 -VarName "OE_KEYVAULT_RESOURCE_ID" -VarValue "$keyVaultResourceId"
 
-          #Deploy-KeyVault `
-          #  -TenantId "${{ secrets.OE_AZURE_TENANT_ID }}" `
-          #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          #  -Location $configMatrix.Location `
-          #  -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
-          #  -TemplateUri ($configAll.TemplateUriPrefix + "key-vault.json") `
-          #  -KeyVaultName "$keyVaultName" `
-          #  -EnabledForDeployment $false `
-          #  -EnabledForDiskEncryption $false `
-          #  -EnabledForTemplateDeployment $false `
-          #  -EnableSoftDelete $false `
-          #  -SoftDeleteRetentionInDays 7 `
-          #  -EnableRbacAuthorization $true `
-          #  -PublicNetworkAccess "Enabled" `
-          #  -DefaultAction "Deny" `
-          #  -AllowedIpAddressRangesCsv "" `
-          #  -AllowedSubnetResourceIdsCsv "$subnetResourceIdsCsv" `
-          #  -Tags ${{ env.OE_TAGS_FOR_ARM }}
+          Deploy-KeyVault `
+            -TenantId "${{ secrets.OE_AZURE_TENANT_ID }}" `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -Location $configMatrix.Location `
+            -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "key-vault.json") `
+            -KeyVaultName "$keyVaultName" `
+            -EnabledForDeployment $false `
+            -EnabledForDiskEncryption $false `
+            -EnabledForTemplateDeployment $false `
+            -EnableSoftDelete $false `
+            -SoftDeleteRetentionInDays 7 `
+            -EnableRbacAuthorization $true `
+            -PublicNetworkAccess "Enabled" `
+            -DefaultAction "Deny" `
+            -AllowedIpAddressRangesCsv "" `
+            -AllowedSubnetResourceIdsCsv "$subnetResourceIdsCsv" `
+            -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
-          ## Key Vault Diagnostics
-          #Deploy-DiagnosticsSetting `
-          #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          #  -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
-          #  -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
-          #  -ResourceId "$keyVaultResourceId" `
-          #  -DiagnosticsSettingName ("diag-" + "$keyVaultName") `
-          #  -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
-          #  -SendLogs $true `
-          #  -SendMetrics $true
+          # Key Vault Diagnostics
+          Deploy-DiagnosticsSetting `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
+            -ResourceId "$keyVaultResourceId" `
+            -DiagnosticsSettingName ("diag-" + "$keyVaultName") `
+            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+            -SendLogs $true `
+            -SendMetrics $true
 
-          #Deploy-PrivateEndpointAndNic `
-          #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          #  -Location $configMatrix.Location `
-          #  -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
-          #  -TemplateUri ($configAll.TemplateUriPrefix + "net.private-endpoint.json") `
-          #  -ProtectedWorkloadResourceId "$keyVaultResourceId" `
-          #  -ProtectedWorkloadSubResource "vault" `
-          #  -PrivateEndpointName $privateEndpointName `
-          #  -NetworkInterfaceName $keyVaultNicName `
-          #  -SubnetResourceId ${{ env.OE_PRIVATE_ENDPOINT_SUBNET_RESOURCE_ID }} `
-          #  -Tags ${{ env.OE_TAGS_FOR_ARM }}
+          Deploy-PrivateEndpointAndNic `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -Location $configMatrix.Location `
+            -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "net.private-endpoint.json") `
+            -ProtectedWorkloadResourceId "$keyVaultResourceId" `
+            -ProtectedWorkloadSubResource "vault" `
+            -PrivateEndpointName $privateEndpointName `
+            -NetworkInterfaceName $keyVaultNicName `
+            -SubnetResourceId ${{ env.OE_PRIVATE_ENDPOINT_SUBNET_RESOURCE_ID }} `
+            -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
-          #Watch-NicUntilProvisionSuccess `
-          #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          #  -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
-          #  -NetworkInterfaceName $keyVaultNicName
+          Watch-NicUntilProvisionSuccess `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+            -NetworkInterfaceName $keyVaultNicName
 
-          ## NIC Diagnostics
-          #Deploy-DiagnosticsSetting `
-          #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          #  -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
-          #  -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
-          #  -ResourceId $keyVaultNicResourceId `
-          #  -DiagnosticsSettingName ("diag-" + "$keyVaultNicName") `
-          #  -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
-          #  -SendLogs $false `
-          #  -SendMetrics $true
+          # NIC Diagnostics
+          Deploy-DiagnosticsSetting `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
+            -ResourceId $keyVaultNicResourceId `
+            -DiagnosticsSettingName ("diag-" + "$keyVaultNicName") `
+            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+            -SendLogs $false `
+            -SendMetrics $true
         shell: pwsh
 
       - name: Deploy Storage
@@ -520,142 +520,142 @@ jobs:
           Set-EnvVar2 -VarName "OE_STORAGE_ACCOUNT_NAME" -VarValue "$storageAccountName"
           Set-EnvVar2 -VarName "OE_STORAGE_ACCOUNT_RESOURCE_ID" -VarValue "$storageAccountResourceId"
 
-          #Deploy-StorageAccount `
-          #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          #  -Location $configMatrix.Location `
-          #  -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
-          #  -TemplateUri ($configAll.TemplateUriPrefix + "storage.account.json") `
-          #  -StorageAccountName "$storageAccountName" `
-          #  -SkuName $configMatrix.Storage.SkuName `
-          #  -AllowedSubnetResourceIdsCsv "$subnetResourceIdsCsv" `
-          #  -AllowedIpAddressRangesCsv "" `
-          #  -DefaultAction "Deny" `
-          #  -Tags ${{ env.OE_TAGS_FOR_ARM }}
+          Deploy-StorageAccount `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -Location $configMatrix.Location `
+            -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "storage.account.json") `
+            -StorageAccountName "$storageAccountName" `
+            -SkuName $configMatrix.Storage.SkuName `
+            -AllowedSubnetResourceIdsCsv "$subnetResourceIdsCsv" `
+            -AllowedIpAddressRangesCsv "" `
+            -DefaultAction "Deny" `
+            -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
-          ## Storage Account Diagnostics
-          #Deploy-StorageDiagnosticsSetting `
-          #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          #  -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
-          #  -TemplateUri ($configAll.TemplateUriPrefix + "storage.diagnostic-settings.json") `
-          #  -ResourceId "$storageAccountResourceId" `
-          #  -DiagnosticsSettingName ("diag-" + "$storageAccountName") `
-          #  -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}"
+          # Storage Account Diagnostics
+          Deploy-StorageDiagnosticsSetting `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "storage.diagnostic-settings.json") `
+            -ResourceId "$storageAccountResourceId" `
+            -DiagnosticsSettingName ("diag-" + "$storageAccountName") `
+            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}"
 
-          ## Deploy Storage Private Endpoint and NIC - Blob
-          #Deploy-PrivateEndpointAndNic `
-          #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          #  -Location $configMatrix.Location `
-          #  -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
-          #  -TemplateUri ($configAll.TemplateUriPrefix + "net.private-endpoint.json") `
-          #  -ProtectedWorkloadResourceId "$storageAccountResourceId" `
-          #  -ProtectedWorkloadSubResource "blob" `
-          #  -PrivateEndpointName $privateEndpointNameBlob `
-          #  -NetworkInterfaceName $storageAccountNicNameBlob `
-          #  -SubnetResourceId ${{ env.OE_PRIVATE_ENDPOINT_SUBNET_RESOURCE_ID }} `
-          #  -Tags ${{ env.OE_TAGS_FOR_ARM }}
+          # Deploy Storage Private Endpoint and NIC - Blob
+          Deploy-PrivateEndpointAndNic `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -Location $configMatrix.Location `
+            -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "net.private-endpoint.json") `
+            -ProtectedWorkloadResourceId "$storageAccountResourceId" `
+            -ProtectedWorkloadSubResource "blob" `
+            -PrivateEndpointName $privateEndpointNameBlob `
+            -NetworkInterfaceName $storageAccountNicNameBlob `
+            -SubnetResourceId ${{ env.OE_PRIVATE_ENDPOINT_SUBNET_RESOURCE_ID }} `
+            -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
-          #$nicState = Watch-NicUntilProvisionSuccess `
-          #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          #  -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
-          #  -NetworkInterfaceName $storageAccountNicNameBlob
+          $nicState = Watch-NicUntilProvisionSuccess `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+            -NetworkInterfaceName $storageAccountNicNameBlob
 
-          ## NIC Diagnostics - Blob
-          #Deploy-DiagnosticsSetting `
-          #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          #  -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
-          #  -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
-          #  -ResourceId $storageAccountNicResourceIdBlob `
-          #  -DiagnosticsSettingName ("diag-" + "$storageAccountNicNameBlob") `
-          #  -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
-          #  -SendLogs $false `
-          #  -SendMetrics $true
+          # NIC Diagnostics - Blob
+          Deploy-DiagnosticsSetting `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
+            -ResourceId $storageAccountNicResourceIdBlob `
+            -DiagnosticsSettingName ("diag-" + "$storageAccountNicNameBlob") `
+            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+            -SendLogs $false `
+            -SendMetrics $true
 
-          ## Deploy Storage Private Endpoint and NIC - File
-          #Deploy-PrivateEndpointAndNic `
-          #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          #  -Location $configMatrix.Location `
-          #  -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
-          #  -TemplateUri ($configAll.TemplateUriPrefix + "net.private-endpoint.json") `
-          #  -ProtectedWorkloadResourceId "$storageAccountResourceId" `
-          #  -ProtectedWorkloadSubResource "file" `
-          #  -PrivateEndpointName $privateEndpointNameFile `
-          #  -NetworkInterfaceName $storageAccountNicNameFile `
-          #  -SubnetResourceId ${{ env.OE_PRIVATE_ENDPOINT_SUBNET_RESOURCE_ID }} `
-          #  -Tags ${{ env.OE_TAGS_FOR_ARM }}
+          # Deploy Storage Private Endpoint and NIC - File
+          Deploy-PrivateEndpointAndNic `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -Location $configMatrix.Location `
+            -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "net.private-endpoint.json") `
+            -ProtectedWorkloadResourceId "$storageAccountResourceId" `
+            -ProtectedWorkloadSubResource "file" `
+            -PrivateEndpointName $privateEndpointNameFile `
+            -NetworkInterfaceName $storageAccountNicNameFile `
+            -SubnetResourceId ${{ env.OE_PRIVATE_ENDPOINT_SUBNET_RESOURCE_ID }} `
+            -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
-          #$nicState = Watch-NicUntilProvisionSuccess `
-          #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          #  -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
-          #  -NetworkInterfaceName $storageAccountNicNameFile
+          $nicState = Watch-NicUntilProvisionSuccess `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+            -NetworkInterfaceName $storageAccountNicNameFile
 
-          ## NIC Diagnostics - File
-          #Deploy-DiagnosticsSetting `
-          #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          #  -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
-          #  -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
-          #  -ResourceId $storageAccountNicResourceIdFile `
-          #  -DiagnosticsSettingName ("diag-" + "$storageAccountNicNameFile") `
-          #  -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
-          #  -SendLogs $false `
-          #  -SendMetrics $true
+          # NIC Diagnostics - File
+          Deploy-DiagnosticsSetting `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
+            -ResourceId $storageAccountNicResourceIdFile `
+            -DiagnosticsSettingName ("diag-" + "$storageAccountNicNameFile") `
+            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+            -SendLogs $false `
+            -SendMetrics $true
 
-          ## Deploy Storage Private Endpoint and NIC - Queue
-          #Deploy-PrivateEndpointAndNic `
-          #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          #  -Location $configMatrix.Location `
-          #  -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
-          #  -TemplateUri ($configAll.TemplateUriPrefix + "net.private-endpoint.json") `
-          #  -ProtectedWorkloadResourceId "$storageAccountResourceId" `
-          #  -ProtectedWorkloadSubResource "queue" `
-          #  -PrivateEndpointName $privateEndpointNameQueue `
-          #  -NetworkInterfaceName $storageAccountNicNameQueue `
-          #  -SubnetResourceId ${{ env.OE_PRIVATE_ENDPOINT_SUBNET_RESOURCE_ID }} `
-          #  -Tags ${{ env.OE_TAGS_FOR_ARM }}
+          # Deploy Storage Private Endpoint and NIC - Queue
+          Deploy-PrivateEndpointAndNic `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -Location $configMatrix.Location `
+            -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "net.private-endpoint.json") `
+            -ProtectedWorkloadResourceId "$storageAccountResourceId" `
+            -ProtectedWorkloadSubResource "queue" `
+            -PrivateEndpointName $privateEndpointNameQueue `
+            -NetworkInterfaceName $storageAccountNicNameQueue `
+            -SubnetResourceId ${{ env.OE_PRIVATE_ENDPOINT_SUBNET_RESOURCE_ID }} `
+            -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
-          #$nicState = Watch-NicUntilProvisionSuccess `
-          #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          #  -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
-          #  -NetworkInterfaceName $storageAccountNicNameQueue
+          $nicState = Watch-NicUntilProvisionSuccess `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+            -NetworkInterfaceName $storageAccountNicNameQueue
 
-          ## NIC Diagnostics - Queue
-          #Deploy-DiagnosticsSetting `
-          #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          #  -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
-          #  -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
-          #  -ResourceId $storageAccountNicResourceIdQueue `
-          #  -DiagnosticsSettingName ("diag-" + "$storageAccountNicNameQueue") `
-          #  -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
-          #  -SendLogs $false `
-          #  -SendMetrics $true
+          # NIC Diagnostics - Queue
+          Deploy-DiagnosticsSetting `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
+            -ResourceId $storageAccountNicResourceIdQueue `
+            -DiagnosticsSettingName ("diag-" + "$storageAccountNicNameQueue") `
+            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+            -SendLogs $false `
+            -SendMetrics $true
 
-          ## Deploy Storage Private Endpoint and NIC - Table
-          #Deploy-PrivateEndpointAndNic `
-          #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          #  -Location $configMatrix.Location `
-          #  -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
-          #  -TemplateUri ($configAll.TemplateUriPrefix + "net.private-endpoint.json") `
-          #  -ProtectedWorkloadResourceId "$storageAccountResourceId" `
-          #  -ProtectedWorkloadSubResource "table" `
-          #  -PrivateEndpointName $privateEndpointNameTable `
-          #  -NetworkInterfaceName $storageAccountNicNameTable `
-          #  -SubnetResourceId ${{ env.OE_PRIVATE_ENDPOINT_SUBNET_RESOURCE_ID }} `
-          #  -Tags ${{ env.OE_TAGS_FOR_ARM }}
+          # Deploy Storage Private Endpoint and NIC - Table
+          Deploy-PrivateEndpointAndNic `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -Location $configMatrix.Location `
+            -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "net.private-endpoint.json") `
+            -ProtectedWorkloadResourceId "$storageAccountResourceId" `
+            -ProtectedWorkloadSubResource "table" `
+            -PrivateEndpointName $privateEndpointNameTable `
+            -NetworkInterfaceName $storageAccountNicNameTable `
+            -SubnetResourceId ${{ env.OE_PRIVATE_ENDPOINT_SUBNET_RESOURCE_ID }} `
+            -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
-          #$nicState = Watch-NicUntilProvisionSuccess `
-          #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          #  -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
-          #  -NetworkInterfaceName $storageAccountNicNameTable
+          $nicState = Watch-NicUntilProvisionSuccess `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+            -NetworkInterfaceName $storageAccountNicNameTable
 
-          ## NIC Diagnostics - Table
-          #Deploy-DiagnosticsSetting `
-          #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          #  -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
-          #  -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
-          #  -ResourceId $storageAccountNicResourceIdTable `
-          #  -DiagnosticsSettingName ("diag-" + "$storageAccountNicNameTable") `
-          #  -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
-          #  -SendLogs $false `
-          #  -SendMetrics $true
+          # NIC Diagnostics - Table
+          Deploy-DiagnosticsSetting `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
+            -ResourceId $storageAccountNicResourceIdTable `
+            -DiagnosticsSettingName ("diag-" + "$storageAccountNicNameTable") `
+            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+            -SendLogs $false `
+            -SendMetrics $true
         shell: pwsh
 
       - name: Deploy Database
