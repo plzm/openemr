@@ -683,7 +683,7 @@ jobs:
             -ResourceGroupName ${{ env.OE_RG_NAME_WORKLOAD }} `
             -TemplateUri ($configAll.TemplateUriPrefix + "db.mariadb.server.json") `
             -ServerName "$dbServerName" `
-            -AdministratorLogin "${{ secrets.OE_DB_ADMIN_LOGIN }}" `
+            -AdministratorLogin "dbAdmin" `
             -AdministratorPassword "${{ secrets.OE_DB_ADMIN_PASSWORD }}" `
             -SkuTier $configMatrix.Database.SkuTier `
             -SkuFamily $configMatrix.Database.SkuFamily `
