@@ -1,3 +1,5 @@
+$debug = $true
+
 function Get-Timestamp()
 {
   [CmdletBinding()]
@@ -30,6 +32,8 @@ function Get-Config()
     $ConfigFilePath
   )
 
+  Write-Debug -Debug:$debug -Message ("Get-Config: ConfigFilePath: " + "$ConfigFilePath")
+
   Get-Content -Path "$ConfigFilePath" | ConvertFrom-Json
 }
 
@@ -45,6 +49,8 @@ function Get-ConfigMatrix()
     [string]
     $DeployUnit
   )
+
+  Write-Debug -Debug:$debug -Message ("Get-ConfigMatrix: ConfigFilePath: " + "$ConfigFilePath" + ", DeployUnit: " + "$DeployUnit")
 
   $configEnv = Get-Content -Path "$ConfigFilePath" | ConvertFrom-Json
 
@@ -79,6 +85,8 @@ function Get-ResourceName()
     [bool]
     $IncludeDelimiter = $true
   )
+
+  Write-Debug -Debug:$debug -Message ("Get-ResourceName: Prefix: " + "$Prefix" + ", Sequence: " + "$Sequence" + ", Suffix: " + "$Suffix" + ", IncludeDelimiter: " + "$IncludeDelimiter")
 
   if ($IncludeDelimiter)
   {
@@ -131,6 +139,8 @@ function Get-ResourceId()
     $ChildResourceName = ""
   )
 
+  Write-Debug -Debug:$debug -Message ("Get-ResourceId: SubscriptionId: " + "$SubscriptionId" + ", ResourceGroupName: " + "$ResourceGroupName" + ", ResourceProviderName: " + "$ResourceProviderName" + ", ResourceTypeName: " + "$ResourceTypeName" + ", ResourceName: " + "$ResourceName" + ", ChildResourceTypeName: " + "$ChildResourceTypeName" + ", ChildResourceName: " + "$ChildResourceName")
+
   $result = "/subscriptions/" + $SubscriptionId + "/resourceGroups/" + $ResourceGroupName + "/providers/" + $ResourceProviderName + "/" + $ResourceTypeName + "/" + $ResourceName
 
   if ($ChildResourceTypeName -and $ChildResourceName)
@@ -155,6 +165,8 @@ function Get-ChildResourceId()
     [string]
     $ChildResourceName
   )
+
+  Write-Debug -Debug:$debug -Message ("Get-ChildResourceId: ParentResourceId: " + "$ParentResourceId" + ", ChildResourceTypeName: " + "$ChildResourceTypeName" + ", ChildResourceName: " + "$ChildResourceName")
 
   $result = $ParentResourceId + "/" + $ChildResourceTypeName + "/" + $ChildResourceName
 
@@ -181,6 +193,8 @@ function Set-EnvVars()
     $ConfigMatrix
   )
 
+  Write-Debug -Debug:$debug -Message ("Set-EnvVars: Environment: " + "$Environment")
+
   Set-EnvVarsMatrix `
   -ConfigAll $ConfigAll `
   -ConfigMatrix $ConfigMatrix
@@ -203,7 +217,8 @@ function Set-EnvVarsMatrix()
     [object]
     $ConfigMatrix
   )
-  # 
+  Write-Debug -Debug:$debug -Message ("Set-EnvVarsMatrix")
+ 
   #Set-EnvVar2 -VarName "" -VarValue ""
 }
 
@@ -222,6 +237,8 @@ function Set-EnvVarTags()
     [object]
     $ConfigMatrix
   )
+
+  Write-Debug -Debug:$debug -Message ("Set-EnvVarTags: Environment: " + "$Environment")
 
   $tagEnv = "env=" + $Environment
   #$tagFoo = "foo=bar"
@@ -266,7 +283,6 @@ function Set-EnvVar2
     .LINK
     None
   #>
-
   [CmdletBinding()]
   param
   (
@@ -277,6 +293,8 @@ function Set-EnvVar2
     [string]
     $VarValue
   )
+
+  Write-Debug -Debug:$debug -Message ("Set-EnvVar2: VarName: " + "$VarName" + ", VarValue: " + "$VarValue")
 
   if ($env:GITHUB_ENV)
   {
@@ -311,7 +329,6 @@ function Set-EnvVar1()
     .LINK
     None
   #>
-
   [CmdletBinding()]
   param
   (
@@ -319,6 +336,8 @@ function Set-EnvVar1()
     [string]
     $VarPair
   )
+
+  Write-Debug -Debug:$debug -Message ("Set-EnvVar1: VarPair: " + "$VarPair")
 
   if ($VarPair -like "*=*")
   {
@@ -341,6 +360,8 @@ function Set-EnvVar1()
 
 function Get-EnvVars()
 {
+  Write-Debug -Debug:$debug -Message ("Get-EnvVars")
+
   Get-ChildItem env:
 }
 
