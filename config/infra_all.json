@@ -15,10 +15,12 @@
   "SeqNumRgMain": "01",
   "SeqNumRgNetwork": "02",
   "SeqNumRgObservability": "03",
+  "SeqNumRgWorkload": "04",
   "SeqNumUai": "10",
   "SeqNumLogAnalytics": "20",
   "SeqNumAmpls": "21",
   "SeqNumKeyVault": "30",
   "SeqNumStorage": "40",
+  "SeqNumDatabase": "50",
   "TemplateUriPrefix": "https://raw.githubusercontent.com/plzm/azure-deploy/main/template/"
 }

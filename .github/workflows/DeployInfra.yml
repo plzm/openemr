@@ -96,6 +96,7 @@ jobs:
           # OE_RG_NAME_MAIN
           # OE_RG_NAME_NETWORK
           # OE_RG_NAME_OBSERVABILITY
+          # OE_RG_NAME_WORKLOAD
           # OE_LAW_NAME
           # OE_LAW_RESOURCE_ID
           # OE_UAI_NAME
@@ -120,10 +121,12 @@ jobs:
           $rgNameMain = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence $configAll.SeqNumRgMain
           $rgNameNetwork = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence $configAll.SeqNumRgNetwork
           $rgNameObservability = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence $configAll.SeqNumRgObservability
+          $rgNameWorkload = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence $configAll.SeqNumRgWorkload
 
           Set-EnvVar2 -VarName "OE_RG_NAME_MAIN" -VarValue "$rgNameMain"
           Set-EnvVar2 -VarName "OE_RG_NAME_NETWORK" -VarValue "$rgNameNetwork"
           Set-EnvVar2 -VarName "OE_RG_NAME_OBSERVABILITY" -VarValue "$rgNameObservability"
+          Set-EnvVar2 -VarName "OE_RG_NAME_WORKLOAD" -VarValue "$rgNameWorkload"
 
           az group create `
             --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
@@ -141,6 +144,12 @@ jobs:
             --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -l $configMatrix.Location `
             -n $rgNameObservability `
+            --tags ${{ env.OE_TAGS_FOR_CLI }}
+
+          az group create `
+            --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -l $configMatrix.Location `
+            -n $rgNameWorkload `
             --tags ${{ env.OE_TAGS_FOR_CLI }}
         shell: pwsh
 
@@ -644,6 +653,87 @@ jobs:
             -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
             -ResourceId $storageAccountNicResourceIdTable `
             -DiagnosticsSettingName ("diag-" + "$storageAccountNicNameTable") `
+            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+            -SendLogs $false `
+            -SendMetrics $true
+        shell: pwsh
+
+      - name: Deploy Database
+        if: success()
+        run: |
+          . ./scripts/infra/Utility.ps1
+          . ./scripts/infra/Network.ps1
+          . ./scripts/infra/Observability.ps1
+          . ./scripts/infra/Database.ps1
+
+          $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+
+          $dbServerName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "db" -Sequence $configAll.SeqNumDatabase
+          $dbServerResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_WORKLOAD }}" -ResourceProviderName "Microsoft.DBforMariaDB" -ResourceTypeName "servers" -ResourceName $dbServerName
+
+          $privateEndpointName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "pep" -Sequence $configAll.SeqNumDatabase
+
+          $dbServerNicName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "nic" -Sequence $configAll.SeqNumDatabase
+          $dbServerNicResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_WORKLOAD }}" -ResourceProviderName "Microsoft.Network" -ResourceTypeName "networkInterfaces" -ResourceName $dbServerNicName
+
+          Deploy-Database `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -Location $configMatrix.Location `
+            -ResourceGroupName ${{ env.OE_RG_NAME_WORKLOAD }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "db.mariadb.server.json") `
+            -ServerName "$dbServerName" `
+            -AdministratorLogin "${{ secrets.OE_DB_ADMIN_LOGIN }}" `
+            -AdministratorPassword "${{ secrets.OE_DB_ADMIN_PASSWORD }}" `
+            -SkuTier $configMatrix.Database.SkuTier `
+            -SkuFamily $configMatrix.Database.SkuFamily `
+            -SkuName $configMatrix.Database.SkuName `
+            -SkuCapacity $configMatrix.Database.SkuCapacity `
+            -SkuSizeMB $configMatrix.Database.SkuSizeMB `
+            -MariaDbVersion $configMatrix.Database.MariaDbVersion `
+            -CreateMode $configMatrix.Database.CreateMode `
+            -BackupRetentionDays $configMatrix.Database.BackupRetentionDays `
+            -GeoRedundantBackup $configMatrix.Database.GeoRedundantBackup `
+            -StorageAutogrow $configMatrix.Database.StorageAutogrow `
+            -MinimumTlsVersion $configMatrix.Database.MinimumTlsVersion `
+            -PublicNetworkAccess $configMatrix.Database.PublicNetworkAccess `
+            -Tags ${{ env.OE_TAGS_FOR_ARM }}
+
+          # Database Server Diagnostics
+          Deploy-DiagnosticsSetting `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_WORKLOAD }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
+            -ResourceId "$dbServerResourceId" `
+            -DiagnosticsSettingName ("diag-" + "$dbServerName") `
+            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+            -SendLogs $true `
+            -SendMetrics $true
+
+          Deploy-PrivateEndpointAndNic `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -Location $configMatrix.Location `
+            -ResourceGroupName ${{ env.OE_RG_NAME_WORKLOAD }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "net.private-endpoint.json") `
+            -ProtectedWorkloadResourceId "$dbServerResourceId" `
+            -ProtectedWorkloadSubResource "mariadbServer" `
+            -PrivateEndpointName $privateEndpointName `
+            -NetworkInterfaceName $dbServerNicName `
+            -SubnetResourceId ${{ env.OE_PRIVATE_ENDPOINT_SUBNET_RESOURCE_ID }} `
+            -Tags ${{ env.OE_TAGS_FOR_ARM }}
+
+          Watch-NicUntilProvisionSuccess `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_WORKLOAD }} `
+            -NetworkInterfaceName $dbServerNicName
+
+          # NIC Diagnostics
+          Deploy-DiagnosticsSetting `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_WORKLOAD }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
+            -ResourceId $dbServerNicResourceId `
+            -DiagnosticsSettingName ("diag-" + "$dbServerNicName") `
             -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
             -SendLogs $false `
             -SendMetrics $true
