@@ -82,7 +82,7 @@ function Deploy-Database()
     skuName="$SkuName" `
     skuCapacity="$SkuCapacity" `
     skuSizeMB="$SkuSizeMB" `
-    mariadbVersion="$MariaDbVersion" `
+    mariaDbVersion="$MariaDbVersion" `
     createMode="$CreateMode" `
     backupRetentionDays="$BackupRetentionDays" `
     geoRedundantBackup="$GeoRedundantBackup" `
