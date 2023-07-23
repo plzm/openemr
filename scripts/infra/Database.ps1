@@ -69,7 +69,7 @@ function Deploy-Database()
 
   az deployment group create --verbose `
     --subscription "$SubscriptionId" `
-    -n "$KeyVaultName" `
+    -n "$ServerName" `
     -g "$ResourceGroupName" `
     --template-uri "$TemplateUri" `
     --parameters `
