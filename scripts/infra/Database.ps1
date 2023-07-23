@@ -22,7 +22,7 @@ function Deploy-Database()
     [string]
     $AdministratorLogin = "",
     [Parameter(Mandatory = $false)]
-    [securestring]
+    [string]
     $AdministratorPassword = "",
     [Parameter(Mandatory = $true)]
     [string]
