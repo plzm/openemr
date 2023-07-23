@@ -46,6 +46,12 @@ function Deploy-Database()
     [string]
     $CreateMode,
     [Parameter(Mandatory = $false)]
+    [string]
+    $SourceServerId = "",
+    [Parameter(Mandatory = $false)]
+    [string]
+    $RestorePointInTime = "",
+    [Parameter(Mandatory = $false)]
     [int]
     $BackupRetentionDays = 7,
     [Parameter(Mandatory = $false)]
@@ -84,10 +90,12 @@ function Deploy-Database()
     skuSizeMB="$SkuSizeMB" `
     mariaDbVersion="$MariaDbVersion" `
     createMode="$CreateMode" `
+    sourceServerId="$SourceServerId" `
+    restorePointInTime="$RestorePointInTime" `
     backupRetentionDays="$BackupRetentionDays" `
     geoRedundantBackup="$GeoRedundantBackup" `
     storageAutogrow="$StorageAutogrow" `
-    allowedSubnetResourceIds="$AllowedSubnetResourceIdsCsv" `
+    minimumTlsVersion="$MinimumTlsVersion" `
     publicNetworkAccess="$PublicNetworkAccess" `
     tags=$Tags
 }
