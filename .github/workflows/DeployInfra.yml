@@ -684,7 +684,7 @@ jobs:
             -TemplateUri ($configAll.TemplateUriPrefix + "db.mariadb.server.json") `
             -ServerName "$dbServerName" `
             -AdministratorLogin "dbAdmin" `
-            -AdministratorPassword "${{ secrets.OE_DB_ADMIN_PASSWORD }}" `
+            -AdministratorPassword "Foof002023!@#" `
             -SkuTier $configMatrix.Database.SkuTier `
             -SkuFamily $configMatrix.Database.SkuFamily `
             -SkuName $configMatrix.Database.SkuName `
