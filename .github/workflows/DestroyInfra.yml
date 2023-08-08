@@ -1,0 +1,120 @@
+---
+name: Destroy Infrastructure
+
+on: 
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+
+jobs:
+  prep_matrix:
+    name: Prepare Matrix
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Write matrix string to output
+        id: set-matrix
+        run: |
+          $path = "./config/infra_" + "${{ inputs.environment }}" + ".json"
+          echo "::debug::path=$path"
+          $configEnv = Get-Content -Path $path | ConvertFrom-Json
+          echo "::debug::configEnv=$configEnv"
+          $matrix = ($configEnv | Select-Object DeployUnit | ConvertTo-Json -Depth 100 -Compress).Replace("`"", "'")
+          echo "::debug::matrix=$matrix"
+          $matrix = "{'include':" + $matrix + "}"
+          echo "matrix=$matrix" >> $env:GITHUB_OUTPUT
+        shell: pwsh
+
+  destroy_matrix:
+    needs: prep_matrix
+    name: Destroy Infrastructure
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ${{ fromJson(needs.prep_matrix.outputs.matrix) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Powershell error action
+        if: success()
+        run: |
+          $global:ErrorActionPreference = "Stop"
+          $ErrorActionPreference = "Stop"
+        shell: pwsh
+
+      - name: Set Azure CLI extensions to auto-install
+        if: success()
+        run: |
+          az config set extension.use_dynamic_install=yes_without_prompt
+        shell: pwsh
+
+      - name: Azure login
+        if: success()
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          enable-AzPSSession: true
+
+      - name: Set Environment Variables
+        if: success()
+        run: |
+          . ./scripts/infra/Utility.ps1
+
+          $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+
+          Set-EnvVars `
+            -Environment "${{ inputs.environment }}" `
+            -ConfigAll $configAll `
+            -ConfigMatrix $configMatrix
+        shell: pwsh
+
+      - name: Delete Resource Groups
+        if: success()
+        run: |
+          . ./scripts/infra/Utility.ps1
+
+          $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+
+          $rgNameMain = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence $configAll.SeqNumRgMain
+          $rgNameNetwork = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence $configAll.SeqNumRgNetwork
+          $rgNameObservability = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence $configAll.SeqNumRgObservability
+          $rgNameWorkload = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence $configAll.SeqNumRgWorkload
+
+          az group delete -y `
+            --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -n $rgNameWorkload
+
+          az group delete -y `
+            --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -n $rgNameObservability
+
+          az group delete -y `
+            --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -n $rgNameMain
+
+          az group delete -y `
+            --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -n $rgNameNetwork
+        shell: pwsh
+
+
+      - name: Azure logout
+        if: always()
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az logout
+            az cache purge
+            az account clear
+...
