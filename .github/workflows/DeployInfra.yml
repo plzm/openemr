@@ -739,6 +739,44 @@ jobs:
             -SendMetrics $true
         shell: pwsh
 
+      - name: Deploy Workload
+        if: success()
+        run: |
+          . ./scripts/infra/Utility.ps1
+          . ./scripts/infra/Network.ps1
+          . ./scripts/infra/Observability.ps1
+
+          $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+
+
+          # App Service Plan
+          $appServicePlanName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "asp" -Sequence $configAll.SeqNumWorkload
+          $appServicePlanResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_WORKLOAD }}" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "serverFarms" -ResourceName $appServicePlanName
+
+
+          # App Service Plan AutoScale Settings
+          $appServicePlanAutoScaleSettingsName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "scl" -Sequence $configAll.SeqNumWorkload
+          $appServicePlanAutoScaleSettingsResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_WORKLOAD }}" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "serverFarms" -SubResourceName "autoscaleSettings" -ResourceName $appServicePlanName
+
+
+          # App Service
+          $appServiceName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "app" -Sequence $configAll.SeqNumWorkload
+          $appServiceResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_WORKLOAD }}" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "sites" -ResourceName $appServiceName
+
+          $appServicePrivateEndpointName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "pep" -Sequence $configAll.SeqNumWorkload
+
+          $appServiceNicName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "nic" -Sequence $configAll.SeqNumWorkload
+          $appServiceNicResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_WORKLOAD }}" -ResourceProviderName "Microsoft.Network" -ResourceTypeName "networkInterfaces" -ResourceName $appServiceNicName
+
+
+          # App Insights
+          $appInsightsName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "ai" -Sequence $configAll.SeqNumWorkload
+          $appInsightsResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_WORKLOAD }}" -ResourceProviderName "Microsoft.Insights" -ResourceTypeName "components" -ResourceName $appInsightsName
+
+        shell: pwsh
+
+
 
       - name: Azure logout
         if: always()
