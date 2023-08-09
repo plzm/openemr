@@ -80,6 +80,9 @@
       "StorageAutogrow": "Enabled",
       "MinimumTlsVersion": "TLS1_2",
       "PublicNetworkAccess": "Disabled"
+    },
+    "Workload": {
+      "CertificateName": "oe-aa-cert-dev"
     }
   },
   {
@@ -163,6 +166,9 @@
       "StorageAutogrow": "Enabled",
       "MinimumTlsVersion": "TLS1_2",
       "PublicNetworkAccess": "Disabled"
+    },
+    "Workload": {
+      "CertificateName": "oe-aa-cert-dev"
     }
   }
 ]

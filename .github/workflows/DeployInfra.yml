@@ -745,6 +745,7 @@ jobs:
           . ./scripts/infra/Utility.ps1
           . ./scripts/infra/Network.ps1
           . ./scripts/infra/Observability.ps1
+          . ./scripts/infra/Workload.ps1
 
           $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
           $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
@@ -758,6 +759,10 @@ jobs:
           # App Service Plan AutoScale Settings
           $appServicePlanAutoScaleSettingsName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "scl" -Sequence $configAll.SeqNumWorkload
           $appServicePlanAutoScaleSettingsResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_WORKLOAD }}" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "serverFarms" -SubResourceName "autoscaleSettings" -ResourceName $appServicePlanName
+
+
+          # App Service Certificate
+          $appServiceCertificateName = "${{ env.OE_KEYVAULT_NAME }}" + "-" + $configMatrix.Workload.CertificateName
 
 
           # App Service
