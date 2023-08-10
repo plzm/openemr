@@ -82,7 +82,20 @@
       "PublicNetworkAccess": "Disabled"
     },
     "Workload": {
-      "CertificateName": "oe-aa-cert-dev"
+      "AppServicePlanSkuName": "P1V3",
+      "AppServicePlanSkuTier": "PremiumV3",
+      "AppServicePlanSkuFamily": "Pv3",
+      "AppServicePlanCapacity": 3,
+      "AppServicePlanKind": "linux",
+      "AppServicePlanZoneRedundant": true,
+      "AppServicePlanAutoscaleSettingsMinimumInstances": 3,
+      "AppServicePlanAutoscaleSettingsMaximumInstances": 6,
+      "AppServicePlanAutoscaleSettingsDefaultInstances": 3,
+      "AppServiceCertificateName": "oe-aa-cert",
+      "AppServiceCertificateSecretName": "oe-aa-cert",
+      "AppServiceLinuxFxVersion": "DOCKER|openemr/openemr:latest",
+      "AllowedIpAddressRanges": "",
+      "CustomFqdn": ""
     }
   },
   {
@@ -168,7 +181,20 @@
       "PublicNetworkAccess": "Disabled"
     },
     "Workload": {
-      "CertificateName": "oe-aa-cert-dev"
+      "AppServicePlanSkuName": "P1V3",
+      "AppServicePlanSkuTier": "PremiumV3",
+      "AppServicePlanSkuFamily": "Pv3",
+      "AppServicePlanCapacity": 3,
+      "AppServicePlanKind": "linux",
+      "AppServicePlanZoneRedundant": true,
+      "AppServicePlanAutoscaleSettingsMinimumInstances": 3,
+      "AppServicePlanAutoscaleSettingsMaximumInstances": 6,
+      "AppServicePlanAutoscaleSettingsDefaultInstances": 3,
+      "AppServiceCertificateName": "oe-aa-cert",
+      "AppServiceCertificateSecretName": "oe-aa-cert",
+      "AppServiceLinuxFxVersion": "DOCKER|openemr/openemr:latest",
+      "AllowedIpAddressRanges": "",
+      "CustomFqdn": ""
     }
   }
 ]

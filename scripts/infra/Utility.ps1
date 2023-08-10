@@ -128,6 +128,9 @@ function Get-ResourceId()
     [Parameter(Mandatory = $true)]
     [string]
     $ResourceTypeName,
+    [Parameter(Mandatory = $false)]
+    [string]
+    $ResourceSubTypeName = "",
     [Parameter(Mandatory = $true)]
     [string]
     $ResourceName,
@@ -141,7 +144,14 @@ function Get-ResourceId()
 
   Write-Debug -Debug:$debug -Message ("Get-ResourceId: SubscriptionId: " + "$SubscriptionId" + ", ResourceGroupName: " + "$ResourceGroupName" + ", ResourceProviderName: " + "$ResourceProviderName" + ", ResourceTypeName: " + "$ResourceTypeName" + ", ResourceName: " + "$ResourceName" + ", ChildResourceTypeName: " + "$ChildResourceTypeName" + ", ChildResourceName: " + "$ChildResourceName")
 
-  $result = "/subscriptions/" + $SubscriptionId + "/resourceGroups/" + $ResourceGroupName + "/providers/" + $ResourceProviderName + "/" + $ResourceTypeName + "/" + $ResourceName
+  $result = "/subscriptions/" + $SubscriptionId + "/resourceGroups/" + $ResourceGroupName + "/providers/" + $ResourceProviderName + "/" + $ResourceTypeName + "/"
+  
+  if ($ResourceSubTypeName)
+  {
+    $result += $ResourceSubTypeName + "/"
+  }
+
+  $result += $ResourceName
 
   if ($ChildResourceTypeName -and $ChildResourceName)
   {

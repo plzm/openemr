@@ -164,6 +164,60 @@ function Deploy-AppServiceCertificate()
     tags=$Tags
 }
 
+function Deploy-AppInsights()
+{
+  [CmdletBinding()]
+  param
+  (
+    [Parameter(Mandatory = $true)]
+    [string]
+    $SubscriptionId,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $Location,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $ResourceGroupName,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $TemplateUri,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $AppInsightsName,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $LogAnalyticsWorkspaceResourceId,
+    [Parameter(Mandatory = $false)]
+    [string]
+    $LinkedStorageAccountResourceId = "",
+    [Parameter(Mandatory = $false)]
+    [string]
+    $PublicNetworkAccessForIngestion = "Disabled",
+    [Parameter(Mandatory = $false)]
+    [string]
+    $PublicNetworkAccessForQuery = "Enabled",
+    [Parameter(Mandatory = $false)]
+    [string]
+    $Tags = ""
+  )
+
+  Write-Debug -Debug:$true -Message "Deploy App Insights"
+
+  az deployment group create --verbose `
+    --subscription "$SubscriptionId" `
+    -n "$AppInsightsName" `
+    -g "$ResourceGroupName" `
+    --template-uri "$TemplateUri" `
+    --parameters `
+    location="$Location" `
+    appInsightsName="$AppInsightsName" `
+    logAnalyticsWorkspaceResourceId="$LogAnalyticsWorkspaceResourceId" `
+    linkedStorageAccountResourceId="$LinkedStorageAccountResourceId" `
+    publicNetworkAccessForIngestion="$PublicNetworkAccessForIngestion" `
+    publicNetworkAccessForQuery="$PublicNetworkAccessForQuery" `
+    tags=$Tags
+}
+
 function Deploy-AppService()
 {
   [CmdletBinding()]
@@ -275,59 +329,5 @@ function Deploy-AppService()
     allowedIpAddressRanges="$AllowedIpAddressRanges" `
     customFqdn="$CustomFqdn" `
     certificateForAppServiceThumbprint="$CertificateForAppServiceThumbprint" `
-    tags=$Tags
-}
-
-function Deploy-AppInsights()
-{
-  [CmdletBinding()]
-  param
-  (
-    [Parameter(Mandatory = $true)]
-    [string]
-    $SubscriptionId,
-    [Parameter(Mandatory = $true)]
-    [string]
-    $Location,
-    [Parameter(Mandatory = $true)]
-    [string]
-    $ResourceGroupName,
-    [Parameter(Mandatory = $true)]
-    [string]
-    $TemplateUri,
-    [Parameter(Mandatory = $true)]
-    [string]
-    $AppInsightsName,
-    [Parameter(Mandatory = $true)]
-    [string]
-    $LogAnalyticsWorkspaceResourceId,
-    [Parameter(Mandatory = $false)]
-    [string]
-    $LinkedStorageAccountResourceId = "",
-    [Parameter(Mandatory = $false)]
-    [string]
-    $PublicNetworkAccessForIngestion = "Enabled",
-    [Parameter(Mandatory = $false)]
-    [string]
-    $PublicNetworkAccessForQuery = "Enabled",
-    [Parameter(Mandatory = $false)]
-    [string]
-    $Tags = ""
-  )
-
-  Write-Debug -Debug:$true -Message "Deploy App Insights"
-
-  az deployment group create --verbose `
-    --subscription "$SubscriptionId" `
-    -n "$AppInsightsName" `
-    -g "$ResourceGroupName" `
-    --template-uri "$TemplateUri" `
-    --parameters `
-    location="$Location" `
-    appInsightsName="$AppInsightsName" `
-    logAnalyticsWorkspaceResourceId="$LogAnalyticsWorkspaceResourceId" `
-    linkedStorageAccountResourceId="$LinkedStorageAccountResourceId" `
-    publicNetworkAccessForIngestion="$PublicNetworkAccessForIngestion" `
-    publicNetworkAccessForQuery="$PublicNetworkAccessForQuery" `
     tags=$Tags
 }
