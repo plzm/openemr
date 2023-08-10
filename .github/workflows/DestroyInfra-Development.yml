@@ -1,0 +1,13 @@
+---
+name: Destroy Infrastructure-Development
+
+on: 
+  workflow_dispatch:
+
+jobs:
+  deploy-infra-env:
+    uses: ./.github/workflows/DestroyInfra.yml
+    with:
+      environment: development
+    secrets: inherit
+...
