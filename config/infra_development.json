@@ -93,6 +93,7 @@
       "AppServicePlanAutoscaleSettingsDefaultInstances": 3,
       "AppServiceCertificateName": "oe-aa-cert",
       "AppServiceCertificateSecretName": "oe-aa-cert",
+      "AppServiceKind": "app,linux,container",
       "AppServiceLinuxFxVersion": "DOCKER|openemr/openemr:latest",
       "AllowedIpAddressRanges": "",
       "CustomFqdn": ""
@@ -192,6 +193,7 @@
       "AppServicePlanAutoscaleSettingsDefaultInstances": 3,
       "AppServiceCertificateName": "oe-aa-cert",
       "AppServiceCertificateSecretName": "oe-aa-cert",
+      "AppServiceKind": "app,linux,container",
       "AppServiceLinuxFxVersion": "DOCKER|openemr/openemr:latest",
       "AllowedIpAddressRanges": "",
       "CustomFqdn": ""
