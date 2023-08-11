@@ -1,7 +1,7 @@
 [
   {
     "DeployUnit": "01",
-    "Location": "eastus2",
+    "Location": "eastus",
     "Network": {
       "NSGs": [
         {
@@ -89,7 +89,7 @@
       "AppServicePlanKind": "linux",
       "AppServicePlanZoneRedundant": true,
       "AppServicePlanAutoscaleSettingsMinimumInstances": 3,
-      "AppServicePlanAutoscaleSettingsMaximumInstances": 6,
+      "AppServicePlanAutoscaleSettingsMaximumInstances": 3,
       "AppServicePlanAutoscaleSettingsDefaultInstances": 3,
       "AppServiceCertificateName": "oe-aa-cert",
       "AppServiceCertificateSecretName": "oe-aa-cert",
@@ -101,7 +101,7 @@
   },
   {
     "DeployUnit": "02",
-    "Location": "westus2",
+    "Location": "centralus",
     "Network": {
       "NSGs": [
         {
@@ -189,7 +189,7 @@
       "AppServicePlanKind": "linux",
       "AppServicePlanZoneRedundant": true,
       "AppServicePlanAutoscaleSettingsMinimumInstances": 3,
-      "AppServicePlanAutoscaleSettingsMaximumInstances": 6,
+      "AppServicePlanAutoscaleSettingsMaximumInstances": 3,
       "AppServicePlanAutoscaleSettingsDefaultInstances": 3,
       "AppServiceCertificateName": "oe-aa-cert",
       "AppServiceCertificateSecretName": "oe-aa-cert",

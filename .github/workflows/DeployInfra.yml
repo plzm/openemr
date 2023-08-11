@@ -796,7 +796,6 @@ jobs:
           $appServicePlanName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "asp" -Sequence $configAll.SeqNumWorkload
           $appServicePlanResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_WORKLOAD }}" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "serverFarms" -ResourceName $appServicePlanName
 
-          Write-Debug -Debug:$true -Message "Deploy App Service Plan"
           Deploy-AppServicePlan `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -Location $configMatrix.Location `
@@ -811,7 +810,6 @@ jobs:
             -ZoneRedundant $configMatrix.Workload.AppServicePlanZoneRedundant `
             -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
-          Write-Debug -Debug:$true -Message "Deploy Diagnostics"
           Deploy-DiagnosticsSetting `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -ResourceGroupName ${{ env.OE_RG_NAME_WORKLOAD }} `
@@ -828,7 +826,6 @@ jobs:
           $appServicePlanAutoScaleSettingsName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "scl" -Sequence $configAll.SeqNumWorkload
           $appServicePlanAutoScaleSettingsResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_WORKLOAD }}" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "serverFarms" -ResourceSubTypeName "autoscaleSettings" -ResourceName $appServicePlanName
 
-          Write-Debug -Debug:$true -Message "Deploy App Service Plan Autoscale Settings"
           Deploy-AppServicePlanAutoscaleSettings `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -Location $configMatrix.Location `
@@ -841,7 +838,6 @@ jobs:
             -DefaultInstances $configMatrix.Workload.AppServicePlanAutoscaleSettingsDefaultInstances `
             -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
-          Write-Debug -Debug:$true -Message "Deploy Diagnostics"
           Deploy-DiagnosticsSetting `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -ResourceGroupName ${{ env.OE_RG_NAME_WORKLOAD }} `
@@ -857,7 +853,6 @@ jobs:
           # App Service Certificate
           $appServiceCertificateName = "${{ env.OE_KEYVAULT_NAME }}" + "-" + $configMatrix.Workload.CertificateName
 
-          Write-Debug -Debug:$true -Message "Deploy App Service Certificate"
           Deploy-AppServiceCertificate `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -Location $configMatrix.Location `
@@ -870,7 +865,6 @@ jobs:
             -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
           # Get certificate thumbprint
-          Write-Debug -Debug:$true -Message "Get App Service Certificate Thumbprint"
           $appServiceCertificateThumbprint = "$(az webapp config ssl show -g ${{ env.OE_RG_NAME_WORKLOAD }} --certificate-name "$appServiceCertificateName" --query 'thumbprint' -o tsv)"
           Write-Debug -Debug:$true -Message "$appServiceCertificateThumbprint"
           # ##################################################
@@ -880,7 +874,6 @@ jobs:
           $appInsightsName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "ai" -Sequence $configAll.SeqNumWorkload
           $appInsightsResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_WORKLOAD }}" -ResourceProviderName "Microsoft.Insights" -ResourceTypeName "components" -ResourceName $appInsightsName
 
-          Write-Debug -Debug:$true -Message "Deploy App Insights"
           Deploy-AppInsights `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -Location $configMatrix.Location `
@@ -890,7 +883,6 @@ jobs:
             -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
             -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
-          Write-Debug -Debug:$true -Message "Deploy Diagnostics"
           Deploy-DiagnosticsSetting `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -ResourceGroupName ${{ env.OE_RG_NAME_WORKLOAD }} `
@@ -912,7 +904,6 @@ jobs:
           $appServiceNicName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "nic" -Sequence $configAll.SeqNumWorkload
           $appServiceNicResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_WORKLOAD }}" -ResourceProviderName "Microsoft.Network" -ResourceTypeName "networkInterfaces" -ResourceName $appServiceNicName
 
-          Write-Debug -Debug:$true -Message "Get second subnet resource id - the one delegated to app services"
           $subnetResourceIds = Get-SubnetResourceIds -ConfigAll $configAll -ConfigMatrix $configMatrix -SubscriptionId ${{ secrets.OE_AZURE_SUBSCRIPTION_ID }} -ResourceGroupName ${{ env.OE_RG_NAME_NETWORK }}
           $subnetResourceId = $subnetResourceIds[1]
 
@@ -938,7 +929,6 @@ jobs:
             -CertificateForAppServiceThumbprint $appServiceCertificateThumbprint `
             -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
-          Write-Debug -Debug:$true -Message "Deploy Diagnostics"
           Deploy-DiagnosticsSetting `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -ResourceGroupName ${{ env.OE_RG_NAME_WORKLOAD }} `
@@ -949,7 +939,6 @@ jobs:
             -SendLogs $true `
             -SendMetrics $true
 
-          Write-Debug -Debug:$true -Message "Deploy Private Endpoint and NIC"
           Deploy-PrivateEndpointAndNic `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -Location $configMatrix.Location `
@@ -968,7 +957,6 @@ jobs:
             -ResourceGroupName ${{ env.OE_RG_NAME_WORKLOAD }} `
             -NetworkInterfaceName $appServiceNicName
 
-          # NIC Diagnostics
           Write-Debug -Debug:$true -Message "Deploy Diagnostics"
           Deploy-DiagnosticsSetting `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
