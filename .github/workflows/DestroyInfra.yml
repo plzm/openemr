@@ -64,6 +64,15 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: true
 
+      - name: Set Config File Paths to Environment
+        if: success()
+        run: |
+          . ./scripts/infra/Utility.ps1
+
+          Set-EnvVar2 -VarName "OE_CONFIG_FILE_ALL" -VarValue "./config/infra_all.json"
+          Set-EnvVar2 -VarName "OE_CONFIG_FILE_ENV" -VarValue ("./config/infra_" + "${{ inputs.environment }}" + ".json")
+        shell: pwsh
+
       - name: Set Environment Variables
         if: success()
         run: |
