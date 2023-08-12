@@ -56,7 +56,9 @@ function Deploy-UAI()
     $Tags = ""
   )
 
-  az deployment group create --verbose `
+  Write-Debug -Debug:$true -Message "Deploy UAI $UAIName"
+
+  $output = az deployment group create --verbose `
     --subscription "$SubscriptionId" `
     -n "$UAIName" `
     -g "$ResourceGroupName" `
@@ -65,7 +67,10 @@ function Deploy-UAI()
     location="$Location" `
     tenantId="$TenantId" `
     identityName="$UAIName" `
-    tags=$Tags
+    tags=$Tags `
+    | ConvertFrom-Json
+
+  return $output
 }
 
 function Deploy-RoleAssignmentSub()
@@ -92,12 +97,17 @@ function Deploy-RoleAssignmentSub()
 
   $deploymentName = "rbac-" + $Location + "-" + (Get-Timestamp -MakeStringSafe $true)
 
-  az deployment sub create --verbose `
+  Write-Debug -Debug:$true -Message "Deploy Sub Role Assignment: RoleDefinitionId=$RoleDefinitionId, PrincipalId=$PrincipalId, PrincipalType=$PrincipalType"
+
+  $output = az deployment sub create --verbose `
     -n "$deploymentName" `
     --location="$Location" `
     --template-uri "$TemplateUri" `
     --parameters `
     roleDefinitionId="$RoleDefinitionId" `
     principalId="$PrincipalId" `
-    principalType="$PrincipalType"
+    principalType="$PrincipalType" `
+    | ConvertFrom-Json
+
+  return $output
 }

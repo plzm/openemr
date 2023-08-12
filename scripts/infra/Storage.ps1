@@ -44,9 +44,9 @@ function Deploy-StorageAccount()
     $Tags = ""
   )
 
-  Write-Debug -Debug:$true -Message "Deploy Storage Account"
+  Write-Debug -Debug:$true -Message "Deploy Storage Account $StorageAccountName"
 
-  az deployment group create --verbose `
+  $output = az deployment group create --verbose `
     --subscription "$SubscriptionId" `
     -n "$StorageAccountName" `
     -g "$ResourceGroupName" `
@@ -61,7 +61,10 @@ function Deploy-StorageAccount()
     allowedSubnetResourceIds="$AllowedSubnetResourceIdsCsv" `
     allowedIpAddressRanges="$AllowedIpAddressRangesCsv" `
     defaultAccessAction=$DefaultAction `
-    tags=$Tags
+    tags=$Tags `
+    | ConvertFrom-Json
+
+  return $output
 }
 
 function Deploy-StorageDiagnosticsSetting()
@@ -89,9 +92,9 @@ function Deploy-StorageDiagnosticsSetting()
     $LogAnalyticsWorkspaceResourceId
   )
 
-  Write-Debug -Debug:$true -Message "Deploy Diagnostics Setting $DiagnosticsSettingName"
+  Write-Debug -Debug:$true -Message "Deploy Storage Diagnostics Setting $DiagnosticsSettingName"
 
-  az deployment group create --verbose --no-wait `
+  $output = az deployment group create --verbose `
     --subscription "$SubscriptionId" `
     -n "$DiagnosticsSettingName" `
     -g "$ResourceGroupName" `
@@ -99,5 +102,8 @@ function Deploy-StorageDiagnosticsSetting()
     --parameters `
     resourceId="$ResourceId" `
     diagnosticsSettingName="$DiagnosticsSettingName" `
-    logAnalyticsWorkspaceResourceId="$LogAnalyticsWorkspaceResourceId"
+    logAnalyticsWorkspaceResourceId="$LogAnalyticsWorkspaceResourceId" `
+    | ConvertFrom-Json
+
+  return $output
 }

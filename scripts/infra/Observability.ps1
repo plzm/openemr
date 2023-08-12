@@ -28,9 +28,9 @@ function Deploy-LogAnalyticsWorkspace() {
     $Tags = ""
   )
 
-  Write-Debug -Debug:$true -Message "Deploy Log Analytics Workspace"
+  Write-Debug -Debug:$true -Message "Deploy Log Analytics Workspace $WorkspaceName"
 
-  az deployment group create --verbose `
+  $output = az deployment group create --verbose `
     --subscription "$SubscriptionId" `
     -n "$WorkspaceName" `
     -g "$ResourceGroupName" `
@@ -40,7 +40,10 @@ function Deploy-LogAnalyticsWorkspace() {
     workspaceName="$WorkspaceName" `
     publicNetworkAccessForIngestion="$PublicNetworkAccessForIngestion" `
     publicNetworkAccessForQuery="$PublicNetworkAccessForQuery" `
-    tags=$Tags
+    tags=$Tags `
+    | ConvertFrom-Json
+
+  return $output
 }
 
 function Deploy-DiagnosticsSetting()
@@ -76,7 +79,7 @@ function Deploy-DiagnosticsSetting()
 
   Write-Debug -Debug:$true -Message "Deploy Diagnostics Setting $DiagnosticsSettingName"
 
-  az deployment group create --verbose --no-wait `
+  $output = az deployment group create --verbose --no-wait `
     --subscription "$SubscriptionId" `
     -n "$DiagnosticsSettingName" `
     -g "$ResourceGroupName" `
@@ -86,7 +89,10 @@ function Deploy-DiagnosticsSetting()
     diagnosticsSettingName="$DiagnosticsSettingName" `
     logAnalyticsWorkspaceResourceId="$LogAnalyticsWorkspaceResourceId" `
     sendLogs=$SendLogs `
-    sendMetrics=$SendMetrics
+    sendMetrics=$SendMetrics `
+    | ConvertFrom-Json
+
+  return $output
 }
 
 function Deploy-Ampls() {
@@ -116,9 +122,9 @@ function Deploy-Ampls() {
     $Tags = ""
   )
 
-  Write-Debug -Debug:$true -Message "Deploy Azure Monitor Private Link Scope"
+  Write-Debug -Debug:$true -Message "Deploy Azure Monitor Private Link Scope $PrivateLinkScopeName"
 
-  az deployment group create --verbose `
+  $output = az deployment group create --verbose `
     --subscription "$SubscriptionId" `
     -n "$PrivateLinkScopeName" `
     -g "$ResourceGroupName" `
@@ -128,7 +134,10 @@ function Deploy-Ampls() {
     linkScopeName=$PrivateLinkScopeName `
     queryAccessMode=$QueryAccessMode `
     ingestionAccessMode=$IngestionAccessMode `
-    tags=$Tags
+    tags=$Tags `
+    | ConvertFrom-Json
+
+  return $output
 }
 
 function Deploy-ConnectLawToAmpls() {
@@ -155,9 +164,9 @@ function Deploy-ConnectLawToAmpls() {
     $ScopedResourceName
   )
 
-  Write-Debug -Debug:$true -Message "Connect Log Analytics Workspace to AMPLS"
+  Write-Debug -Debug:$true -Message "Connect Log Analytics Workspace $ScopedResourceName to AMPLS $PrivateLinkScopeName"
 
-  az deployment group create --verbose `
+  $output = az deployment group create --verbose `
     --subscription "$SubscriptionId" `
     -n "$PrivateLinkScopeName-$ScopedResourceName" `
     -g "$ResourceGroupName" `
@@ -165,5 +174,8 @@ function Deploy-ConnectLawToAmpls() {
     --parameters `
     linkScopeName=$PrivateLinkScopeName `
     scopedResourceId=$ScopedResourceId `
-    scopedResourceName=$ScopedResourceName
+    scopedResourceName=$ScopedResourceName `
+    | ConvertFrom-Json
+
+  return $output
 }

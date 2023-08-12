@@ -41,9 +41,9 @@ function Deploy-AppServicePlan()
     $Tags = ""
   )
 
-  Write-Debug -Debug:$true -Message "Deploy App Service Plan"
+  Write-Debug -Debug:$true -Message "Deploy App Service Plan $AppServicePlanName"
 
-  az deployment group create --verbose `
+  $output = az deployment group create --verbose `
     --subscription "$SubscriptionId" `
     -n "$AppServicePlanName" `
     -g "$ResourceGroupName" `
@@ -57,7 +57,10 @@ function Deploy-AppServicePlan()
     capacity="$Capacity" `
     kind="$Kind" `
     zoneRedundant="$ZoneRedundant" `
-    tags=$Tags
+    tags=$Tags `
+    | ConvertFrom-Json
+
+  return $output
 }
 
 function Deploy-AppServicePlanAutoscaleSettings()
@@ -97,9 +100,9 @@ function Deploy-AppServicePlanAutoscaleSettings()
     $Tags = ""
   )
 
-  Write-Debug -Debug:$true -Message "Deploy App Service Plan Autoscale Settings"
+  Write-Debug -Debug:$true -Message "Deploy App Service Plan Autoscale Settings $AutoscaleSettingsName"
 
-  az deployment group create --verbose `
+  $output = az deployment group create --verbose `
     --subscription "$SubscriptionId" `
     -n "$AutoscaleSettingsName" `
     -g "$ResourceGroupName" `
@@ -111,7 +114,10 @@ function Deploy-AppServicePlanAutoscaleSettings()
     minimumInstances="$MinimumInstances" `
     maximumInstances="$MaximumInstances" `
     defaultInstances="$DefaultInstances" `
-    tags=$Tags
+    tags=$Tags `
+    | ConvertFrom-Json
+
+  return $output
 }
 
 function Deploy-AppServiceCertificate()
@@ -148,9 +154,9 @@ function Deploy-AppServiceCertificate()
     $Tags = ""
   )
 
-  Write-Debug -Debug:$true -Message "Deploy App Service Certificate"
+  Write-Debug -Debug:$true -Message "Deploy App Service Certificate $AppServiceCertificateName"
 
-  az deployment group create --verbose `
+  $output = az deployment group create --verbose `
     --subscription "$SubscriptionId" `
     -n "$AppServiceCertificateName" `
     -g "$ResourceGroupName" `
@@ -161,7 +167,10 @@ function Deploy-AppServiceCertificate()
     certificateName="$AppServiceCertificateName" `
     keyVaultResourceId="$KeyVaultResourceId" `
     keyVaultSecretName="$KeyVaultSecretName" `
-    tags=$Tags
+    tags=$Tags `
+    | ConvertFrom-Json
+
+  return $output
 }
 
 function Deploy-AppInsights()
@@ -201,9 +210,9 @@ function Deploy-AppInsights()
     $Tags = ""
   )
 
-  Write-Debug -Debug:$true -Message "Deploy App Insights"
+  Write-Debug -Debug:$true -Message "Deploy App Insights $AppInsightsName"
 
-  az deployment group create --verbose `
+  $output = az deployment group create --verbose `
     --subscription "$SubscriptionId" `
     -n "$AppInsightsName" `
     -g "$ResourceGroupName" `
@@ -215,7 +224,8 @@ function Deploy-AppInsights()
     linkedStorageAccountResourceId="$LinkedStorageAccountResourceId" `
     publicNetworkAccessForIngestion="$PublicNetworkAccessForIngestion" `
     publicNetworkAccessForQuery="$PublicNetworkAccessForQuery" `
-    tags=$Tags
+    tags=$Tags `
+    | ConvertFrom-Json
 }
 
 function Deploy-AppService()
@@ -300,9 +310,9 @@ function Deploy-AppService()
     $Tags = ""
   )
 
-  Write-Debug -Debug:$true -Message "Deploy App Service"
+  Write-Debug -Debug:$true -Message "Deploy App Service $AppServiceName"
 
-  az deployment group create --verbose `
+  $output = az deployment group create --verbose `
     --subscription "$SubscriptionId" `
     -n "$AppServiceName" `
     -g "$ResourceGroupName" `
@@ -329,5 +339,8 @@ function Deploy-AppService()
     allowedIpAddressRanges="$AllowedIpAddressRanges" `
     customFqdn="$CustomFqdn" `
     certificateForAppServiceThumbprint="$CertificateForAppServiceThumbprint" `
-    tags=$Tags
+    tags=$Tags `
+    | ConvertFrom-Json
+
+  return $output
 }
