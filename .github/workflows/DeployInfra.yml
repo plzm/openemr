@@ -161,6 +161,8 @@ jobs:
       - name: Create Resource Groups
         if: success()
         run: |
+          . ./scripts/infra/Utility.ps1
+
           $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
           $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
