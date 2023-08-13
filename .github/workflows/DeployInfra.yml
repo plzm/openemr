@@ -102,14 +102,14 @@ jobs:
 
           # Log Analytics
           $workspaceName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "law" -Sequence $configAll.SeqNumLogAnalytics
-          $workspaceResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_OBSERVABILITY }}" -ResourceProviderName "microsoft.operationalinsights" -ResourceTypeName "workspaces" -ResourceName $workspaceName
+          $workspaceResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "$rgNameObservability" -ResourceProviderName "microsoft.operationalinsights" -ResourceTypeName "workspaces" -ResourceName $workspaceName
 
           Set-EnvVar2 -VarName "OE_LAW_NAME" -VarValue "$workspaceName"
           Set-EnvVar2 -VarName "OE_LAW_RESOURCE_ID" -VarValue "$workspaceResourceId"
 
           # User Assigned Identity
           $uaiName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "mid" -Sequence $configall.SeqNumUai
-          $uaiResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_MAIN }}" -ResourceProviderName "Microsoft.ManagedIdentity" -ResourceTypeName "userAssignedIdentities" -ResourceName $uaiName
+          $uaiResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "$rgNameMain" -ResourceProviderName "Microsoft.ManagedIdentity" -ResourceTypeName "userAssignedIdentities" -ResourceName $uaiName
 
           Set-EnvVar2 -VarName "OE_UAI_NAME" -VarValue "$uaiName"
           Set-EnvVar2 -VarName "OE_UAI_RESOURCE_ID" -VarValue "$uaiResourceId"
@@ -119,20 +119,20 @@ jobs:
           # Network
           # TODO may need to nuance this a bit more than simply grabbing the first subnet
           Write-Debug -Debug:$true -Message "Get first subnet resource id"
-          $subnetResourceIds = Get-SubnetResourceIds -ConfigAll $configAll -ConfigMatrix $configMatrix -SubscriptionId ${{ secrets.OE_AZURE_SUBSCRIPTION_ID }} -ResourceGroupName $rgNameNetwork
+          $subnetResourceIds = Get-SubnetResourceIds -ConfigAll $configAll -ConfigMatrix $configMatrix -SubscriptionId ${{ secrets.OE_AZURE_SUBSCRIPTION_ID }} -ResourceGroupName "$rgNameNetwork"
           $subnetResourceId = $subnetResourceIds[0]
           Set-EnvVar2 -VarName "OE_SUBNET_RESOURCE_ID_PRIVATE_ENDPOINT" -VarValue $subnetResourceId
 
           # Key Vault
           $keyVaultName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "kvt" -Sequence $configAll.SeqNumKeyVault
-          $keyVaultResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_MAIN }}" -ResourceProviderName "Microsoft.KeyVault" -ResourceTypeName "vaults" -ResourceName $keyVaultName
+          $keyVaultResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "$rgNameMain" -ResourceProviderName "Microsoft.KeyVault" -ResourceTypeName "vaults" -ResourceName $keyVaultName
 
           Set-EnvVar2 -VarName "OE_KEYVAULT_NAME" -VarValue "$keyVaultName"
           Set-EnvVar2 -VarName "OE_KEYVAULT_RESOURCE_ID" -VarValue "$keyVaultResourceId"
 
           # Storage
           $storageAccountName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "sa" -Sequence $configAll.SeqNumStorage -IncludeDelimiter $false
-          $storageAccountResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_MAIN }}" -ResourceProviderName "Microsoft.Storage" -ResourceTypeName "storageAccounts" -ResourceName $storageAccountName
+          $storageAccountResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "$rgNameMain" -ResourceProviderName "Microsoft.Storage" -ResourceTypeName "storageAccounts" -ResourceName $storageAccountName
 
           Set-EnvVar2 -VarName "OE_STORAGE_ACCOUNT_NAME" -VarValue "$storageAccountName"
           Set-EnvVar2 -VarName "OE_STORAGE_ACCOUNT_RESOURCE_ID" -VarValue "$storageAccountResourceId"
