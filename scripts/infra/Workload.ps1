@@ -268,6 +268,9 @@ function Deploy-AppService()
     $AppInsightsResourceId = "",
     [Parameter(Mandatory = $true)]
     [string]
+    $StorageAccountResourceId,
+    [Parameter(Mandatory = $true)]
+    [string]
     $StorageAccountName,
     [Parameter(Mandatory = $false)]
     [string]
@@ -326,6 +329,7 @@ function Deploy-AppService()
     userAssignedIdentityClientId="$UserAssignedIdentityClientId" `
     appServicePlanResourceId="$AppServicePlanResourceId" `
     appInsightsResourceId="$AppInsightsResourceId" `
+    storageAccountResourceId="$StorageAccountResourceId" `
     storageAccountName="$StorageAccountName" `
     functionRuntimeVersion="$FunctionRuntimeVersion" `
     functionRuntimeWorker="$FunctionRuntimeWorker" `

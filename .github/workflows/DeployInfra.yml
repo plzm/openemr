@@ -1016,6 +1016,7 @@ jobs:
             -UserAssignedIdentityClientId ${{ env.OE_UAI_CLIENT_ID }} `
             -AppServicePlanResourceId $appServicePlanResourceId `
             -AppInsightsResourceId $appInsightsResourceId `
+            -StorageAccountResourceId "${{ env.OE_STORAGE_ACCOUNT_RESOURCE_ID }}" `
             -StorageAccountName "${{ env.OE_STORAGE_ACCOUNT_NAME }}" `
             -LinuxFxVersion "$configMatrix.Workload.AppServiceLinuxFxVersion" `
             -PublicNetworkAccess "Enabled" `
