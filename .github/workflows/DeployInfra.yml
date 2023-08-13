@@ -247,8 +247,8 @@ jobs:
           . ./scripts/infra/Utility.ps1
           . ./scripts/infra/Security.ps1
 
-          #$configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          #$configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+          $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
           Write-Debug -Debug:$true -Message "Deploy UAI ${{ env.OE_UAI_NAME }}"
           $output = Deploy-UAI `
