@@ -781,7 +781,7 @@ jobs:
           $dbServerNicResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_WORKLOAD }}" -ResourceProviderName "Microsoft.Network" -ResourceTypeName "networkInterfaces" -ResourceName $dbServerNicName
 
           Write-Debug -Debug:$true -Message "Deploy Database"
-          $output = Deploy-Database `
+          $output = Deploy-MariaDbServer `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -Location $configMatrix.Location `
             -ResourceGroupName ${{ env.OE_RG_NAME_WORKLOAD }} `
