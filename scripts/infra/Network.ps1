@@ -521,7 +521,6 @@ function Deploy-PrivateDnsZones()
         -ResourceGroupName $ResourceGroupName `
         -TemplateUri ($ConfigAll.TemplateUriPrefix + "net.private-dns-zone.vnet-link.json") `
         -DnsZoneName $zoneName `
-        -VNetName $vnetName `
         -VNetResourceId $vnetResourceId `
         -Tags $Tags
 
