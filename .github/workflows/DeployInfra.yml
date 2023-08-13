@@ -89,6 +89,56 @@ jobs:
             -ConfigAll $configAll `
             -ConfigMatrix $configMatrix
 
+          # Resource Groups
+          $rgNameMain = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence $configAll.SeqNumRgMain
+          $rgNameNetwork = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence $configAll.SeqNumRgNetwork
+          $rgNameObservability = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence $configAll.SeqNumRgObservability
+          $rgNameWorkload = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence $configAll.SeqNumRgWorkload
+
+          Set-EnvVar2 -VarName "OE_RG_NAME_MAIN" -VarValue "$rgNameMain"
+          Set-EnvVar2 -VarName "OE_RG_NAME_NETWORK" -VarValue "$rgNameNetwork"
+          Set-EnvVar2 -VarName "OE_RG_NAME_OBSERVABILITY" -VarValue "$rgNameObservability"
+          Set-EnvVar2 -VarName "OE_RG_NAME_WORKLOAD" -VarValue "$rgNameWorkload"
+
+          # Log Analytics
+          $workspaceName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "law" -Sequence $configAll.SeqNumLogAnalytics
+          $workspaceResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_OBSERVABILITY }}" -ResourceProviderName "microsoft.operationalinsights" -ResourceTypeName "workspaces" -ResourceName $workspaceName
+
+          Set-EnvVar2 -VarName "OE_LAW_NAME" -VarValue "$workspaceName"
+          Set-EnvVar2 -VarName "OE_LAW_RESOURCE_ID" -VarValue "$workspaceResourceId"
+
+          # User Assigned Identity
+          $uaiName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "mid" -Sequence $configall.SeqNumUai
+          $uaiResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_MAIN }}" -ResourceProviderName "Microsoft.ManagedIdentity" -ResourceTypeName "userAssignedIdentities" -ResourceName $uaiName
+
+          Set-EnvVar2 -VarName "OE_UAI_NAME" -VarValue "$uaiName"
+          Set-EnvVar2 -VarName "OE_UAI_RESOURCE_ID" -VarValue "$uaiResourceId"
+          # In step below (after UAI provisioned)
+          # OE_UAI_CLIENT_ID, OE_UAI_PRINCIPAL_ID
+
+          # Network
+          # TODO may need to nuance this a bit more than simply grabbing the first subnet
+          Write-Debug -Debug:$true -Message "Get first subnet resource id"
+          $subnetResourceIds = Get-SubnetResourceIds -ConfigAll $configAll -ConfigMatrix $configMatrix -SubscriptionId ${{ secrets.OE_AZURE_SUBSCRIPTION_ID }} -ResourceGroupName $rgNameNetwork
+          $subnetResourceId = $subnetResourceIds[0]
+          Set-EnvVar2 -VarName "OE_SUBNET_RESOURCE_ID_PRIVATE_ENDPOINT" -VarValue $subnetResourceId
+
+          # Key Vault
+          $keyVaultName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "kvt" -Sequence $configAll.SeqNumKeyVault
+          $keyVaultResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_MAIN }}" -ResourceProviderName "Microsoft.KeyVault" -ResourceTypeName "vaults" -ResourceName $keyVaultName
+
+          Set-EnvVar2 -VarName "OE_KEYVAULT_NAME" -VarValue "$keyVaultName"
+          Set-EnvVar2 -VarName "OE_KEYVAULT_RESOURCE_ID" -VarValue "$keyVaultResourceId"
+
+          # Storage
+          $storageAccountName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "sa" -Sequence $configAll.SeqNumStorage -IncludeDelimiter $false
+          $storageAccountResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_MAIN }}" -ResourceProviderName "Microsoft.Storage" -ResourceTypeName "storageAccounts" -ResourceName $storageAccountName
+
+          Set-EnvVar2 -VarName "OE_STORAGE_ACCOUNT_NAME" -VarValue "$storageAccountName"
+          Set-EnvVar2 -VarName "OE_STORAGE_ACCOUNT_RESOURCE_ID" -VarValue "$storageAccountResourceId"
+
+
+
           # Env vars set in following steps, listed here for convenience
           # OE_RG_NAME_MAIN
           # OE_RG_NAME_NETWORK
@@ -102,7 +152,7 @@ jobs:
           # OE_UAI_PRINCIPAL_ID
           # OE_KEYVAULT_NAME
           # OE_KEYVAULT_RESOURCE_ID
-          # OE_PRIVATE_ENDPOINT_SUBNET_RESOURCE_ID
+          # OE_SUBNET_RESOURCE_ID_PRIVATE_ENDPOINT
           # OE_STORAGE_ACCOUNT_NAME
           # OE_STORAGE_ACCOUNT_RESOURCE_ID
         shell: pwsh
@@ -110,26 +160,14 @@ jobs:
       - name: Create Resource Groups
         if: success()
         run: |
-          . ./scripts/infra/Utility.ps1
-
           $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
           $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
-
-          $rgNameMain = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence $configAll.SeqNumRgMain
-          $rgNameNetwork = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence $configAll.SeqNumRgNetwork
-          $rgNameObservability = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence $configAll.SeqNumRgObservability
-          $rgNameWorkload = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence $configAll.SeqNumRgWorkload
-
-          Set-EnvVar2 -VarName "OE_RG_NAME_MAIN" -VarValue "$rgNameMain"
-          Set-EnvVar2 -VarName "OE_RG_NAME_NETWORK" -VarValue "$rgNameNetwork"
-          Set-EnvVar2 -VarName "OE_RG_NAME_OBSERVABILITY" -VarValue "$rgNameObservability"
-          Set-EnvVar2 -VarName "OE_RG_NAME_WORKLOAD" -VarValue "$rgNameWorkload"
 
           Write-Debug -Debug:$true -Message "Create RG $rgNameMain"
           $output = az group create `
             --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -l $configMatrix.Location `
-            -n $rgNameMain `
+            -n "${{ env.OE_RG_NAME_MAIN }}" `
             --tags ${{ env.OE_TAGS_FOR_CLI }} `
             | ConvertFrom-Json
 
@@ -139,7 +177,7 @@ jobs:
           $output = az group create `
             --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -l $configMatrix.Location `
-            -n $rgNameNetwork `
+            -n "${{ env.OE_RG_NAME_NETWORK }}" `
             --tags ${{ env.OE_TAGS_FOR_CLI }} `
             | ConvertFrom-Json
 
@@ -149,7 +187,7 @@ jobs:
           $output = az group create `
             --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -l $configMatrix.Location `
-            -n $rgNameObservability `
+            -n "${{ env.OE_RG_NAME_OBSERVABILITY }}" `
             --tags ${{ env.OE_TAGS_FOR_CLI }} `
             | ConvertFrom-Json
 
@@ -159,7 +197,7 @@ jobs:
           $output = az group create `
             --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -l $configMatrix.Location `
-            -n $rgNameWorkload `
+            -n "${{ env.OE_RG_NAME_WORKLOAD }}" `
             --tags ${{ env.OE_TAGS_FOR_CLI }} `
             | ConvertFrom-Json
 
@@ -175,19 +213,13 @@ jobs:
           $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
           $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
-          $workspaceName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "law" -Sequence $configAll.SeqNumLogAnalytics
-          $workspaceResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_OBSERVABILITY }}" -ResourceProviderName "microsoft.operationalinsights" -ResourceTypeName "workspaces" -ResourceName $workspaceName
-
-          Set-EnvVar2 -VarName "OE_LAW_NAME" -VarValue "$workspaceName"
-          Set-EnvVar2 -VarName "OE_LAW_RESOURCE_ID" -VarValue "$workspaceResourceId"
-
-          Write-Debug -Debug:$true -Message "Deploy LAW $workspaceName"
+          Write-Debug -Debug:$true -Message "Deploy LAW ${{ env.OE_LAW_NAME }}"
           $output = Deploy-LogAnalyticsWorkspace `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -Location $configMatrix.Location `
             -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
             -TemplateUri ($configAll.TemplateUriPrefix + "monitor.log-analytics-workspace.json") `
-            -WorkspaceName $workspaceName `
+            -WorkspaceName "${{ env.OE_LAW_NAME }}" `
             -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
           Write-Debug -Debug:$true -Message "$output"
@@ -197,9 +229,9 @@ jobs:
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
             -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
-            -ResourceId $workspaceResourceId `
-            -DiagnosticsSettingName ("diag-" + "$workspaceName") `
-            -LogAnalyticsWorkspaceResourceId $workspaceResourceId `
+            -ResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+            -DiagnosticsSettingName ("diag-" + "${{ env.OE_LAW_NAME }}") `
+            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
             -SendLogs $true `
             -SendMetrics $true
 
@@ -215,20 +247,14 @@ jobs:
           $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
           $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
-          $uaiName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "mid" -Sequence $configall.SeqNumUai
-          $uaiResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_MAIN }}" -ResourceProviderName "Microsoft.ManagedIdentity" -ResourceTypeName "userAssignedIdentities" -ResourceName $uaiName
-
-          Set-EnvVar2 -VarName "OE_UAI_NAME" -VarValue "$uaiName"
-          Set-EnvVar2 -VarName "OE_UAI_RESOURCE_ID" -VarValue "$uaiResourceId"
-
-          Write-Debug -Debug:$true -Message "Deploy UAI $uaiName"
+          Write-Debug -Debug:$true -Message "Deploy UAI ${{ env.OE_UAI_NAME }}"
           $output = Deploy-UAI `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -Location $configMatrix.Location `
             -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
             -TemplateUri ($configAll.TemplateUriPrefix + "identity.user-assigned-identity.json") `
             -TenantId "${{ secrets.OE_AZURE_TENANT_ID }}" `
-            -UAIName $uaiName `
+            -UAIName "${{ env.OE_UAI_NAME }}" `
             -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
           Write-Debug -Debug:$true -Message "$output"
@@ -236,8 +262,8 @@ jobs:
           Write-Debug -Debug:$true -Message "Sleep to allow UAI deploy to complete"
           Start-Sleep -s 60
 
-          Write-Debug -Debug:$true -Message "Get UAI $uaiName"
-          $uai = "$(az identity show -g ${{ env.OE_RG_NAME_MAIN }} -n $uaiName)" | ConvertFrom-Json
+          Write-Debug -Debug:$true -Message "Get UAI ${{ env.OE_UAI_NAME }}"
+          $uai = "$(az identity show -g ${{ env.OE_RG_NAME_MAIN }} -n ${{ env.OE_UAI_NAME }})" | ConvertFrom-Json
 
           Set-EnvVar2 -VarName "OE_UAI_CLIENT_ID" -VarValue $uai.clientId
           Set-EnvVar2 -VarName "OE_UAI_PRINCIPAL_ID" -VarValue $uai.principalId
@@ -344,12 +370,6 @@ jobs:
             -LogAnalyticsWorkspaceName "${{ env.OE_LAW_NAME }}" `
             -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
             -Tags ${{ env.OE_TAGS_FOR_ARM }}
-
-          # TODO may need to nuance this a bit more than simply grabbing the first subnet
-          Write-Debug -Debug:$true -Message "Get first subnet resource id"
-          $subnetResourceIds = Get-SubnetResourceIds -ConfigAll $configAll -ConfigMatrix $configMatrix -SubscriptionId ${{ secrets.OE_AZURE_SUBSCRIPTION_ID }} -ResourceGroupName ${{ env.OE_RG_NAME_NETWORK }}
-          $subnetResourceId = $subnetResourceIds[0]
-          Set-EnvVar2 -VarName "OE_PRIVATE_ENDPOINT_SUBNET_RESOURCE_ID" -VarValue $subnetResourceId
         shell: pwsh
 
       - name: Deploy Private DNS zones
@@ -419,7 +439,7 @@ jobs:
             -ProtectedWorkloadSubResource "azuremonitor" `
             -PrivateEndpointName $privateEndpointName `
             -NetworkInterfaceName $privateLinkScopeNicName `
-            -SubnetResourceId ${{ env.OE_PRIVATE_ENDPOINT_SUBNET_RESOURCE_ID }} `
+            -SubnetResourceId ${{ env.OE_SUBNET_RESOURCE_ID_PRIVATE_ENDPOINT }} `
             -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
           Write-Debug -Debug:$true -Message "$output"
@@ -459,16 +479,10 @@ jobs:
           $subnetResourceIdsCsv = $($subnetResourceIds -join ",")
           Write-Debug -Debug:$true -Message "$subnetResourceIdsCsv"
 
-          $keyVaultName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "kvt" -Sequence $configAll.SeqNumKeyVault
-          $keyVaultResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_MAIN }}" -ResourceProviderName "Microsoft.KeyVault" -ResourceTypeName "vaults" -ResourceName $keyVaultName
-
           $privateEndpointName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "pep" -Sequence $configAll.SeqNumKeyVault
 
           $keyVaultNicName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "nic" -Sequence $configAll.SeqNumKeyVault
           $keyVaultNicResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_MAIN }}" -ResourceProviderName "Microsoft.Network" -ResourceTypeName "networkInterfaces" -ResourceName $keyVaultNicName
-
-          Set-EnvVar2 -VarName "OE_KEYVAULT_NAME" -VarValue "$keyVaultName"
-          Set-EnvVar2 -VarName "OE_KEYVAULT_RESOURCE_ID" -VarValue "$keyVaultResourceId"
 
           Write-Debug -Debug:$true -Message "Deploy Key Vault"
           $output = Deploy-KeyVault `
@@ -477,7 +491,7 @@ jobs:
             -Location $configMatrix.Location `
             -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
             -TemplateUri ($configAll.TemplateUriPrefix + "key-vault.json") `
-            -KeyVaultName "$keyVaultName" `
+            -KeyVaultName "${{ env.OE_KEYVAULT_NAME }}" `
             -EnabledForDeployment $false `
             -EnabledForDiskEncryption $false `
             -EnabledForTemplateDeployment $false `
@@ -498,7 +512,7 @@ jobs:
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
             -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
-            -ResourceId "$keyVaultResourceId" `
+            -ResourceId "${{ env.OE_KEYVAULT_RESOURCE_ID}}" `
             -DiagnosticsSettingName ("diag-" + "${{ env.OE_LAW_NAME }}") `
             -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
             -SendLogs $true `
@@ -512,11 +526,11 @@ jobs:
             -Location $configMatrix.Location `
             -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
             -TemplateUri ($configAll.TemplateUriPrefix + "net.private-endpoint.json") `
-            -ProtectedWorkloadResourceId "$keyVaultResourceId" `
+            -ProtectedWorkloadResourceId "${{ env.OE_KEYVAULT_RESOURCE_ID}}" `
             -ProtectedWorkloadSubResource "vault" `
             -PrivateEndpointName $privateEndpointName `
             -NetworkInterfaceName $keyVaultNicName `
-            -SubnetResourceId ${{ env.OE_PRIVATE_ENDPOINT_SUBNET_RESOURCE_ID }} `
+            -SubnetResourceId ${{ env.OE_SUBNET_RESOURCE_ID_PRIVATE_ENDPOINT }} `
             -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
           Write-Debug -Debug:$true -Message "$output"
@@ -563,9 +577,6 @@ jobs:
           $subnetResourceIdsCsv = $($subnetResourceIds -join ",")
           Write-Debug -Debug:$true -Message "$subnetResourceIdsCsv"
 
-          $storageAccountName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "sa" -Sequence $configAll.SeqNumStorage -IncludeDelimiter $false
-          $storageAccountResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_MAIN }}" -ResourceProviderName "Microsoft.Storage" -ResourceTypeName "storageAccounts" -ResourceName $storageAccountName
-
           # Blob
           $privateEndpointNameBlob = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "pep" -Sequence $configAll.SeqNumStorage -Suffix "blob"
           $storageAccountNicNameBlob = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "nic" -Sequence $configAll.SeqNumStorage -Suffix "blob"
@@ -586,16 +597,13 @@ jobs:
           $storageAccountNicNameTable = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "nic" -Sequence $configAll.SeqNumStorage -Suffix "table"
           $storageAccountNicResourceIdTable = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_MAIN }}" -ResourceProviderName "Microsoft.Network" -ResourceTypeName "networkInterfaces" -ResourceName $storageAccountNicNameTable
 
-          Set-EnvVar2 -VarName "OE_STORAGE_ACCOUNT_NAME" -VarValue "$storageAccountName"
-          Set-EnvVar2 -VarName "OE_STORAGE_ACCOUNT_RESOURCE_ID" -VarValue "$storageAccountResourceId"
-
           Write-Debug -Debug:$true -Message "Deploy Storage Account"
           $output = Deploy-StorageAccount `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -Location $configMatrix.Location `
             -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
             -TemplateUri ($configAll.TemplateUriPrefix + "storage.account.json") `
-            -StorageAccountName "$storageAccountName" `
+            -StorageAccountName "${{ env.OE_STORAGE_ACCOUNT_NAME }}" `
             -SkuName $configMatrix.Storage.SkuName `
             -AllowedSubnetResourceIdsCsv "$subnetResourceIdsCsv" `
             -AllowedIpAddressRangesCsv "" `
@@ -610,8 +618,8 @@ jobs:
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
             -TemplateUri ($configAll.TemplateUriPrefix + "storage.diagnostic-settings.json") `
-            -ResourceId "$storageAccountResourceId" `
-            -DiagnosticsSettingName ("diag-" + "$storageAccountName") `
+            -ResourceId "${{ env.OE_STORAGE_ACCOUNT_RESOURCE_ID }}" `
+            -DiagnosticsSettingName ("diag-" + "${{ env.OE_STORAGE_ACCOUNT_NAME }}") `
             -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}"
 
           Write-Debug -Debug:$true -Message "$output"
@@ -623,11 +631,11 @@ jobs:
             -Location $configMatrix.Location `
             -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
             -TemplateUri ($configAll.TemplateUriPrefix + "net.private-endpoint.json") `
-            -ProtectedWorkloadResourceId "$storageAccountResourceId" `
+            -ProtectedWorkloadResourceId "${{ env.OE_STORAGE_ACCOUNT_RESOURCE_ID }}" `
             -ProtectedWorkloadSubResource "blob" `
             -PrivateEndpointName $privateEndpointNameBlob `
             -NetworkInterfaceName $storageAccountNicNameBlob `
-            -SubnetResourceId ${{ env.OE_PRIVATE_ENDPOINT_SUBNET_RESOURCE_ID }} `
+            -SubnetResourceId ${{ env.OE_SUBNET_RESOURCE_ID_PRIVATE_ENDPOINT }} `
             -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
           Write-Debug -Debug:$true -Message "$output"
@@ -659,11 +667,11 @@ jobs:
             -Location $configMatrix.Location `
             -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
             -TemplateUri ($configAll.TemplateUriPrefix + "net.private-endpoint.json") `
-            -ProtectedWorkloadResourceId "$storageAccountResourceId" `
+            -ProtectedWorkloadResourceId "${{ env.OE_STORAGE_ACCOUNT_RESOURCE_ID }}" `
             -ProtectedWorkloadSubResource "file" `
             -PrivateEndpointName $privateEndpointNameFile `
             -NetworkInterfaceName $storageAccountNicNameFile `
-            -SubnetResourceId ${{ env.OE_PRIVATE_ENDPOINT_SUBNET_RESOURCE_ID }} `
+            -SubnetResourceId ${{ env.OE_SUBNET_RESOURCE_ID_PRIVATE_ENDPOINT }} `
             -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
           Write-Debug -Debug:$true -Message "$output"
@@ -695,11 +703,11 @@ jobs:
             -Location $configMatrix.Location `
             -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
             -TemplateUri ($configAll.TemplateUriPrefix + "net.private-endpoint.json") `
-            -ProtectedWorkloadResourceId "$storageAccountResourceId" `
+            -ProtectedWorkloadResourceId "${{ env.OE_STORAGE_ACCOUNT_RESOURCE_ID }}" `
             -ProtectedWorkloadSubResource "queue" `
             -PrivateEndpointName $privateEndpointNameQueue `
             -NetworkInterfaceName $storageAccountNicNameQueue `
-            -SubnetResourceId ${{ env.OE_PRIVATE_ENDPOINT_SUBNET_RESOURCE_ID }} `
+            -SubnetResourceId ${{ env.OE_SUBNET_RESOURCE_ID_PRIVATE_ENDPOINT }} `
             -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
           Write-Debug -Debug:$true -Message "$output"
@@ -731,11 +739,11 @@ jobs:
             -Location $configMatrix.Location `
             -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
             -TemplateUri ($configAll.TemplateUriPrefix + "net.private-endpoint.json") `
-            -ProtectedWorkloadResourceId "$storageAccountResourceId" `
+            -ProtectedWorkloadResourceId "${{ env.OE_STORAGE_ACCOUNT_RESOURCE_ID }}" `
             -ProtectedWorkloadSubResource "table" `
             -PrivateEndpointName $privateEndpointNameTable `
             -NetworkInterfaceName $storageAccountNicNameTable `
-            -SubnetResourceId ${{ env.OE_PRIVATE_ENDPOINT_SUBNET_RESOURCE_ID }} `
+            -SubnetResourceId ${{ env.OE_SUBNET_RESOURCE_ID_PRIVATE_ENDPOINT }} `
             -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
           Write-Debug -Debug:$true -Message "$output"
@@ -829,7 +837,7 @@ jobs:
             -ProtectedWorkloadSubResource "mariadbServer" `
             -PrivateEndpointName $privateEndpointName `
             -NetworkInterfaceName $dbServerNicName `
-            -SubnetResourceId ${{ env.OE_PRIVATE_ENDPOINT_SUBNET_RESOURCE_ID }} `
+            -SubnetResourceId ${{ env.OE_SUBNET_RESOURCE_ID_PRIVATE_ENDPOINT }} `
             -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
           Write-Debug -Debug:$true -Message "$output"
@@ -1050,7 +1058,7 @@ jobs:
             -ProtectedWorkloadSubResource "sites" `
             -PrivateEndpointName $appServicePrivateEndpointName `
             -NetworkInterfaceName $appServiceNicName `
-            -SubnetResourceId ${{ env.OE_PRIVATE_ENDPOINT_SUBNET_RESOURCE_ID }} `
+            -SubnetResourceId ${{ env.OE_SUBNET_RESOURCE_ID_PRIVATE_ENDPOINT }} `
             -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
           Write-Debug -Debug:$true -Message "$output"
