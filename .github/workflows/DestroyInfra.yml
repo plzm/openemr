@@ -44,13 +44,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Powershell error action
-        if: success()
-        run: |
-          $global:ErrorActionPreference = "Stop"
-          $ErrorActionPreference = "Stop"
-        shell: pwsh
-
       - name: Set Azure CLI extensions to auto-install
         if: success()
         run: |
@@ -67,6 +60,8 @@ jobs:
       - name: Set Config File Paths to Environment
         if: success()
         run: |
+          $ErrorActionPreference = "Stop"
+
           . ./scripts/infra/Utility.ps1
 
           Set-EnvVar2 -VarName "OE_CONFIG_FILE_ALL" -VarValue "./config/infra_all.json"
@@ -76,6 +71,8 @@ jobs:
       - name: Set Environment Variables
         if: success()
         run: |
+          $ErrorActionPreference = "Stop"
+
           . ./scripts/infra/Utility.ps1
 
           $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
@@ -90,6 +87,8 @@ jobs:
       - name: Delete Resource Groups
         if: success()
         run: |
+          $ErrorActionPreference = "Stop"
+
           . ./scripts/infra/Utility.ps1
 
           $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
