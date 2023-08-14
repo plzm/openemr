@@ -1,7 +1,7 @@
 [
   {
     "DeployUnit": "01",
-    "Location": "eastus2",
+    "Location": "eastus",
     "Network": {
       "NSGs": [
         {
@@ -89,18 +89,20 @@
       "AppServicePlanKind": "linux",
       "AppServicePlanZoneRedundant": true,
       "AppServicePlanAutoscaleSettingsMinimumInstances": 3,
-      "AppServicePlanAutoscaleSettingsMaximumInstances": 6,
+      "AppServicePlanAutoscaleSettingsMaximumInstances": 9,
       "AppServicePlanAutoscaleSettingsDefaultInstances": 3,
-      "AppServiceCertificateName": "oe-aa-cert",
-      "AppServiceCertificateSecretName": "oe-aa-cert",
+      "AppServiceKind": "app,linux,container",
       "AppServiceLinuxFxVersion": "DOCKER|openemr/openemr:latest",
       "AllowedIpAddressRanges": "",
-      "CustomFqdn": ""
+      "CustomFqdn": "",
+      "AppServiceCertificateName": "oe-aa-cert",
+      "AppServiceCertificateSecretName": "oe-alfaadin-cert",
+      "AppServiceCertificateFilePath": ""
     }
   },
   {
     "DeployUnit": "02",
-    "Location": "westus2",
+    "Location": "westus3",
     "Network": {
       "NSGs": [
         {
@@ -188,13 +190,15 @@
       "AppServicePlanKind": "linux",
       "AppServicePlanZoneRedundant": true,
       "AppServicePlanAutoscaleSettingsMinimumInstances": 3,
-      "AppServicePlanAutoscaleSettingsMaximumInstances": 6,
+      "AppServicePlanAutoscaleSettingsMaximumInstances": 9,
       "AppServicePlanAutoscaleSettingsDefaultInstances": 3,
-      "AppServiceCertificateName": "oe-aa-cert",
-      "AppServiceCertificateSecretName": "oe-aa-cert",
+      "AppServiceKind": "app,linux,container",
       "AppServiceLinuxFxVersion": "DOCKER|openemr/openemr:latest",
       "AllowedIpAddressRanges": "",
-      "CustomFqdn": ""
+      "CustomFqdn": "",
+      "AppServiceCertificateName": "oe-aa-cert",
+      "AppServiceCertificateSecretName": "oe-alfaadin-cert",
+      "AppServiceCertificateFilePath": ""
     }
   }
 ]

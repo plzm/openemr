@@ -1,4 +1,4 @@
-function Deploy-Database()
+function Deploy-MariaDbServer()
 {
   [CmdletBinding()]
   param
@@ -71,9 +71,9 @@ function Deploy-Database()
     $Tags = ""
   )
 
-  Write-Debug -Debug:$true -Message "Deploy Database"
+  Write-Debug -Debug:$true -Message "Deploy MariaDB Server $ServerName"
 
-  az deployment group create --verbose `
+  $output = az deployment group create --verbose `
     --subscription "$SubscriptionId" `
     -n "$ServerName" `
     -g "$ResourceGroupName" `
@@ -97,5 +97,8 @@ function Deploy-Database()
     storageAutogrow="$StorageAutogrow" `
     minimumTlsVersion="$MinimumTlsVersion" `
     publicNetworkAccess="$PublicNetworkAccess" `
-    tags=$Tags
+    tags=$Tags `
+    | ConvertFrom-Json
+
+  return $output
 }

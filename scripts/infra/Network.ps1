@@ -42,7 +42,7 @@ function Deploy-Network()
     Write-Debug -Debug:$true -Message ("NSG Resource ID string: " + $nsgResourceId)
     Write-Debug -Debug:$true -Message ("NSG object Resource ID: " + $nsg.ResourceId)
 
-    Deploy-NSG `
+    $output = Deploy-NSG `
       -SubscriptionID "$SubscriptionId" `
       -Location $configMatrix.Location `
       -ResourceGroupName $ResourceGroupName `
@@ -50,9 +50,11 @@ function Deploy-Network()
       -NSGName $nsgName `
       -Tags $Tags
 
+    Write-Debug -Debug:$true -Message "$output"
+
     if ($LogAnalyticsWorkspaceName -and $LogAnalyticsWorkspaceResourceId)
     {
-      Deploy-DiagnosticsSetting `
+      $output = Deploy-DiagnosticsSetting `
         -SubscriptionID "$SubscriptionId" `
         -ResourceGroupName $ResourceGroupName `
         -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
@@ -61,26 +63,30 @@ function Deploy-Network()
         -LogAnalyticsWorkspaceResourceId $LogAnalyticsWorkspaceResourceId `
         -SendLogs $true `
         -SendMetrics $false
+      
+      Write-Debug -Debug:$true -Message "$output"
     }
 
     foreach ($nsgRule in $nsg.Rules)
     {
-      Deploy-NSGRule `
-      -SubscriptionID "$SubscriptionId" `
-      -Location $configMatrix.Location `
-      -ResourceGroupName $ResourceGroupName `
-      -TemplateUri ($configAll.TemplateUriPrefix + "net.nsg.rule.json") `
-      -NSGName $nsgName `
-      -NSGRuleName $nsgRule.Name `
-      -Description $nsgRule.Description `
-      -Priority $nsgRule.Priority `
-      -Direction $nsgRule.Direction `
-      -Access $nsgRule.Access `
-      -Protocol $nsgRule.Protocol `
-      -SourceAddressPrefix $nsgRule.SourceAddressPrefix `
-      -SourcePortRange $nsgRule.SourcePortRange `
-      -DestinationAddressPrefix $nsgRule.DestinationAddressPrefix `
-      -DestinationPortRange $nsgRule.DestinationPortRange
+      $output = Deploy-NSGRule `
+        -SubscriptionID "$SubscriptionId" `
+        -Location $configMatrix.Location `
+        -ResourceGroupName $ResourceGroupName `
+        -TemplateUri ($configAll.TemplateUriPrefix + "net.nsg.rule.json") `
+        -NSGName $nsgName `
+        -NSGRuleName $nsgRule.Name `
+        -Description $nsgRule.Description `
+        -Priority $nsgRule.Priority `
+        -Direction $nsgRule.Direction `
+        -Access $nsgRule.Access `
+        -Protocol $nsgRule.Protocol `
+        -SourceAddressPrefix $nsgRule.SourceAddressPrefix `
+        -SourcePortRange $nsgRule.SourcePortRange `
+        -DestinationAddressPrefix $nsgRule.DestinationAddressPrefix `
+        -DestinationPortRange $nsgRule.DestinationPortRange
+
+      Write-Debug -Debug:$true -Message "$output"
     }
 
     $nsgIndex++
@@ -94,7 +100,7 @@ function Deploy-Network()
     $vnetName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "vnt" -Sequence ($vnetIndex.ToString().PadLeft(2, "0"))
     $vnetResourceId = "/subscriptions/" + $SubscriptionId + "/resourceGroups/" + $ResourceGroupName + "/providers/Microsoft.Network/virtualNetworks/" + $vnetName
 
-    Deploy-VNet `
+    $output = Deploy-VNet `
       -SubscriptionID "$SubscriptionId" `
       -Location $configMatrix.Location `
       -ResourceGroupName $ResourceGroupName `
@@ -104,9 +110,11 @@ function Deploy-Network()
       -EnableDdosProtection $vnet.EnableDdosProtection `
       -Tags $Tags
 
+    Write-Debug -Debug:$true -Message "$output"
+
     if ($LogAnalyticsWorkspaceName -and $LogAnalyticsWorkspaceResourceId)
     {
-      Deploy-DiagnosticsSetting `
+      $output = Deploy-DiagnosticsSetting `
         -SubscriptionID "$SubscriptionId" `
         -ResourceGroupName $ResourceGroupName `
         -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
@@ -115,6 +123,8 @@ function Deploy-Network()
         -LogAnalyticsWorkspaceResourceId $LogAnalyticsWorkspaceResourceId `
         -SendLogs $true `
         -SendMetrics $true
+
+      Write-Debug -Debug:$true -Message "$output"
     }
 
     foreach ($subnet in $vnet.Subnets)
@@ -124,7 +134,7 @@ function Deploy-Network()
       $nsg = $configMatrix.Network.NSGs | Where-Object {$_.NsgId -eq $subnet.NsgId}
       Write-Debug -Debug:$true -Message ("NSG Resource ID: " + $nsg.ResourceId)
 
-      Deploy-Subnet `
+      $output = Deploy-Subnet `
         -SubscriptionID "$SubscriptionId" `
         -ResourceGroupName $ResourceGroupName `
         -TemplateUri ($configAll.TemplateUriPrefix + "net.vnet.subnet.json") `
@@ -135,6 +145,8 @@ function Deploy-Network()
         -RouteTableResourceId "" `
         -DelegationService $subnet.Delegation `
         -ServiceEndpoints $subnet.ServiceEndpoints
+
+      Write-Debug -Debug:$true -Message "$output"
     }
 
     $vnetIndex++
@@ -165,9 +177,9 @@ function Deploy-NSG() {
     $Tags = ""
   )
 
-  Write-Debug -Debug:$true -Message "Deploy NSG"
+  Write-Debug -Debug:$true -Message "Deploy NSG $NSGName"
 
-  az deployment group create --verbose `
+  $output = az deployment group create --verbose `
     --subscription "$SubscriptionId" `
     -n "$NSGName" `
     -g "$ResourceGroupName" `
@@ -175,7 +187,10 @@ function Deploy-NSG() {
     --parameters `
     location="$Location" `
     nsgName="$NSGName" `
-    tags=$Tags
+    tags=$Tags `
+    | ConvertFrom-Json
+  
+  return $output
 }
 
 function Deploy-NSGRule() {
@@ -229,9 +244,9 @@ function Deploy-NSGRule() {
     $DestinationPortRange
   )
 
-  Write-Debug -Debug:$true -Message "Deploy NSG Rule"
+  Write-Debug -Debug:$true -Message "Deploy NSG Rule $NSGRuleName"
 
-  az deployment group create --verbose `
+  $output = az deployment group create --verbose `
     --subscription "$SubscriptionId" `
     -n "$NSGRuleName" `
     -g "$ResourceGroupName" `
@@ -247,7 +262,10 @@ function Deploy-NSGRule() {
     sourceAddressPrefix="$SourceAddressPrefix" `
     sourcePortRange="$SourcePortRange" `
     destinationAddressPrefix="$DestinationAddressPrefix" `
-    destinationPortRange="$DestinationPortRange"
+    destinationPortRange="$DestinationPortRange" `
+    | ConvertFrom-Json
+  
+  return $output
 }
 
 function Deploy-VNet() {
@@ -283,9 +301,9 @@ function Deploy-VNet() {
     $Tags = ""
   )
 
-  Write-Debug -Debug:$true -Message "Deploy VNet"
+  Write-Debug -Debug:$true -Message "Deploy VNet $VNetName"
 
-  az deployment group create --verbose `
+  $output = az deployment group create --verbose `
     --subscription "$SubscriptionId" `
     -n "$VNetName" `
     -g "$ResourceGroupName" `
@@ -296,7 +314,10 @@ function Deploy-VNet() {
     vnetPrefix="$VNetPrefix" `
     enableDdosProtection="$EnableDdosProtection" `
     enableVmProtection="$EnableVmProtection" `
-    tags=$Tags
+    tags=$Tags `
+    | ConvertFrom-Json
+
+  return $output
 }
 
 function Deploy-Subnet() {
@@ -335,9 +356,9 @@ function Deploy-Subnet() {
     $ServiceEndpoints = ""
   )
 
-  Write-Debug -Debug:$true -Message "Deploy Subnet"
+  Write-Debug -Debug:$true -Message "Deploy Subnet $SubnetName"
 
-  az deployment group create --verbose `
+  $output = az deployment group create --verbose `
     --subscription "$SubscriptionId" `
     -n "$SubnetName" `
     -g "$ResourceGroupName" `
@@ -349,7 +370,10 @@ function Deploy-Subnet() {
     nsgResourceId="$NsgResourceId" `
     routeTableResourceId="$RouteTableResourceId" `
     delegationService="$DelegationService" `
-    serviceEndpoints="$ServiceEndpoints"
+    serviceEndpoints="$ServiceEndpoints" `
+    | ConvertFrom-Json
+
+  return $output
 }
 
 # -------------------------------
@@ -390,9 +414,9 @@ function Deploy-PrivateEndpointAndNic() {
     $Tags = ""
   )
 
-  Write-Debug -Debug:$true -Message "Deploy Private Endpoint and NIC"
+  Write-Debug -Debug:$true -Message "Deploy Private Endpoint and NIC $PrivateEndpointName"
 
-  az deployment group create -n "$PrivateEndpointName" --verbose `
+  $output = az deployment group create -n "$PrivateEndpointName" --verbose `
     --subscription "$SubscriptionId" `
     -n "$PrivateEndpointName" `
     -g "$ResourceGroupName" `
@@ -404,7 +428,10 @@ function Deploy-PrivateEndpointAndNic() {
     privateEndpointName="$PrivateEndpointName" `
     networkInterfaceName="$NetworkInterfaceName" `
     subnetResourceId="$SubnetResourceId" `
-    tags=$Tags
+    tags=$Tags `
+    | ConvertFrom-Json
+
+  return $output
 }
 
 function Watch-NicUntilProvisionSuccess()
@@ -423,7 +450,7 @@ function Watch-NicUntilProvisionSuccess()
     $NetworkInterfaceName
   )
 
-  Write-Debug -Debug:$true -Message "Watch NIC until ProvisioningStage=Succeeded"
+  Write-Debug -Debug:$true -Message "Watch NIC $NetworkInterfaceName until ProvisioningStage=Succeeded"
 
   $limit = (Get-Date).AddMinutes(55)
 
@@ -473,36 +500,114 @@ function Deploy-PrivateDnsZones()
   {
     $zoneName = $privateDnsZone.Name
 
-    az deployment group create --verbose `
-      --subscription "$SubscriptionId" `
-      -n "$zoneName" `
-      -g "$ResourceGroupName" `
-      --template-uri ($ConfigAll.TemplateUriPrefix + "net.private-dns-zone.json") `
-      --parameters `
-      privateDnsZoneName="$zoneName" `
-      tags=$Tags
+    $output = Deploy-PrivateDnsZone `
+      -SubscriptionId $SubscriptionId `
+      -ResourceGroupName $ResourceGroupName `
+      -TemplateUri ($ConfigAll.TemplateUriPrefix + "net.private-dns-zone.json") `
+      -DnsZoneName $zoneName `
+      -Tags $Tags
 
-      $vnetIndex = 1
+    Write-Debug -Debug:$true -Message "$output"
 
-      foreach ($vnet in $ConfigMatrix.Network.VNets)
-      {
-        $vnetName = Get-ResourceName -ConfigAll $ConfigAll -ConfigMatrix $ConfigMatrix -Prefix "vnt" -Sequence ($vnetIndex.ToString().PadLeft(2, "0"))
-        $vnetResourceId = "/subscriptions/" + $SubscriptionId + "/resourceGroups/" + $ResourceGroupName + "/providers/Microsoft.Network/virtualNetworks/" + $vnetName
+    $vnetIndex = 1
 
-        az deployment group create --verbose `
-          --subscription "$SubscriptionId" `
-          -n "$zoneName" `
-          -g "$ResourceGroupName" `
-          --template-uri ($ConfigAll.TemplateUriPrefix + "net.private-dns-zone.vnet-link.json") `
-          --parameters `
-          privateDnsZoneName="$zoneName" `
-          vnetResourceId="$vnetResourceId" `
-          enableAutoRegistration=$false `
-          tags=$Tags
-  
-        $vnetIndex++
-      }
+    foreach ($vnet in $ConfigMatrix.Network.VNets)
+    {
+      $vnetName = Get-ResourceName -ConfigAll $ConfigAll -ConfigMatrix $ConfigMatrix -Prefix "vnt" -Sequence ($vnetIndex.ToString().PadLeft(2, "0"))
+      $vnetResourceId = Get-ResourceId -SubscriptionId $SubscriptionId -ResourceGroupName $ResourceGroupName -ResourceProviderName "Microsoft.Network" -ResourceTypeName "virtualNetworks" -ResourceName $vnetName
+
+      $output = Deploy-PrivateDnsZoneVNetLink `
+        -SubscriptionId $SubscriptionId `
+        -ResourceGroupName $ResourceGroupName `
+        -TemplateUri ($ConfigAll.TemplateUriPrefix + "net.private-dns-zone.vnet-link.json") `
+        -DnsZoneName $zoneName `
+        -VNetResourceId $vnetResourceId `
+        -Tags $Tags
+
+      Write-Debug -Debug:$true -Message "$output"
+
+      $vnetIndex++
+    }
   }
+}
+
+function Deploy-PrivateDnsZone()
+{
+  [CmdletBinding()]
+  param
+  (
+    [Parameter(Mandatory = $true)]
+    [string]
+    $SubscriptionId,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $ResourceGroupName,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $TemplateUri,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $DnsZoneName,
+    [Parameter(Mandatory = $false)]
+    [string]
+    $Tags = ""
+  )
+
+  Write-Debug -Debug:$true -Message "Deploy Private DNS Zone $DnsZoneName"
+
+  $output = az deployment group create --verbose `
+    --subscription "$SubscriptionId" `
+    -n "$DnsZoneName" `
+    -g "$ResourceGroupName" `
+    --template-uri "$TemplateUri" `
+    --parameters `
+    privateDnsZoneName="$DnsZoneName" `
+    tags=$Tags `
+    | ConvertFrom-Json
+
+  return $output
+}
+
+function Deploy-PrivateDnsZoneVNetLink()
+{
+  [CmdletBinding()]
+  param
+  (
+    [Parameter(Mandatory = $true)]
+    [string]
+    $SubscriptionId,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $ResourceGroupName,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $TemplateUri,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $DnsZoneName,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $VNetResourceId,
+    [Parameter(Mandatory = $false)]
+    [string]
+    $Tags = ""
+  )
+
+  Write-Debug -Debug:$true -Message "Deploy Private DNS Zone VNet Link $DnsZoneName to $VNetResourceId"
+
+  $output = az deployment group create --verbose `
+    --subscription "$SubscriptionId" `
+    -n "$DnsZoneName" `
+    -g "$ResourceGroupName" `
+    --template-uri "$TemplateUri" `
+    --parameters `
+    privateDnsZoneName="$DnsZoneName" `
+    vnetResourceId="$VNetResourceId" `
+    enableAutoRegistration=$false `
+    tags=$Tags `
+    | ConvertFrom-Json
+
+  return $output
 }
 
 function Get-SubnetResourceIds()

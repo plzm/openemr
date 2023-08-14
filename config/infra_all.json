@@ -22,6 +22,7 @@
   "SeqNumKeyVault": "30",
   "SeqNumStorage": "40",
   "SeqNumDatabase": "50",
-  "SeqNumWorkload": "60",
+  "SeqNumWorkloadAppServicePlan": "60",
+  "SeqNumWorkloadWebApp": "61",
   "TemplateUriPrefix": "https://raw.githubusercontent.com/plzm/azure-deploy/main/template/"
 }
