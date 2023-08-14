@@ -102,7 +102,7 @@
   },
   {
     "DeployUnit": "02",
-    "Location": "centralus",
+    "Location": "westus3",
     "Network": {
       "NSGs": [
         {
