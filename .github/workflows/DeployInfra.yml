@@ -251,38 +251,38 @@ jobs:
       #    Write-Debug -Debug:$true -Message "$output"
       #  shell: pwsh
 
-      #- name: Deploy User Assigned Identity
-      #  if: success()
-      #  run: |
-      #    $ErrorActionPreference = "Stop"
+      - name: Deploy User Assigned Identity
+        if: success()
+        run: |
+          $ErrorActionPreference = "Stop"
 
-      #    . ./scripts/infra/Utility.ps1
-      #    . ./scripts/infra/Security.ps1
+          . ./scripts/infra/Utility.ps1
+          . ./scripts/infra/Security.ps1
 
-      #    $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-      #    $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+          $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
-      #    Write-Debug -Debug:$true -Message "Deploy UAI ${{ env.OE_UAI_NAME }}"
-      #    $output = Deploy-UAI `
-      #      -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #      -Location $configMatrix.Location `
-      #      -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
-      #      -TemplateUri ($configAll.TemplateUriPrefix + "identity.user-assigned-identity.json") `
-      #      -TenantId "${{ secrets.OE_AZURE_TENANT_ID }}" `
-      #      -UAIName "${{ env.OE_UAI_NAME }}" `
-      #      -Tags ${{ env.OE_TAGS_FOR_ARM }}
+          Write-Debug -Debug:$true -Message "Deploy UAI ${{ env.OE_UAI_NAME }}"
+          $output = Deploy-UAI `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -Location $configMatrix.Location `
+            -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "identity.user-assigned-identity.json") `
+            -TenantId "${{ secrets.OE_AZURE_TENANT_ID }}" `
+            -UAIName "${{ env.OE_UAI_NAME }}" `
+            -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
-      #    Write-Debug -Debug:$true -Message "$output"
+          Write-Debug -Debug:$true -Message "$output"
 
-      #    Write-Debug -Debug:$true -Message "Sleep to allow UAI deploy to complete"
-      #    Start-Sleep -s 60
+          Write-Debug -Debug:$true -Message "Sleep to allow UAI deploy to complete"
+          Start-Sleep -s 60
 
-      #    Write-Debug -Debug:$true -Message "Get UAI ${{ env.OE_UAI_NAME }}"
-      #    $uai = "$(az identity show -g ${{ env.OE_RG_NAME_MAIN }} -n ${{ env.OE_UAI_NAME }})" | ConvertFrom-Json
+          Write-Debug -Debug:$true -Message "Get UAI ${{ env.OE_UAI_NAME }}"
+          $uai = "$(az identity show -g ${{ env.OE_RG_NAME_MAIN }} -n ${{ env.OE_UAI_NAME }})" | ConvertFrom-Json
 
-      #    Set-EnvVar2 -VarName "OE_UAI_CLIENT_ID" -VarValue $uai.clientId
-      #    Set-EnvVar2 -VarName "OE_UAI_PRINCIPAL_ID" -VarValue $uai.principalId
-      #  shell: pwsh
+          Set-EnvVar2 -VarName "OE_UAI_CLIENT_ID" -VarValue $uai.clientId
+          Set-EnvVar2 -VarName "OE_UAI_PRINCIPAL_ID" -VarValue $uai.principalId
+        shell: pwsh
 
       #- name: Deploy Role Assignments
       #  if: success()
