@@ -59,15 +59,15 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: true
 
-      #- name: Register RPs
-      #  if: success()
-      #  run: |
-      #    $ErrorActionPreference = "Stop"
+      - name: Register RPs
+        if: success()
+        run: |
+          $ErrorActionPreference = "Stop"
 
-      #    $output = az provider register --namespace "Microsoft.ChangeAnalysis" --accept-terms --consent-to-permissions --wait | ConvertFrom-Json
+          $output = az provider register --namespace "Microsoft.ChangeAnalysis" --accept-terms --consent-to-permissions --wait | ConvertFrom-Json
 
-      #    Write-Debug -Debug:$true -Message "$output"
-      #  shell: pwsh
+          Write-Debug -Debug:$true -Message "$output"
+        shell: pwsh
 
       - name: Set Config File Paths to Environment
         if: success()
@@ -164,92 +164,92 @@ jobs:
           # OE_STORAGE_ACCOUNT_RESOURCE_ID
         shell: pwsh
 
-      #- name: Create Resource Groups
-      #  if: success()
-      #  run: |
-      #    $ErrorActionPreference = "Stop"
+      - name: Create Resource Groups
+        if: success()
+        run: |
+          $ErrorActionPreference = "Stop"
 
-      #    . ./scripts/infra/Utility.ps1
+          . ./scripts/infra/Utility.ps1
 
-      #    $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-      #    $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+          $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
-      #    Write-Debug -Debug:$true -Message "Create RG $rgNameMain"
-      #    $output = az group create `
-      #      --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #      -l $configMatrix.Location `
-      #      -n "${{ env.OE_RG_NAME_MAIN }}" `
-      #      --tags ${{ env.OE_TAGS_FOR_CLI }} `
-      #      | ConvertFrom-Json
+          Write-Debug -Debug:$true -Message "Create RG $rgNameMain"
+          $output = az group create `
+            --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -l $configMatrix.Location `
+            -n "${{ env.OE_RG_NAME_MAIN }}" `
+            --tags ${{ env.OE_TAGS_FOR_CLI }} `
+            | ConvertFrom-Json
 
-      #    Write-Debug -Debug:$true -Message "$output"
+          Write-Debug -Debug:$true -Message "$output"
 
-      #    Write-Debug -Debug:$true -Message "Create RG $rgNameNetwork"
-      #    $output = az group create `
-      #      --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #      -l $configMatrix.Location `
-      #      -n "${{ env.OE_RG_NAME_NETWORK }}" `
-      #      --tags ${{ env.OE_TAGS_FOR_CLI }} `
-      #      | ConvertFrom-Json
+          Write-Debug -Debug:$true -Message "Create RG $rgNameNetwork"
+          $output = az group create `
+            --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -l $configMatrix.Location `
+            -n "${{ env.OE_RG_NAME_NETWORK }}" `
+            --tags ${{ env.OE_TAGS_FOR_CLI }} `
+            | ConvertFrom-Json
 
-      #    Write-Debug -Debug:$true -Message "$output"
+          Write-Debug -Debug:$true -Message "$output"
 
-      #    Write-Debug -Debug:$true -Message "Create RG $rgNameObservability"
-      #    $output = az group create `
-      #      --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #      -l $configMatrix.Location `
-      #      -n "${{ env.OE_RG_NAME_OBSERVABILITY }}" `
-      #      --tags ${{ env.OE_TAGS_FOR_CLI }} `
-      #      | ConvertFrom-Json
+          Write-Debug -Debug:$true -Message "Create RG $rgNameObservability"
+          $output = az group create `
+            --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -l $configMatrix.Location `
+            -n "${{ env.OE_RG_NAME_OBSERVABILITY }}" `
+            --tags ${{ env.OE_TAGS_FOR_CLI }} `
+            | ConvertFrom-Json
 
-      #    Write-Debug -Debug:$true -Message "$output"
+          Write-Debug -Debug:$true -Message "$output"
 
-      #    Write-Debug -Debug:$true -Message "Create RG $rgNameWorkload"
-      #    $output = az group create `
-      #      --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #      -l $configMatrix.Location `
-      #      -n "${{ env.OE_RG_NAME_WORKLOAD }}" `
-      #      --tags ${{ env.OE_TAGS_FOR_CLI }} `
-      #      | ConvertFrom-Json
+          Write-Debug -Debug:$true -Message "Create RG $rgNameWorkload"
+          $output = az group create `
+            --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -l $configMatrix.Location `
+            -n "${{ env.OE_RG_NAME_WORKLOAD }}" `
+            --tags ${{ env.OE_TAGS_FOR_CLI }} `
+            | ConvertFrom-Json
 
-      #    Write-Debug -Debug:$true -Message "$output"
-      #  shell: pwsh
+          Write-Debug -Debug:$true -Message "$output"
+        shell: pwsh
 
-      #- name: Deploy Observability
-      #  if: success()
-      #  run: |
-      #    $ErrorActionPreference = "Stop"
+      - name: Deploy Observability
+        if: success()
+        run: |
+          $ErrorActionPreference = "Stop"
 
-      #    . ./scripts/infra/Utility.ps1
-      #    . ./scripts/infra/Observability.ps1
+          . ./scripts/infra/Utility.ps1
+          . ./scripts/infra/Observability.ps1
 
-      #    $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-      #    $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+          $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
-      #    Write-Debug -Debug:$true -Message "Deploy LAW ${{ env.OE_LAW_NAME }}"
-      #    $output = Deploy-LogAnalyticsWorkspace `
-      #      -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #      -Location $configMatrix.Location `
-      #      -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
-      #      -TemplateUri ($configAll.TemplateUriPrefix + "monitor.log-analytics-workspace.json") `
-      #      -WorkspaceName "${{ env.OE_LAW_NAME }}" `
-      #      -Tags ${{ env.OE_TAGS_FOR_ARM }}
+          Write-Debug -Debug:$true -Message "Deploy LAW ${{ env.OE_LAW_NAME }}"
+          $output = Deploy-LogAnalyticsWorkspace `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -Location $configMatrix.Location `
+            -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "monitor.log-analytics-workspace.json") `
+            -WorkspaceName "${{ env.OE_LAW_NAME }}" `
+            -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
-      #    Write-Debug -Debug:$true -Message "$output"
+          Write-Debug -Debug:$true -Message "$output"
 
-      #    Write-Debug -Debug:$true -Message "Deploy Diagnostics"
-      #    $output = Deploy-DiagnosticsSetting `
-      #      -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #      -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
-      #      -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
-      #      -ResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
-      #      -DiagnosticsSettingName ("diag-" + "${{ env.OE_LAW_NAME }}") `
-      #      -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
-      #      -SendLogs $true `
-      #      -SendMetrics $true
+          Write-Debug -Debug:$true -Message "Deploy Diagnostics"
+          $output = Deploy-DiagnosticsSetting `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
+            -ResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+            -DiagnosticsSettingName ("diag-" + "${{ env.OE_LAW_NAME }}") `
+            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+            -SendLogs $true `
+            -SendMetrics $true
 
-      #    Write-Debug -Debug:$true -Message "$output"
-      #  shell: pwsh
+          Write-Debug -Debug:$true -Message "$output"
+        shell: pwsh
 
       - name: Deploy User Assigned Identity
         if: success()
