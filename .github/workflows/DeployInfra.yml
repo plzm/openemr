@@ -905,7 +905,7 @@ jobs:
       #    $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
       #    $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
-      #    $appServicePlanName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "asp" -Sequence $configAll.SeqNumWorkload
+      #    $appServicePlanName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "asp" -Sequence $configAll.SeqNumWorkloadAppServicePlan
       #    $appServicePlanResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_WORKLOAD }}" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "serverFarms" -ResourceName $appServicePlanName
 
       #    $output = Deploy-AppServicePlan `
@@ -950,10 +950,10 @@ jobs:
       #    $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
       #    $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
-      #    $appServicePlanName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "asp" -Sequence $configAll.SeqNumWorkload
+      #    $appServicePlanName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "asp" -Sequence $configAll.SeqNumWorkloadAppServicePlan
       #    $appServicePlanResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_WORKLOAD }}" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "serverFarms" -ResourceName $appServicePlanName
 
-      #    $appServicePlanAutoScaleSettingsName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "scl" -Sequence $configAll.SeqNumWorkload
+      #    $appServicePlanAutoScaleSettingsName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "scl" -Sequence $configAll.SeqNumWorkloadAppServicePlan
       #    $appServicePlanAutoScaleSettingsResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_WORKLOAD }}" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "serverFarms" -ResourceSubTypeName "autoscaleSettings" -ResourceName $appServicePlanName
 
       #    $output = Deploy-AppServicePlanAutoscaleSettings `
@@ -983,7 +983,7 @@ jobs:
       #    Write-Debug -Debug:$true -Message "$output"
       #  shell: pwsh
 
-      - name: Deploy Workload
+      - name: Deploy Workload - App Insights
         if: success()
         run: |
           $ErrorActionPreference = "Stop"
@@ -996,8 +996,53 @@ jobs:
           $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
           $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
-          $appServicePlanName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "asp" -Sequence $configAll.SeqNumWorkload
+          $appInsightsName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "ai" -Sequence $configAll.SeqNumWorkloadWebApp
+          $appInsightsResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_WORKLOAD }}" -ResourceProviderName "Microsoft.Insights" -ResourceTypeName "components" -ResourceName $appInsightsName
+
+          $output = Deploy-AppInsights `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -Location $configMatrix.Location `
+            -ResourceGroupName ${{ env.OE_RG_NAME_WORKLOAD }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "monitor.app-insights.json") `
+            -AppInsightsName $appInsightsName `
+            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+            -Tags ${{ env.OE_TAGS_FOR_ARM }}
+
+          Write-Debug -Debug:$true -Message "$output"
+
+          $output = Deploy-DiagnosticsSetting `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_WORKLOAD }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
+            -ResourceId "$appInsightsResourceId" `
+            -DiagnosticsSettingName ("diag-" + "${{ env.OE_LAW_NAME }}") `
+            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+            -SendLogs $true `
+            -SendMetrics $true
+
+          Write-Debug -Debug:$true -Message "$output"
+        shell: pwsh
+
+
+      - name: Deploy Workload - App
+        if: success()
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          . ./scripts/infra/Utility.ps1
+          . ./scripts/infra/Network.ps1
+          . ./scripts/infra/Observability.ps1
+          . ./scripts/infra/Workload.ps1
+
+          $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+
+          $appServicePlanName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "asp" -Sequence $configAll.SeqNumWorkloadAppServicePlan
           $appServicePlanResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_WORKLOAD }}" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "serverFarms" -ResourceName $appServicePlanName
+
+          $appInsightsName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "ai" -Sequence $configAll.SeqNumWorkloadWebApp
+          $appInsightsResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_WORKLOAD }}" -ResourceProviderName "Microsoft.Insights" -ResourceTypeName "components" -ResourceName $appInsightsName
+
 
           # ##################################################
           # App Service Certificate
@@ -1030,46 +1075,19 @@ jobs:
           # ##################################################
 
           # ##################################################
-          # App Insights
-          $appInsightsName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "ai" -Sequence $configAll.SeqNumWorkload
-          $appInsightsResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_WORKLOAD }}" -ResourceProviderName "Microsoft.Insights" -ResourceTypeName "components" -ResourceName $appInsightsName
-
-          $output = Deploy-AppInsights `
-            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -Location $configMatrix.Location `
-            -ResourceGroupName ${{ env.OE_RG_NAME_WORKLOAD }} `
-            -TemplateUri ($configAll.TemplateUriPrefix + "monitor.app-insights.json") `
-            -AppInsightsName $appInsightsName `
-            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
-            -Tags ${{ env.OE_TAGS_FOR_ARM }}
-
-          Write-Debug -Debug:$true -Message "$output"
-
-          $output = Deploy-DiagnosticsSetting `
-            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -ResourceGroupName ${{ env.OE_RG_NAME_WORKLOAD }} `
-            -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
-            -ResourceId "$appInsightsResourceId" `
-            -DiagnosticsSettingName ("diag-" + "${{ env.OE_LAW_NAME }}") `
-            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
-            -SendLogs $true `
-            -SendMetrics $true
-
-          Write-Debug -Debug:$true -Message "$output"
-          # ##################################################
-
-          # ##################################################
           # App Service
-          $appServiceName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "app" -Sequence $configAll.SeqNumWorkload
+          $appServiceName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "app" -Sequence $configAll.SeqNumWorkloadWebApp
           $appServiceResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_WORKLOAD }}" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "sites" -ResourceName $appServiceName
 
-          $appServicePrivateEndpointName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "pep" -Sequence $configAll.SeqNumWorkload
+          $appServicePrivateEndpointName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "pep" -Sequence $configAll.SeqNumWorkloadWebApp
 
-          $appServiceNicName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "nic" -Sequence $configAll.SeqNumWorkload
+          $appServiceNicName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "nic" -Sequence $configAll.SeqNumWorkloadWebApp
           $appServiceNicResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_WORKLOAD }}" -ResourceProviderName "Microsoft.Network" -ResourceTypeName "networkInterfaces" -ResourceName $appServiceNicName
 
           $subnetResourceIds = Get-SubnetResourceIds -ConfigAll $configAll -ConfigMatrix $configMatrix -SubscriptionId ${{ secrets.OE_AZURE_SUBSCRIPTION_ID }} -ResourceGroupName ${{ env.OE_RG_NAME_NETWORK }}
           $subnetResourceId = $subnetResourceIds[1]
+
+          $appServiceLinuxFxVersion = $configMatrix.Workload.AppServiceLinuxFxVersion
 
           $output = Deploy-AppService `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
@@ -1085,7 +1103,7 @@ jobs:
             -AppInsightsResourceId $appInsightsResourceId `
             -StorageAccountResourceId "${{ env.OE_STORAGE_ACCOUNT_RESOURCE_ID }}" `
             -StorageAccountName "${{ env.OE_STORAGE_ACCOUNT_NAME }}" `
-            -LinuxFxVersion "$configMatrix.Workload.AppServiceLinuxFxVersion" `
+            -LinuxFxVersion "$appServiceLinuxFxVersion" `
             -PublicNetworkAccess "Enabled" `
             -SubnetResourceId "$subnetResourceId" `
             -RouteAllTrafficThroughVNet $true `
