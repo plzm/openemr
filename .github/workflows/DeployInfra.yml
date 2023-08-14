@@ -892,96 +892,96 @@ jobs:
       #    Write-Debug -Debug:$true -Message "$output"
       #  shell: pwsh
 
-      #- name: Deploy Workload - App Service Plan
-      #  if: success()
-      #  run: |
-      #    $ErrorActionPreference = "Stop"
+      - name: Deploy Workload - App Service Plan
+        if: success()
+        run: |
+          $ErrorActionPreference = "Stop"
 
-      #    . ./scripts/infra/Utility.ps1
-      #    . ./scripts/infra/Network.ps1
-      #    . ./scripts/infra/Observability.ps1
-      #    . ./scripts/infra/Workload.ps1
+          . ./scripts/infra/Utility.ps1
+          . ./scripts/infra/Network.ps1
+          . ./scripts/infra/Observability.ps1
+          . ./scripts/infra/Workload.ps1
 
-      #    $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-      #    $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+          $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
-      #    $appServicePlanName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "asp" -Sequence $configAll.SeqNumWorkloadAppServicePlan
-      #    $appServicePlanResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_WORKLOAD }}" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "serverFarms" -ResourceName $appServicePlanName
+          $appServicePlanName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "asp" -Sequence $configAll.SeqNumWorkloadAppServicePlan
+          $appServicePlanResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_WORKLOAD }}" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "serverFarms" -ResourceName $appServicePlanName
 
-      #    $output = Deploy-AppServicePlan `
-      #      -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #      -Location $configMatrix.Location `
-      #      -ResourceGroupName ${{ env.OE_RG_NAME_WORKLOAD }} `
-      #      -TemplateUri ($configAll.TemplateUriPrefix + "app-service-plan.json") `
-      #      -AppServicePlanName $appServicePlanName `
-      #      -SkuName $configMatrix.Workload.AppServicePlanSkuName `
-      #      -SkuTier $configMatrix.Workload.AppServicePlanSkuTier `
-      #      -SkuFamily $configMatrix.Workload.AppServicePlanSkuFamily `
-      #      -Capacity $configMatrix.Workload.AppServicePlanCapacity `
-      #      -Kind $configMatrix.Workload.AppServicePlanKind `
-      #      -ZoneRedundant $configMatrix.Workload.AppServicePlanZoneRedundant `
-      #      -Tags ${{ env.OE_TAGS_FOR_ARM }}
+          $output = Deploy-AppServicePlan `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -Location $configMatrix.Location `
+            -ResourceGroupName ${{ env.OE_RG_NAME_WORKLOAD }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "app-service-plan.json") `
+            -AppServicePlanName $appServicePlanName `
+            -SkuName $configMatrix.Workload.AppServicePlanSkuName `
+            -SkuTier $configMatrix.Workload.AppServicePlanSkuTier `
+            -SkuFamily $configMatrix.Workload.AppServicePlanSkuFamily `
+            -Capacity $configMatrix.Workload.AppServicePlanCapacity `
+            -Kind $configMatrix.Workload.AppServicePlanKind `
+            -ZoneRedundant $configMatrix.Workload.AppServicePlanZoneRedundant `
+            -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
-      #    Write-Debug -Debug:$true -Message "$output"
+          Write-Debug -Debug:$true -Message "$output"
 
-      #    $output = Deploy-DiagnosticsSetting `
-      #      -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #      -ResourceGroupName ${{ env.OE_RG_NAME_WORKLOAD }} `
-      #      -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
-      #      -ResourceId "$appServicePlanResourceId" `
-      #      -DiagnosticsSettingName ("diag-" + "${{ env.OE_LAW_NAME }}") `
-      #      -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
-      #      -SendLogs $false `
-      #      -SendMetrics $true
+          $output = Deploy-DiagnosticsSetting `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_WORKLOAD }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
+            -ResourceId "$appServicePlanResourceId" `
+            -DiagnosticsSettingName ("diag-" + "${{ env.OE_LAW_NAME }}") `
+            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+            -SendLogs $false `
+            -SendMetrics $true
 
-      #    Write-Debug -Debug:$true -Message "$output"
-      #  shell: pwsh
+          Write-Debug -Debug:$true -Message "$output"
+        shell: pwsh
 
-      #- name: Deploy Workload - App Service Plan AutoScale Settings
-      #  if: success()
-      #  run: |
-      #    $ErrorActionPreference = "Stop"
+      - name: Deploy Workload - App Service Plan AutoScale Settings
+        if: success()
+        run: |
+          $ErrorActionPreference = "Stop"
 
-      #    . ./scripts/infra/Utility.ps1
-      #    . ./scripts/infra/Network.ps1
-      #    . ./scripts/infra/Observability.ps1
-      #    . ./scripts/infra/Workload.ps1
+          . ./scripts/infra/Utility.ps1
+          . ./scripts/infra/Network.ps1
+          . ./scripts/infra/Observability.ps1
+          . ./scripts/infra/Workload.ps1
 
-      #    $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-      #    $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+          $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
 
-      #    $appServicePlanName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "asp" -Sequence $configAll.SeqNumWorkloadAppServicePlan
-      #    $appServicePlanResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_WORKLOAD }}" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "serverFarms" -ResourceName $appServicePlanName
+          $appServicePlanName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "asp" -Sequence $configAll.SeqNumWorkloadAppServicePlan
+          $appServicePlanResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_WORKLOAD }}" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "serverFarms" -ResourceName $appServicePlanName
 
-      #    $appServicePlanAutoScaleSettingsName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "scl" -Sequence $configAll.SeqNumWorkloadAppServicePlan
-      #    $appServicePlanAutoScaleSettingsResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_WORKLOAD }}" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "serverFarms" -ResourceSubTypeName "autoscaleSettings" -ResourceName $appServicePlanName
+          $appServicePlanAutoScaleSettingsName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "scl" -Sequence $configAll.SeqNumWorkloadAppServicePlan
+          $appServicePlanAutoScaleSettingsResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_WORKLOAD }}" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "serverFarms" -ResourceSubTypeName "autoscaleSettings" -ResourceName $appServicePlanName
 
-      #    $output = Deploy-AppServicePlanAutoscaleSettings `
-      #      -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #      -Location $configMatrix.Location `
-      #      -ResourceGroupName ${{ env.OE_RG_NAME_WORKLOAD }} `
-      #      -TemplateUri ($configAll.TemplateUriPrefix + "app-service-plan.autoscale.json") `
-      #      -AutoscaleSettingsName $appServicePlanAutoScaleSettingsName `
-      #      -AppServicePlanResourceId $appServicePlanResourceId `
-      #      -MinimumInstances $configMatrix.Workload.AppServicePlanAutoscaleSettingsMinimumInstances `
-      #      -MaximumInstances $configMatrix.Workload.AppServicePlanAutoscaleSettingsMaximumInstances `
-      #      -DefaultInstances $configMatrix.Workload.AppServicePlanAutoscaleSettingsDefaultInstances `
-      #      -Tags ${{ env.OE_TAGS_FOR_ARM }}
+          $output = Deploy-AppServicePlanAutoscaleSettings `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -Location $configMatrix.Location `
+            -ResourceGroupName ${{ env.OE_RG_NAME_WORKLOAD }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "app-service-plan.autoscale.json") `
+            -AutoscaleSettingsName $appServicePlanAutoScaleSettingsName `
+            -AppServicePlanResourceId $appServicePlanResourceId `
+            -MinimumInstances $configMatrix.Workload.AppServicePlanAutoscaleSettingsMinimumInstances `
+            -MaximumInstances $configMatrix.Workload.AppServicePlanAutoscaleSettingsMaximumInstances `
+            -DefaultInstances $configMatrix.Workload.AppServicePlanAutoscaleSettingsDefaultInstances `
+            -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
-      #    Write-Debug -Debug:$true -Message "$output"
+          Write-Debug -Debug:$true -Message "$output"
 
-      #    $output = Deploy-DiagnosticsSetting `
-      #      -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #      -ResourceGroupName ${{ env.OE_RG_NAME_WORKLOAD }} `
-      #      -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
-      #      -ResourceId "$appServicePlanAutoScaleSettingsResourceId" `
-      #      -DiagnosticsSettingName ("diag-" + "${{ env.OE_LAW_NAME }}") `
-      #      -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
-      #      -SendLogs $true `
-      #      -SendMetrics $true
+          $output = Deploy-DiagnosticsSetting `
+            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_WORKLOAD }} `
+            -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
+            -ResourceId "$appServicePlanAutoScaleSettingsResourceId" `
+            -DiagnosticsSettingName ("diag-" + "${{ env.OE_LAW_NAME }}") `
+            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+            -SendLogs $true `
+            -SendMetrics $true
 
-      #    Write-Debug -Debug:$true -Message "$output"
-      #  shell: pwsh
+          Write-Debug -Debug:$true -Message "$output"
+        shell: pwsh
 
       - name: Deploy Workload - App Insights
         if: success()
@@ -1022,7 +1022,6 @@ jobs:
 
           Write-Debug -Debug:$true -Message "$output"
         shell: pwsh
-
 
       - name: Deploy Workload - App
         if: success()
