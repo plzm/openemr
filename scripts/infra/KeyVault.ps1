@@ -209,16 +209,16 @@ function Remove-KeyVaultNetworkRuleForIpAddressOrRange()
     $KeyVaultName,
     [Parameter(Mandatory = $true)]
     [string]
-    $Cidr
+    $IpAddressOrRange
   )
 
-  Write-Debug -Debug:$true -Message "Remove Key Vault $KeyVaultName Network Rule for $Cidr"
+  Write-Debug -Debug:$true -Message "Remove Key Vault $KeyVaultName Network Rule for $IpAddressOrRange"
 
   $output = az keyvault network-rule remove `
     --subscription "$SubscriptionId" `
     -g "$ResourceGroupName" `
     -n "$KeyVaultName" `
-    --ip-address "$Cidr" `
+    --ip-address "$IpAddressOrRange" `
     | ConvertFrom-Json
 
   return $output
