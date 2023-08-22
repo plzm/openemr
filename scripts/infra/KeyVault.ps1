@@ -193,7 +193,7 @@ function New-KeyVaultNetworkRuleForIpAddressOrRange()
   return $output
 }
 
-function Remove-KeyVaultNetworkRuleForCidr()
+function Remove-KeyVaultNetworkRuleForIpAddressOrRange()
 {
   [CmdletBinding()]
   param
