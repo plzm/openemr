@@ -931,57 +931,57 @@ jobs:
           Set-KeyVaultSecret `
             -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -KeyVaultName "${{ env.OE_KEYVAULT_NAME }}" `
-            -RawSecretName "MYSQL_HOST" `
-            -RawSecretValue "${{ env.OE_DB_SERVER_NAME }}.mariadb.database.azure.com"
+            -SecretName "MYSQL_HOST" `
+            -SecretValue "${{ env.OE_DB_SERVER_NAME }}.mariadb.database.azure.com"
 
           Write-Debug -Debug:$true -Message "Write Key Vault secret MYSQL_DATABASE"
           Set-KeyVaultSecret `
             -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -KeyVaultName "${{ env.OE_KEYVAULT_NAME }}" `
-            -RawSecretName "MYSQL_DATABASE" `
-            -RawSecretValue "${{ env.OE_DB_DATABASE_NAME }}"
+            -SecretName "MYSQL_DATABASE" `
+            -SecretValue "${{ secrets.OE_DB_DATABASE_NAME }}"
 
           Write-Debug -Debug:$true -Message "Write Key Vault secret MYSQL_ROOT_USER"
           Set-KeyVaultSecret `
             -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -KeyVaultName "${{ env.OE_KEYVAULT_NAME }}" `
-            -RawSecretName "MYSQL_ROOT_USER" `
-            -RawSecretValue "${{ secrets.OE_DB_ADMIN_LOGIN }}"
+            -SecretName "MYSQL_ROOT_USER" `
+            -SecretValue "${{ secrets.OE_DB_ADMIN_LOGIN }}"
 
           Write-Debug -Debug:$true -Message "Write Key Vault secret MYSQL_ROOT_PASS"
           Set-KeyVaultSecret `
             -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -KeyVaultName "${{ env.OE_KEYVAULT_NAME }}" `
-            -RawSecretName "MYSQL_ROOT_PASS" `
-            -RawSecretValue "${{ secrets.OE_DB_ADMIN_PASSWORD }}"
+            -SecretName "MYSQL_ROOT_PASS" `
+            -SecretValue "${{ secrets.OE_DB_ADMIN_PASSWORD }}"
 
           Write-Debug -Debug:$true -Message "Write Key Vault secret MYSQL_USER"
           Set-KeyVaultSecret `
             -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -KeyVaultName "${{ env.OE_KEYVAULT_NAME }}" `
-            -RawSecretName "MYSQL_USER" `
-            -RawSecretValue "${{ secrets.OE_DB_LOGIN }}"
+            -SecretName "MYSQL_USER" `
+            -SecretValue "${{ secrets.OE_DB_LOGIN }}"
 
           Write-Debug -Debug:$true -Message "Write Key Vault secret MYSQL_PASS"
           Set-KeyVaultSecret `
             -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -KeyVaultName "${{ env.OE_KEYVAULT_NAME }}" `
-            -RawSecretName "MYSQL_PASS" `
-            -RawSecretValue "${{ secrets.OE_DB_PASSWORD }}"
+            -SecretName "MYSQL_PASS" `
+            -SecretValue "${{ secrets.OE_DB_PASSWORD }}"
 
           Write-Debug -Debug:$true -Message "Write Key Vault secret OE_USER"
           Set-KeyVaultSecret `
             -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -KeyVaultName "${{ env.OE_KEYVAULT_NAME }}" `
-            -RawSecretName "OE_USER" `
-            -RawSecretValue "${{ secrets.OE_LOGIN }}"
+            -SecretName "OE_USER" `
+            -SecretValue "${{ secrets.OE_LOGIN }}"
 
           Write-Debug -Debug:$true -Message "Write Key Vault secret OE_PASS"
           Set-KeyVaultSecret `
             -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -KeyVaultName "${{ env.OE_KEYVAULT_NAME }}" `
-            -RawSecretName "OE_PASS" `
-            -RawSecretValue "${{ secrets.OE_PASSWORD }}"
+            -SecretName "OE_PASS" `
+            -SecretValue "${{ secrets.OE_PASSWORD }}"
 
 
 
