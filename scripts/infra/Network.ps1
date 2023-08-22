@@ -650,3 +650,12 @@ function Get-SubnetResourceIds()
 
   return $result
 }
+
+# -------------------------------
+
+function Get-MyCurrentPublicIpAddress()
+{
+  $ipAddress = Invoke-RestMethod https://ipinfo.io/json | Select-Object -exp ip
+
+  return $ipAddress
+}
