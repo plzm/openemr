@@ -146,7 +146,7 @@ jobs:
 
 
 
-          # Env vars set in following steps, listed here for convenience
+          # Env vars listed here for convenience
           # OE_RG_NAME_MAIN
           # OE_RG_NAME_NETWORK
           # OE_RG_NAME_OBSERVABILITY
@@ -155,8 +155,8 @@ jobs:
           # OE_LAW_RESOURCE_ID
           # OE_UAI_NAME
           # OE_UAI_RESOURCE_ID
-          # OE_UAI_CLIENT_ID
-          # OE_UAI_PRINCIPAL_ID
+          # OE_UAI_CLIENT_ID - set below
+          # OE_UAI_PRINCIPAL_ID - set below
           # OE_KEYVAULT_NAME
           # OE_KEYVAULT_RESOURCE_ID
           # OE_SUBNET_RESOURCE_ID_PRIVATE_ENDPOINT
