@@ -627,7 +627,7 @@ jobs:
             -PrivateEndpointName $privateEndpointName `
             -PrivateDnsZoneName $configAll.PrivateDnsZoneNameKeyVault `
             -PrivateDnsZoneGroupName "default" `
-            -PrivateDnsZoneResourceId $privateDnsZoneResourceId`
+            -PrivateDnsZoneResourceId $privateDnsZoneResourceId
         shell: pwsh
 
       - name: Deploy Storage
@@ -732,7 +732,7 @@ jobs:
             -PrivateEndpointName $privateEndpointNameBlob `
             -PrivateDnsZoneName $configAll.PrivateDnsZoneNameStorageBlob `
             -PrivateDnsZoneGroupName "default" `
-            -PrivateDnsZoneResourceId $privateDnsZoneResourceId`
+            -PrivateDnsZoneResourceId $privateDnsZoneResourceId
         shell: pwsh
 
       - name: Deploy Database
@@ -845,7 +845,7 @@ jobs:
             -PrivateEndpointName $privateEndpointName `
             -PrivateDnsZoneName $configAll.PrivateDnsZoneNameDatabaseMariaDb `
             -PrivateDnsZoneGroupName "default" `
-            -PrivateDnsZoneResourceId $privateDnsZoneResourceId`
+            -PrivateDnsZoneResourceId $privateDnsZoneResourceId
         shell: pwsh
 
       - name: Write Secrets to Key Vault
@@ -1230,7 +1230,7 @@ jobs:
             -PrivateEndpointName $appServicePrivateEndpointName `
             -PrivateDnsZoneName $configAll.PrivateDnsZoneNameAppService `
             -PrivateDnsZoneGroupName "default" `
-            -PrivateDnsZoneResourceId $privateDnsZoneResourceId`
+            -PrivateDnsZoneResourceId $privateDnsZoneResourceId
           # ##################################################
         shell: pwsh
 
