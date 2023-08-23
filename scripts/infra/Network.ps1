@@ -416,7 +416,7 @@ function Deploy-PrivateEndpointAndNic() {
 
   Write-Debug -Debug:$true -Message "Deploy Private Endpoint and NIC $PrivateEndpointName"
 
-  $output = az deployment group create -n "$PrivateEndpointName" --verbose `
+  $output = az deployment group create --verbose `
     --subscription "$SubscriptionId" `
     -n "$PrivateEndpointName" `
     -g "$ResourceGroupName" `
@@ -429,6 +429,58 @@ function Deploy-PrivateEndpointAndNic() {
     networkInterfaceName="$NetworkInterfaceName" `
     subnetResourceId="$SubnetResourceId" `
     tags=$Tags `
+    | ConvertFrom-Json
+
+  Write-Debug -Debug:$true -Message "Wait for NIC provisioning to complete"
+  Watch-NicUntilProvisionSuccess `
+    -SubscriptionID "$SubscriptionId" `
+    -ResourceGroupName "$ResourceGroupName" `
+    -NetworkInterfaceName "$NetworkInterfaceName"
+
+  return $output
+}
+
+function Deploy-PrivateEndpointPrivateDnsZoneGroup() {
+  [CmdletBinding()]
+  param
+  (
+    [Parameter(Mandatory = $true)]
+    [string]
+    $SubscriptionId,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $ResourceGroupName,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $TemplateUri,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $PrivateEndpointName,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $PrivateDnsZoneName,
+    [Parameter(Mandatory = $false)]
+    [string]
+    $PrivateDnsZoneGroupName = "default",
+    [Parameter(Mandatory = $true)]
+    [string]
+    $PrivateDnsZoneResourceId
+  )
+
+  Write-Debug -Debug:$true -Message "Deploy Private Endpoint $PrivateEndpointName DNS Zone Group for $PrivateDnsZoneName"
+
+  $zoneName = $PrivateDnsZoneName.Replace(".", "_")
+
+  $output = az deployment group create --verbose `
+    --subscription "$SubscriptionId" `
+    -n "$PrivateEndpointName-DNSZone" `
+    -g "$ResourceGroupName" `
+    --template-uri "$TemplateUri" `
+    --parameters `
+    privateEndpointName="$PrivateEndpointName" `
+    privateDnsZoneName="$zoneName" `
+    privateDnsZoneGroupName="$PrivateDnsZoneGroupName" `
+    privateDnsZoneResourceId="$PrivateDnsZoneResourceId" `
     | ConvertFrom-Json
 
   return $output
@@ -496,9 +548,17 @@ function Deploy-PrivateDnsZones()
 
   Write-Debug -Debug:$true -Message "Deploy Private DNS Zones and VNet links"
 
-  foreach ($privateDnsZone in $ConfigMatrix.Network.PrivateDnsZones)
+  # Get the private DNS zone property names from the ConfigAll object
+  # Do this so we don't hard-code DNS zone names here, just grab whatever is configured on the config...
+  $privateDnsZonePropNames = $ConfigAll `
+   | Get-Member -MemberType NoteProperty `
+   | Select-Object -ExpandProperty Name `
+   | Where-Object { $_.StartsWith("PrivateDnsZoneName") }
+
+
+  foreach ($privateDnsZonePropName in $privateDnsZonePropNames)
   {
-    $zoneName = $privateDnsZone.Name
+    $zoneName = $ConfigAll.$privateDnsZonePropName # Look it up - PSCustomObject... https://learn.microsoft.com/powershell/scripting/learn/deep-dives/everything-about-pscustomobject#dynamically-accessing-properties
 
     $output = Deploy-PrivateDnsZone `
       -SubscriptionId $SubscriptionId `
