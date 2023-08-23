@@ -514,7 +514,7 @@ jobs:
             -PrivateEndpointName $privateEndpointName `
             -PrivateDnsZoneName $configAll.PrivateDnsZoneNameMonitor `
             -PrivateDnsZoneGroupName "default" `
-            -PrivateDnsZoneResourceId $privateDnsZoneResourceId`
+            -PrivateDnsZoneResourceId $privateDnsZoneResourceId
         shell: pwsh
 
       - name: Deploy Key Vault
