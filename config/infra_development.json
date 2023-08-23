@@ -68,6 +68,9 @@
       "SkuName": "Standard_LRS"
     },
     "Database": {
+      "Type": "MariaDB",
+      "ResourceProvider": "Microsoft.DBforMariaDB",
+      "ResourceType": "servers",
       "SkuTier": "GeneralPurpose",
       "SkuFamily": "Gen5",
       "SkuName": "GP_Gen5_2",

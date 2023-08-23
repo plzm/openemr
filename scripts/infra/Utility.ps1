@@ -251,13 +251,11 @@ function Set-EnvVarTags()
   Write-Debug -Debug:$debug -Message ("Set-EnvVarTags: Environment: " + "$Environment")
 
   $tagEnv = "env=" + $Environment
-  #$tagFoo = "foo=bar"
 
   $tagsForAzureCli = @($tagEnv)
 
   $tagsObject = @{}
   $tagsObject['env'] = $Environment
-  #$tagsObject['foo'] = 'bar'
 
   # The following manipulations are needed to get through separate un-escaping by Powershell AND by Azure CLI, 
   # and to get CLI to correctly see the tags as a JSON string passed into ARM templates as an object type.
