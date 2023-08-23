@@ -146,7 +146,7 @@ jobs:
 
 
 
-          # Env vars set in following steps, listed here for convenience
+          # Env vars listed here for convenience
           # OE_RG_NAME_MAIN
           # OE_RG_NAME_NETWORK
           # OE_RG_NAME_OBSERVABILITY
@@ -155,8 +155,8 @@ jobs:
           # OE_LAW_RESOURCE_ID
           # OE_UAI_NAME
           # OE_UAI_RESOURCE_ID
-          # OE_UAI_CLIENT_ID
-          # OE_UAI_PRINCIPAL_ID
+          # OE_UAI_CLIENT_ID - set below
+          # OE_UAI_PRINCIPAL_ID - set below
           # OE_KEYVAULT_NAME
           # OE_KEYVAULT_RESOURCE_ID
           # OE_SUBNET_RESOURCE_ID_PRIVATE_ENDPOINT
@@ -891,6 +891,116 @@ jobs:
 
           Write-Debug -Debug:$true -Message "$output"
         shell: pwsh
+
+      - name: Write Secrets to Key Vault
+        if: success()
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          . ./scripts/infra/Utility.ps1
+          . ./scripts/infra/Network.ps1
+          . ./scripts/infra/KeyVault.ps1
+
+          $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+
+          Write-Debug -Debug:$true -Message "Get runner IP address"
+          $runnerIpAddress = Get-MyCurrentPublicIpAddress
+
+          Write-Debug -Debug:$true -Message "Enable Key Vault public network access with default action Deny since we will explicitly add runner IP"
+          Set-KeyVaultNetworkSettings `
+            -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+            -KeyVaultName "${{ env.OE_KEYVAULT_NAME }}" `
+            -PublicNetworkAccess "Enabled" `
+            -DefaultAction "Deny"
+
+          Write-Debug -Debug:$true -Message "Add runner IP to KV network rules"
+          New-KeyVaultNetworkRuleForIpAddressOrRange `
+            -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+            -KeyVaultName "${{ env.OE_KEYVAULT_NAME }}" `
+            -IpAddressOrRange $runnerIpAddress
+
+
+
+
+          Write-Debug -Debug:$true -Message "Write Key Vault secrets for database"
+
+          Write-Debug -Debug:$true -Message "Write Key Vault secret MYSQL_HOST"
+          Set-KeyVaultSecret `
+            -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -KeyVaultName "${{ env.OE_KEYVAULT_NAME }}" `
+            -SecretName "MYSQL_HOST" `
+            -SecretValue "${{ env.OE_DB_SERVER_NAME }}.mariadb.database.azure.com"
+
+          Write-Debug -Debug:$true -Message "Write Key Vault secret MYSQL_DATABASE"
+          Set-KeyVaultSecret `
+            -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -KeyVaultName "${{ env.OE_KEYVAULT_NAME }}" `
+            -SecretName "MYSQL_DATABASE" `
+            -SecretValue "${{ secrets.OE_DB_DATABASE_NAME }}"
+
+          Write-Debug -Debug:$true -Message "Write Key Vault secret MYSQL_ROOT_USER"
+          Set-KeyVaultSecret `
+            -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -KeyVaultName "${{ env.OE_KEYVAULT_NAME }}" `
+            -SecretName "MYSQL_ROOT_USER" `
+            -SecretValue "${{ secrets.OE_DB_ADMIN_LOGIN }}"
+
+          Write-Debug -Debug:$true -Message "Write Key Vault secret MYSQL_ROOT_PASS"
+          Set-KeyVaultSecret `
+            -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -KeyVaultName "${{ env.OE_KEYVAULT_NAME }}" `
+            -SecretName "MYSQL_ROOT_PASS" `
+            -SecretValue "${{ secrets.OE_DB_ADMIN_PASSWORD }}"
+
+          Write-Debug -Debug:$true -Message "Write Key Vault secret MYSQL_USER"
+          Set-KeyVaultSecret `
+            -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -KeyVaultName "${{ env.OE_KEYVAULT_NAME }}" `
+            -SecretName "MYSQL_USER" `
+            -SecretValue "${{ secrets.OE_DB_LOGIN }}"
+
+          Write-Debug -Debug:$true -Message "Write Key Vault secret MYSQL_PASS"
+          Set-KeyVaultSecret `
+            -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -KeyVaultName "${{ env.OE_KEYVAULT_NAME }}" `
+            -SecretName "MYSQL_PASS" `
+            -SecretValue "${{ secrets.OE_DB_PASSWORD }}"
+
+          Write-Debug -Debug:$true -Message "Write Key Vault secret OE_USER"
+          Set-KeyVaultSecret `
+            -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -KeyVaultName "${{ env.OE_KEYVAULT_NAME }}" `
+            -SecretName "OE_USER" `
+            -SecretValue "${{ secrets.OE_LOGIN }}"
+
+          Write-Debug -Debug:$true -Message "Write Key Vault secret OE_PASS"
+          Set-KeyVaultSecret `
+            -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -KeyVaultName "${{ env.OE_KEYVAULT_NAME }}" `
+            -SecretName "OE_PASS" `
+            -SecretValue "${{ secrets.OE_PASSWORD }}"
+
+
+
+          Write-Debug -Debug:$true -Message "Remove runner IP from KV network rules"
+          Remove-KeyVaultNetworkRuleForIpAddressOrRange `
+            -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+            -KeyVaultName "${{ env.OE_KEYVAULT_NAME }}" `
+            -IpAddressOrRange $runnerIpAddress
+
+          Write-Debug -Debug:$true -Message "Disable Key Vault public network access with default action Deny"
+          Set-KeyVaultNetworkSettings `
+            -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -ResourceGroupName ${{ env.OE_RG_NAME_MAIN }} `
+            -KeyVaultName "${{ env.OE_KEYVAULT_NAME }}" `
+            -PublicNetworkAccess "Disabled" `
+            -DefaultAction "Deny"
+        shell: pwsh
+
 
       - name: Deploy Workload - App Service Plan
         if: success()
