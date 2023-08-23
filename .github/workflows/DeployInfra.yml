@@ -448,54 +448,54 @@ jobs:
           $privateLinkScopeNicName = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "nic" -Sequence $configAll.SeqNumAmpls
           $privateLinkScopeNicResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_OBSERVABILITY }}" -ResourceProviderName "Microsoft.Network" -ResourceTypeName "networkInterfaces" -ResourceName $privateLinkScopeNicName
 
-          Write-Debug -Debug:$true -Message "Deploy AMPLS"
-          $output = Deploy-Ampls `
-            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
-            -TemplateUri ($configAll.TemplateUriPrefix + "monitor.private-link-scope.json") `
-            -PrivateLinkScopeName $privateLinkScopeName `
-            -Tags ${{ env.OE_TAGS_FOR_ARM }}
+          #Write-Debug -Debug:$true -Message "Deploy AMPLS"
+          #$output = Deploy-Ampls `
+          #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+          #  -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
+          #  -TemplateUri ($configAll.TemplateUriPrefix + "monitor.private-link-scope.json") `
+          #  -PrivateLinkScopeName $privateLinkScopeName `
+          #  -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
-          Write-Debug -Debug:$true -Message "$output"
+          #Write-Debug -Debug:$true -Message "$output"
 
-          Write-Debug -Debug:$true -Message "Deploy AMPLS-LAW connection"
-          $output = Deploy-ConnectLawToAmpls `
-            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
-            -TemplateUri ($configAll.TemplateUriPrefix + "monitor.private-link-scope.scoped-resource.json") `
-            -PrivateLinkScopeName $privateLinkScopeName `
-            -ScopedResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
-            -ScopedResourceName "${{ env.OE_LAW_NAME }}"
+          #Write-Debug -Debug:$true -Message "Deploy AMPLS-LAW connection"
+          #$output = Deploy-ConnectLawToAmpls `
+          #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+          #  -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
+          #  -TemplateUri ($configAll.TemplateUriPrefix + "monitor.private-link-scope.scoped-resource.json") `
+          #  -PrivateLinkScopeName $privateLinkScopeName `
+          #  -ScopedResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+          #  -ScopedResourceName "${{ env.OE_LAW_NAME }}"
 
-          Write-Debug -Debug:$true -Message "$output"
+          #Write-Debug -Debug:$true -Message "$output"
 
-          Write-Debug -Debug:$true -Message "Deploy AMPLS Private Endpoint and NIC"
-          $output = Deploy-PrivateEndpointAndNic `
-            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -Location $configMatrix.Location `
-            -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
-            -TemplateUri ($configAll.TemplateUriPrefix + "net.private-endpoint.json") `
-            -ProtectedWorkloadResourceId "$privateLinkScopeResourceId" `
-            -ProtectedWorkloadSubResource "azuremonitor" `
-            -PrivateEndpointName $privateEndpointName `
-            -NetworkInterfaceName $privateLinkScopeNicName `
-            -SubnetResourceId ${{ env.OE_SUBNET_RESOURCE_ID_PRIVATE_ENDPOINT }} `
-            -Tags ${{ env.OE_TAGS_FOR_ARM }}
+          #Write-Debug -Debug:$true -Message "Deploy AMPLS Private Endpoint and NIC"
+          #$output = Deploy-PrivateEndpointAndNic `
+          #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+          #  -Location $configMatrix.Location `
+          #  -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
+          #  -TemplateUri ($configAll.TemplateUriPrefix + "net.private-endpoint.json") `
+          #  -ProtectedWorkloadResourceId "$privateLinkScopeResourceId" `
+          #  -ProtectedWorkloadSubResource "azuremonitor" `
+          #  -PrivateEndpointName $privateEndpointName `
+          #  -NetworkInterfaceName $privateLinkScopeNicName `
+          #  -SubnetResourceId ${{ env.OE_SUBNET_RESOURCE_ID_PRIVATE_ENDPOINT }} `
+          #  -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
-          Write-Debug -Debug:$true -Message "$output"
+          #Write-Debug -Debug:$true -Message "$output"
 
-          Write-Debug -Debug:$true -Message "Deploy NIC Diagnostics"
-          $output = Deploy-DiagnosticsSetting `
-            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
-            -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
-            -ResourceId $privateLinkScopeNicResourceId `
-            -DiagnosticsSettingName ("diag-" + "${{ env.OE_LAW_NAME }}") `
-            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
-            -SendLogs $false `
-            -SendMetrics $true
+          #Write-Debug -Debug:$true -Message "Deploy NIC Diagnostics"
+          #$output = Deploy-DiagnosticsSetting `
+          #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+          #  -ResourceGroupName ${{ env.OE_RG_NAME_OBSERVABILITY }} `
+          #  -TemplateUri ($configAll.TemplateUriPrefix + "diagnostic-settings.json") `
+          #  -ResourceId $privateLinkScopeNicResourceId `
+          #  -DiagnosticsSettingName ("diag-" + "${{ env.OE_LAW_NAME }}") `
+          #  -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+          #  -SendLogs $false `
+          #  -SendMetrics $true
 
-          Write-Debug -Debug:$true -Message "$output"
+          #Write-Debug -Debug:$true -Message "$output"
 
 
           # Private Endpoint DNS Zone Group
