@@ -64,7 +64,7 @@ jobs:
 
           . ./scripts/infra/Utility.ps1
 
-          Set-EnvVar2 -VarName "OE_CONFIG_FILE_ALL" -VarValue "./config/infra_all.json"
+          Set-EnvVar2 -VarName "OE_CONFIG_FILE_ALL" -VarValue "./config/infra_constants.json"
           Set-EnvVar2 -VarName "OE_CONFIG_FILE_ENV" -VarValue ("./config/infra_" + "${{ inputs.environment }}" + ".json")
         shell: pwsh
 
@@ -75,13 +75,12 @@ jobs:
 
           . ./scripts/infra/Utility.ps1
 
-          $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -ScaleUnit "${{ matrix.ScaleUnit }}"
+          $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.ScaleUnit }}"
 
           Set-EnvVars `
             -Environment "${{ inputs.environment }}" `
-            -ConfigAll $configAll `
-            -ConfigMatrix $configMatrix
+            -ConfigScaleUnit $configScaleUnit
         shell: pwsh
 
       - name: Delete Resource Groups
@@ -91,13 +90,13 @@ jobs:
 
           . ./scripts/infra/Utility.ps1
 
-          $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -ScaleUnit "${{ matrix.ScaleUnit }}"
+          $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.ScaleUnit }}"
 
-          $rgNameMain = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence $configAll.SeqNumRgMain
-          $rgNameNetwork = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence $configAll.SeqNumRgNetwork
-          $rgNameObservability = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence $configAll.SeqNumRgObservability
-          $rgNameWorkload = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence $configAll.SeqNumRgWorkload
+          $rgNameMain = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitCore
+          $rgNameNetwork = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitNetwork
+          $rgNameObservability = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitObservability
+          $rgNameWorkload = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitWorkload
 
           az group delete -y `
             --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
