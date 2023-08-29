@@ -47,14 +47,14 @@ function Get-ConfigMatrix()
     $ConfigFilePath,
     [Parameter(Mandatory = $true)]
     [string]
-    $DeployUnit
+    $ScaleUnit
   )
 
-  Write-Debug -Debug:$debug -Message ("Get-ConfigMatrix: ConfigFilePath: " + "$ConfigFilePath" + ", DeployUnit: " + "$DeployUnit")
+  Write-Debug -Debug:$debug -Message ("Get-ConfigMatrix: ConfigFilePath: " + "$ConfigFilePath" + ", ScaleUnit: " + "$ScaleUnit")
 
   $configEnv = Get-Content -Path "$ConfigFilePath" | ConvertFrom-Json
 
-  $configEnv | Where-Object { $_.DeployUnit -eq "$DeployUnit" }
+  $configEnv | Where-Object { $_.ScaleUnit -eq "$ScaleUnit" }
 }
 
 #endregion
@@ -101,7 +101,7 @@ function Get-ResourceName()
 
   if ($ConfigAll.NamePrefix) { $result = $ConfigAll.NamePrefix }
   if ($ConfigAll.NameInfix) { $result += $delimiter + $ConfigAll.NameInfix }
-  if ($ConfigMatrix.DeployUnit) { $result += $delimiter + $ConfigMatrix.DeployUnit }
+  if ($ConfigMatrix.ScaleUnit) { $result += $delimiter + $ConfigMatrix.ScaleUnit }
   #if ($ConfigMatrix.Location) { $result += $delimiter + $ConfigMatrix.Location }
 
   if ($Prefix) { $result = $Prefix + $delimiter + $result }

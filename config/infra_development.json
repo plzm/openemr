@@ -1,6 +1,6 @@
 [
   {
-    "DeployUnit": "01",
+    "ScaleUnit": "01",
     "Location": "eastus",
     "Network": {
       "NSGs": [
@@ -89,7 +89,7 @@
     }
   },
   {
-    "DeployUnit": "02",
+    "ScaleUnit": "02",
     "Location": "westus3",
     "Network": {
       "NSGs": [

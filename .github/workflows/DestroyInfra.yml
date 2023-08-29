@@ -26,7 +26,7 @@ jobs:
           echo "::debug::path=$path"
           $configEnv = Get-Content -Path $path | ConvertFrom-Json
           echo "::debug::configEnv=$configEnv"
-          $matrix = ($configEnv | Select-Object DeployUnit | ConvertTo-Json -Depth 100 -Compress).Replace("`"", "'")
+          $matrix = ($configEnv | Select-Object ScaleUnit | ConvertTo-Json -Depth 100 -Compress).Replace("`"", "'")
           echo "::debug::matrix=$matrix"
           $matrix = "{'include':" + $matrix + "}"
           echo "matrix=$matrix" >> $env:GITHUB_OUTPUT
@@ -76,7 +76,7 @@ jobs:
           . ./scripts/infra/Utility.ps1
 
           $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -ScaleUnit "${{ matrix.ScaleUnit }}"
 
           Set-EnvVars `
             -Environment "${{ inputs.environment }}" `
@@ -92,7 +92,7 @@ jobs:
           . ./scripts/infra/Utility.ps1
 
           $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -ScaleUnit "${{ matrix.ScaleUnit }}"
 
           $rgNameMain = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence $configAll.SeqNumRgMain
           $rgNameNetwork = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence $configAll.SeqNumRgNetwork
