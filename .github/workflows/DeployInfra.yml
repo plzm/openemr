@@ -522,7 +522,7 @@ jobs:
 
           $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
           $configGlobal = Get-ConfigGlobal -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}"
-          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.ScaleUnit }}"
+          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
 
           Set-EnvVars `
             -Environment "${{ inputs.environment }}" `
@@ -648,7 +648,7 @@ jobs:
           . ./scripts/infra/Utility.ps1
 
           $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.ScaleUnit }}"
+          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
 
           Write-Debug -Debug:$true -Message "Create RG ${{ env.OE_RG_NAME_SU_CORE }}"
           $output = az group create `
@@ -711,7 +711,7 @@ jobs:
           . ./scripts/infra/Network.ps1
 
           $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.ScaleUnit }}"
+          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
 
           Write-Debug -Debug:$true -Message "Deploy Network"
           Deploy-Network `
@@ -733,7 +733,7 @@ jobs:
           . ./scripts/infra/Network.ps1
 
           $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.ScaleUnit }}"
+          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
 
           Write-Debug -Debug:$true -Message "Deploy private DNS zones"
           Deploy-PrivateDnsZones `
@@ -754,7 +754,7 @@ jobs:
           . ./scripts/infra/Network.ps1
 
           $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.ScaleUnit }}"
+          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
 
           $privateLinkScopeName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixAmpls -Sequence $configConstants.SeqNumAmpls
           $privateLinkScopeResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_OBSERVABILITY }}" -ResourceProviderName "microsoft.insights" -ResourceTypeName "privatelinkscopes" -ResourceName $privateLinkScopeName
@@ -844,7 +844,7 @@ jobs:
           . ./scripts/infra/KeyVault.ps1
 
           $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.ScaleUnit }}"
+          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
 
           Write-Debug -Debug:$true -Message "Get subnets for Key Vault network access rules"
           $subnetResourceIds = Get-SubnetResourceIds `
@@ -957,7 +957,7 @@ jobs:
           . ./scripts/infra/Storage.ps1
 
           $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.ScaleUnit }}"
+          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
 
           Write-Debug -Debug:$true -Message "Get subnets for Storage Account network access rules"
           $subnetResourceIds = Get-SubnetResourceIds `
@@ -1063,7 +1063,7 @@ jobs:
 
           $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
           $configGlobal = Get-ConfigGlobal -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}"
-          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.ScaleUnit }}"
+          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
 
 
           if ($configGlobal.Database.Type -eq "MariaDB")
@@ -1201,7 +1201,7 @@ jobs:
 
           $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
           $configGlobal = Get-ConfigGlobal -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}"
-          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.ScaleUnit }}"
+          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
 
           Write-Debug -Debug:$true -Message "Get runner IP address"
           $runnerIpAddress = Get-MyCurrentPublicIpAddress
@@ -1311,7 +1311,7 @@ jobs:
           . ./scripts/infra/Workload.ps1
 
           $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.ScaleUnit }}"
+          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
 
           $appServicePlanName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixAppServicePlan -Sequence $configConstants.SeqNumWorkloadAppServicePlan
           $appServicePlanResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_WORKLOAD }}" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "serverFarms" -ResourceName $appServicePlanName
@@ -1356,7 +1356,7 @@ jobs:
           . ./scripts/infra/Workload.ps1
 
           $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.ScaleUnit }}"
+          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
 
           $appServicePlanName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixAppServicePlan -Sequence $configConstants.SeqNumWorkloadAppServicePlan
           $appServicePlanResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_WORKLOAD }}" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "serverFarms" -ResourceName $appServicePlanName
@@ -1402,7 +1402,7 @@ jobs:
           . ./scripts/infra/Workload.ps1
 
           $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.ScaleUnit }}"
+          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
 
           $appInsightsName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixAppInsights -Sequence $configConstants.SeqNumWorkloadWebApp
           $appInsightsResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_WORKLOAD }}" -ResourceProviderName "Microsoft.Insights" -ResourceTypeName "components" -ResourceName $appInsightsName
@@ -1442,7 +1442,7 @@ jobs:
           . ./scripts/infra/Workload.ps1
 
           $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.ScaleUnit }}"
+          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
 
           $appServicePlanName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixAppServicePlan -Sequence $configConstants.SeqNumWorkloadAppServicePlan
           $appServicePlanResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_WORKLOAD }}" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "serverFarms" -ResourceName $appServicePlanName
@@ -1589,7 +1589,7 @@ jobs:
           . ./scripts/infra/Workload.ps1
 
           $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.ScaleUnit }}"
+          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
 
           # Prepare JSON file
           $fileContents = "{`n"
