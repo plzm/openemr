@@ -46,9 +46,9 @@ jobs:
 
       - name: Set Azure CLI extensions to auto-install
         if: success()
+        shell: pwsh
         run: |
           az config set extension.use_dynamic_install=yes_without_prompt
-        shell: pwsh
 
       - name: Azure login
         if: success()
@@ -59,6 +59,7 @@ jobs:
 
       - name: Set Config File Paths to Environment
         if: success()
+        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
 
@@ -66,25 +67,24 @@ jobs:
 
           Set-EnvVar2 -VarName "OE_CONFIG_FILE_ALL" -VarValue "./config/infra_constants.json"
           Set-EnvVar2 -VarName "OE_CONFIG_FILE_ENV" -VarValue ("./config/infra_" + "${{ inputs.environment }}" + ".json")
-        shell: pwsh
 
       - name: Set Environment Variables
         if: success()
+        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
 
           . ./scripts/infra/Utility.ps1
 
-          $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
           $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.ScaleUnit }}"
 
           Set-EnvVars `
             -Environment "${{ inputs.environment }}" `
             -ConfigScaleUnit $configScaleUnit
-        shell: pwsh
 
       - name: Delete Resource Groups
         if: success()
+        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
 
@@ -93,27 +93,31 @@ jobs:
           $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
           $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.ScaleUnit }}"
 
-          $rgNameMain = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitCore
-          $rgNameNetwork = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitNetwork
-          $rgNameObservability = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitObservability
-          $rgNameWorkload = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitWorkload
+          $rgNameScaleUnitCore = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitCore
+          $rgNameScaleUnitNetwork = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitNetwork
+          $rgNameScaleUnitObservability = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitObservability
+          $rgNameScaleUnitData = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitData
+          $rgNameScaleUnitWorkload = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitWorkload
 
           az group delete -y `
             --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -n $rgNameWorkload
+            -n $rgNameScaleUnitWorkload
 
           az group delete -y `
             --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -n $rgNameObservability
+            -n $rgNameScaleUnitData
 
           az group delete -y `
             --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -n $rgNameMain
+            -n $rgNameScaleUnitObservability
 
           az group delete -y `
             --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -n $rgNameNetwork
-        shell: pwsh
+            -n $rgNameScaleUnitCore
+
+          az group delete -y `
+            --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -n $rgNameScaleUnitNetwork
 
 
       - name: Azure logout
@@ -143,6 +147,7 @@ jobs:
 
       - name: Set Config File Paths to Environment
         if: success()
+        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
 
@@ -150,10 +155,20 @@ jobs:
 
           Set-EnvVar2 -VarName "OE_CONFIG_FILE_ALL" -VarValue "./config/infra_constants.json"
           Set-EnvVar2 -VarName "OE_CONFIG_FILE_ENV" -VarValue ("./config/infra_" + "${{ inputs.environment }}" + ".json")
-        shell: pwsh
 
       - name: Set Environment Variables
         if: success()
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          . ./scripts/infra/Utility.ps1
+
+          Set-EnvVars -Environment "${{ inputs.environment }}"
+
+      - name: Delete Resource Groups
+        if: success()
+        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
 
@@ -163,8 +178,30 @@ jobs:
           $configGlobal = Get-ConfigGlobal -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}"
           $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.ScaleUnit }}"
 
-          Set-EnvVars -Environment "${{ inputs.environment }}"
-        shell: pwsh
+          $rgNameGlobalCore = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalCore
+          $rgNameGlobalNetwork = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalNetwork
+          $rgNameGlobalObservability = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalObservability
+          $rgNameGlobalData = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalData
+          $rgNameGlobalWorkload = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalWorkload
 
+          az group delete -y `
+            --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -n $rgNameGlobalWorkload
+
+          az group delete -y `
+            --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -n $rgNameGlobalData
+
+          az group delete -y `
+            --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -n $rgNameGlobalObservability
+
+          az group delete -y `
+            --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -n $rgNameGlobalCore
+
+          az group delete -y `
+            --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -n $rgNameGlobalNetwork
 
 ...

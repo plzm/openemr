@@ -44,6 +44,7 @@ jobs:
 
       - name: Set Config File Paths to Environment
         if: success()
+        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
 
@@ -51,10 +52,10 @@ jobs:
 
           Set-EnvVar2 -VarName "OE_CONFIG_FILE_ALL" -VarValue "./config/infra_constants.json"
           Set-EnvVar2 -VarName "OE_CONFIG_FILE_ENV" -VarValue ("./config/infra_" + "${{ inputs.environment }}" + ".json")
-        shell: pwsh
 
       - name: Set Environment Variables
         if: success()
+        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
 
@@ -110,10 +111,10 @@ jobs:
           # OE_UAI_PRINCIPAL_ID - set below
           # OE_LAW_NAME
           # OE_LAW_RESOURCE_ID
-        shell: pwsh
 
       - name: Create Resource Groups
         if: success()
+        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
 
@@ -171,10 +172,10 @@ jobs:
             | ConvertFrom-Json
 
           Write-Debug -Debug:$true -Message "$output"
-        shell: pwsh
 
       - name: Deploy User Assigned Identity
         if: success()
+        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
 
@@ -204,10 +205,10 @@ jobs:
 
           Set-EnvVar2 -VarName "OE_UAI_CLIENT_ID" -VarValue $uai.clientId
           Set-EnvVar2 -VarName "OE_UAI_PRINCIPAL_ID" -VarValue $uai.principalId
-        shell: pwsh
 
       - name: Deploy Role Assignments
         if: success()
+        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
 
@@ -288,10 +289,10 @@ jobs:
             -PrincipalId $configConstants.PrincipalIdDiagnosticServicesTrustedStorageAccess
 
           Write-Debug -Debug:$true -Message "$output"
-        shell: pwsh
 
       - name: Deploy Observability
         if: success()
+        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
 
@@ -324,10 +325,10 @@ jobs:
             -SendMetrics $true
 
           Write-Debug -Debug:$true -Message "$output"
-        shell: pwsh
 
       - name: Deploy Database
         if: success()
+        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
 
@@ -442,7 +443,6 @@ jobs:
           {
             Write-Debug -Debug:$true -Message "UNKNOWN DATABASE TYPE"
           }
-        shell: pwsh
 
 
 
@@ -459,6 +459,7 @@ jobs:
 
       - name: Write matrix string to output
         id: set-matrix
+        shell: pwsh
         run: |
           $path = "./config/infra_" + "${{ inputs.environment }}" + ".json"
           echo "::debug::path=$path"
@@ -469,7 +470,6 @@ jobs:
           echo "::debug::matrix=$matrix"
           $matrix = "{'include':" + $matrix + "}"
           echo "matrix=$matrix" >> $env:GITHUB_OUTPUT
-        shell: pwsh
 
 
 
@@ -487,11 +487,11 @@ jobs:
 
       - name: Set Azure CLI extensions to auto-install
         if: success()
+        shell: pwsh
         run: |
           $output = az config set extension.use_dynamic_install=yes_without_prompt | ConvertFrom-Json
 
           Write-Debug -Debug:$true -Message "$output"
-        shell: pwsh
 
       - name: Azure login
         if: success()
@@ -502,6 +502,7 @@ jobs:
 
       - name: Set Config File Paths to Environment
         if: success()
+        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
 
@@ -509,10 +510,10 @@ jobs:
 
           Set-EnvVar2 -VarName "OE_CONFIG_FILE_ALL" -VarValue "./config/infra_constants.json"
           Set-EnvVar2 -VarName "OE_CONFIG_FILE_ENV" -VarValue ("./config/infra_" + "${{ inputs.environment }}" + ".json")
-        shell: pwsh
 
       - name: Set Environment Variables
         if: success()
+        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
 
@@ -637,10 +638,10 @@ jobs:
           # OE_APP_SERVICE_NAME
           # OE_APP_SERVICE_RESOURCE_ID
           # ##################################################
-        shell: pwsh
 
       - name: Create Resource Groups
         if: success()
+        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
 
@@ -698,10 +699,10 @@ jobs:
             | ConvertFrom-Json
 
           Write-Debug -Debug:$true -Message "$output"
-        shell: pwsh
 
       - name: Deploy Network
         if: success()
+        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
 
@@ -721,10 +722,10 @@ jobs:
             -LogAnalyticsWorkspaceName "${{ env.OE_LAW_NAME }}" `
             -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
             -Tags ${{ env.OE_TAGS_FOR_ARM }}
-        shell: pwsh
 
       - name: Deploy Private DNS zones
         if: success()
+        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
 
@@ -741,10 +742,10 @@ jobs:
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -ResourceGroupName ${{ env.OE_RG_NAME_SU_NETWORK }} `
             -Tags ${{ env.OE_TAGS_FOR_ARM }}
-        shell: pwsh
 
       - name: Deploy Azure Monitor Private Link Scope
         if: success()
+        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
 
@@ -830,10 +831,10 @@ jobs:
             -PrivateDnsZoneName $configConstants.PrivateDnsZoneNameMonitor `
             -PrivateDnsZoneGroupName "default" `
             -PrivateDnsZoneResourceId $privateDnsZoneResourceId
-        shell: pwsh
 
       - name: Deploy Key Vault
         if: success()
+        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
 
@@ -943,10 +944,10 @@ jobs:
             -PrivateDnsZoneName $configConstants.PrivateDnsZoneNameKeyVault `
             -PrivateDnsZoneGroupName "default" `
             -PrivateDnsZoneResourceId $privateDnsZoneResourceId
-        shell: pwsh
 
       - name: Deploy Storage
         if: success()
+        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
 
@@ -1048,7 +1049,6 @@ jobs:
             -PrivateDnsZoneName $configConstants.PrivateDnsZoneNameStorageBlob `
             -PrivateDnsZoneGroupName "default" `
             -PrivateDnsZoneResourceId $privateDnsZoneResourceId
-        shell: pwsh
 
       - name: Deploy Database Connectivity
         if: success()
@@ -1189,9 +1189,9 @@ jobs:
             Write-Debug -Debug:$true -Message "UNKNOWN DATABASE TYPE"
           }
 
-
       - name: Write Secrets to Key Vault
         if: success()
+        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
 
@@ -1298,10 +1298,10 @@ jobs:
             -KeyVaultName "${{ env.OE_KEYVAULT_NAME }}" `
             -PublicNetworkAccess "Disabled" `
             -DefaultAction "Deny"
-        shell: pwsh
 
       - name: Deploy Workload - App Service Plan
         if: success()
+        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
 
@@ -1343,10 +1343,10 @@ jobs:
             -SendMetrics $true
 
           Write-Debug -Debug:$true -Message "$output"
-        shell: pwsh
 
       - name: Deploy Workload - App Service Plan AutoScale Settings
         if: success()
+        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
 
@@ -1389,10 +1389,10 @@ jobs:
             -SendMetrics $true
 
           Write-Debug -Debug:$true -Message "$output"
-        shell: pwsh
 
       - name: Deploy Workload - App Insights
         if: success()
+        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
 
@@ -1429,10 +1429,10 @@ jobs:
             -SendMetrics $true
 
           Write-Debug -Debug:$true -Message "$output"
-        shell: pwsh
 
       - name: Deploy Workload - App Service
         if: success()
+        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
 
@@ -1577,10 +1577,10 @@ jobs:
             -PrivateDnsZoneGroupName "default" `
             -PrivateDnsZoneResourceId $privateDnsZoneResourceId
           # ##################################################
-        shell: pwsh
 
       - name: Deploy Workload - App Settings
         if: success()
+        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
 
@@ -1636,7 +1636,6 @@ jobs:
 
           Write-Debug -Debug:$true -Message "Write to ${{ env.OE_APP_SERVICE_NAME }}"
           az webapp config appsettings set -g ${{ env.OE_RG_NAME_SU_WORKLOAD }} -n ${{ env.OE_APP_SERVICE_NAME }} --settings '@config.json'
-        shell: pwsh
 
 
       - name: Azure logout
