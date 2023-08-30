@@ -365,7 +365,7 @@ jobs:
               -CreateMode $instance.Mode `
               -BackupRetentionDays $configGlobal.Database.BackupRetentionDays `
               -GeoRedundantBackup $configGlobal.Database.GeoRedundantBackup `
-              -StorageAutogrow $configGlobal.Database.StorageAutogrow `
+              -StorageAutogrow $instance.StorageAutogrow `
               -MinimumTlsVersion $configGlobal.Database.MinimumTlsVersion `
               -PublicNetworkAccess $configGlobal.Database.PublicNetworkAccess `
               -Tags ${{ env.OE_TAGS_FOR_ARM }}
@@ -415,7 +415,7 @@ jobs:
                 -SourceServerId $defaultInstanceResourceId `
                 -BackupRetentionDays $configGlobal.Database.BackupRetentionDays `
                 -GeoRedundantBackup $configGlobal.Database.GeoRedundantBackup `
-                -StorageAutogrow $false `
+                -StorageAutogrow $instance.StorageAutogrow `
                 -MinimumTlsVersion $configGlobal.Database.MinimumTlsVersion `
                 -PublicNetworkAccess $configGlobal.Database.PublicNetworkAccess `
                 -Tags ${{ env.OE_TAGS_FOR_ARM }}
