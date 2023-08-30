@@ -434,8 +434,6 @@ jobs:
 
               Write-Debug -Debug:$true -Message "$output"
 
-              if (-not $output) { throw }
-
               $instanceIndex++
             }
           }
