@@ -267,7 +267,7 @@ function Set-EnvVarTags()
 
   if ($ConfigScaleUnit)
   {
-    $tagScaleUnit = "ScaleUnit=" + $ConfigScaleUnit.ScaleUnit
+    $tagScaleUnit = "ScaleUnit=" + $ConfigScaleUnit.Id
 
     $tagsForAzureCli = @($tagEnv, $tagScaleUnit)
   }
@@ -281,7 +281,7 @@ function Set-EnvVarTags()
 
   if ($ConfigScaleUnit)
   {
-    $tagsObject['ScaleUnit'] = $ConfigScaleUnit.ScaleUnit
+    $tagsObject['ScaleUnit'] = $ConfigScaleUnit.Id
   }
 
   # The following manipulations are needed to get through separate un-escaping by Powershell AND by Azure CLI, 
