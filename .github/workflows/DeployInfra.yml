@@ -448,7 +448,7 @@ jobs:
 
   prep_matrix:
     needs: deploy_global
-    name: Prepare Matrix
+    name: Prepare Scale Unit Matrix
     environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
     outputs:
@@ -474,7 +474,7 @@ jobs:
 
   deploy_scale_unit:
     needs: prep_matrix
-    name: Deploy Infrastructure
+    name: Deploy Scale Unit ${{ matrix.Id }} Infrastructure
     environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
     strategy:

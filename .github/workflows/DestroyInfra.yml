@@ -10,7 +10,7 @@ on:
 
 jobs:
   prep_matrix:
-    name: Prepare Matrix
+    name: Prepare Scale Unit Matrix
     environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
     outputs:
@@ -34,7 +34,7 @@ jobs:
 
   destroy_matrix:
     needs: prep_matrix
-    name: Destroy Infrastructure
+    name: Destroy Scale Unit ${{ matrix.Id }} Infrastructure
     environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
     strategy:
@@ -153,7 +153,7 @@ jobs:
 
   destroy_global:
     needs: destroy_matrix
-    name: Destroy Global Resources
+    name: Destroy Global Infrastructure
     environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
     steps:
