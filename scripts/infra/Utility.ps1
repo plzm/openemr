@@ -88,7 +88,7 @@ function Get-ResourceName()
     $ConfigConstants,
     [Parameter(Mandatory = $false)]
     [object]
-    $ConfigConfigGlobal = $null,
+    $ConfigGlobal = $null,
     [Parameter(Mandatory = $false)]
     [object]
     $ConfigScaleUnit = $null,
