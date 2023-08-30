@@ -415,7 +415,7 @@ jobs:
                 -SourceServerId $defaultInstanceResourceId `
                 -BackupRetentionDays $configGlobal.Database.BackupRetentionDays `
                 -GeoRedundantBackup $configGlobal.Database.GeoRedundantBackup `
-                -StorageAutogrow $configGlobal.Database.StorageAutogrow `
+                -StorageAutogrow $false `
                 -MinimumTlsVersion $configGlobal.Database.MinimumTlsVersion `
                 -PublicNetworkAccess $configGlobal.Database.PublicNetworkAccess `
                 -Tags ${{ env.OE_TAGS_FOR_ARM }}
