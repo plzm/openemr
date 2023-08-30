@@ -113,7 +113,7 @@ function Get-DatabaseInstanceName()
     $ConfigConstants,
     [Parameter(Mandatory = $true)]
     [object]
-    $ConfigConfigGlobal,
+    $ConfigGlobal,
     [Parameter(Mandatory = $true)]
     [string]
     $Suffix
