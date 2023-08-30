@@ -348,43 +348,43 @@ jobs:
             $defaultInstanceName = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix $configConstants.PrefixDatabase -Sequence $configConstants.SeqNumData -Suffix "01"
             $defaultInstanceResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_G_DATA }}" -ResourceProviderName $configGlobal.Database.ResourceProvider -ResourceTypeName $configGlobal.Database.ResourceType -ResourceName $defaultInstanceName
 
-            $output = Deploy-MariaDbServer `
-              -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-              -Location $instance.Location `
-              -ResourceGroupName ${{ env.OE_RG_NAME_G_DATA }} `
-              -TemplateUri ($configConstants.TemplateUriPrefix + "db.mariadb.server.json") `
-              -ServerName "$defaultInstanceName" `
-              -AdministratorLogin "${{ secrets.OE_DB_ADMIN_LOGIN }}" `
-              -AdministratorPassword "${{ secrets.OE_DB_ADMIN_PASSWORD }}" `
-              -SkuTier $configGlobal.Database.SkuTier `
-              -SkuFamily $configGlobal.Database.SkuFamily `
-              -SkuName $configGlobal.Database.SkuName `
-              -SkuCapacity $configGlobal.Database.SkuCapacity `
-              -SkuSizeMB $configGlobal.Database.SkuSizeMB `
-              -MariaDbVersion $configGlobal.Database.Version `
-              -CreateMode $instance.Mode `
-              -BackupRetentionDays $configGlobal.Database.BackupRetentionDays `
-              -GeoRedundantBackup $configGlobal.Database.GeoRedundantBackup `
-              -StorageAutogrow $instance.StorageAutogrow `
-              -MinimumTlsVersion $configGlobal.Database.MinimumTlsVersion `
-              -PublicNetworkAccess $configGlobal.Database.PublicNetworkAccess `
-              -Tags ${{ env.OE_TAGS_FOR_ARM }}
+            #$output = Deploy-MariaDbServer `
+            #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            #  -Location $instance.Location `
+            #  -ResourceGroupName ${{ env.OE_RG_NAME_G_DATA }} `
+            #  -TemplateUri ($configConstants.TemplateUriPrefix + "db.mariadb.server.json") `
+            #  -ServerName "$defaultInstanceName" `
+            #  -AdministratorLogin "${{ secrets.OE_DB_ADMIN_LOGIN }}" `
+            #  -AdministratorPassword "${{ secrets.OE_DB_ADMIN_PASSWORD }}" `
+            #  -SkuTier $configGlobal.Database.SkuTier `
+            #  -SkuFamily $configGlobal.Database.SkuFamily `
+            #  -SkuName $configGlobal.Database.SkuName `
+            #  -SkuCapacity $configGlobal.Database.SkuCapacity `
+            #  -SkuSizeMB $configGlobal.Database.SkuSizeMB `
+            #  -MariaDbVersion $configGlobal.Database.Version `
+            #  -CreateMode $instance.Mode `
+            #  -BackupRetentionDays $configGlobal.Database.BackupRetentionDays `
+            #  -GeoRedundantBackup $configGlobal.Database.GeoRedundantBackup `
+            #  -StorageAutogrow $instance.StorageAutogrow `
+            #  -MinimumTlsVersion $configGlobal.Database.MinimumTlsVersion `
+            #  -PublicNetworkAccess $configGlobal.Database.PublicNetworkAccess `
+            #  -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
-            Write-Debug -Debug:$true -Message "$output"
+            #Write-Debug -Debug:$true -Message "$output"
 
-            # Database Server Diagnostics
-            Write-Debug -Debug:$true -Message "Deploy Diagnostics"
-            $output = Deploy-DiagnosticsSetting `
-              -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-              -ResourceGroupName ${{ env.OE_RG_NAME_G_DATA }} `
-              -TemplateUri ($configConstants.TemplateUriPrefix + "diagnostic-settings.json") `
-              -ResourceId "$defaultInstanceResourceId" `
-              -DiagnosticsSettingName ("diag-" + "${{ env.OE_LAW_NAME }}") `
-              -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
-              -SendLogs $true `
-              -SendMetrics $true
+            ## Database Server Diagnostics
+            #Write-Debug -Debug:$true -Message "Deploy Diagnostics"
+            #$output = Deploy-DiagnosticsSetting `
+            #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            #  -ResourceGroupName ${{ env.OE_RG_NAME_G_DATA }} `
+            #  -TemplateUri ($configConstants.TemplateUriPrefix + "diagnostic-settings.json") `
+            #  -ResourceId "$defaultInstanceResourceId" `
+            #  -DiagnosticsSettingName ("diag-" + "${{ env.OE_LAW_NAME }}") `
+            #  -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+            #  -SendLogs $true `
+            #  -SendMetrics $true
 
-            Write-Debug -Debug:$true -Message "$output"
+            #Write-Debug -Debug:$true -Message "$output"
 
             # Replicas
             $instanceIndex = 2
