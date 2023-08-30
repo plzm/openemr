@@ -18,6 +18,7 @@
       "StorageAutogrow": "Enabled",
       "MinimumTlsVersion": "TLS1_2",
       "PublicNetworkAccess": "Disabled",
+      "Tld": "mariadb.database.azure.com",
       "Instances": [
         {
           "Mode": "Default",

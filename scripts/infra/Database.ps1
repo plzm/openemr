@@ -102,3 +102,29 @@ function Deploy-MariaDbServer()
 
   return $output
 }
+
+function Get-DatabaseInstanceName()
+{
+  [CmdletBinding()]
+  param
+  (
+    [Parameter(Mandatory = $true)]
+    [object]
+    $ConfigConstants,
+    [Parameter(Mandatory = $true)]
+    [object]
+    $ConfigConfigGlobal,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $Suffix
+  )
+
+  $instanceName = Get-ResourceName `
+    -ConfigConstants $ConfigConstants `
+    -ConfigGlobal $ConfigGlobal `
+    -Prefix $ConfigGlobal.PrefixDatabase `
+    -Sequence $configConstants.SeqNumData `
+    -Suffix $Suffix
+
+  return $instanceName
+}

@@ -34,13 +34,13 @@ jobs:
 
       - name: Register RPs
         if: success()
+        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
 
           $output = az provider register --namespace "Microsoft.ChangeAnalysis" --accept-terms --consent-to-permissions --wait | ConvertFrom-Json
 
           Write-Debug -Debug:$true -Message "$output"
-        shell: pwsh
 
       - name: Set Config File Paths to Environment
         if: success()
@@ -67,22 +67,22 @@ jobs:
 
 
           # Resource Groups
-          $rgNameCore = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalCore
-          $rgNameNetwork = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalNetwork
-          $rgNameObservability = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalObservability
-          $rgNameData = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalData
-          $rgNameWorkload = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalWorkload
+          $rgNameGlobalCore = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalCore
+          $rgNameGlobalNetwork = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalNetwork
+          $rgNameGlobalObservability = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalObservability
+          $rgNameGlobalData = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalData
+          $rgNameGlobalWorkload = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalWorkload
 
-          Set-EnvVar2 -VarName "OE_RG_NAME_G_CORE" -VarValue "$rgNameCore"
-          Set-EnvVar2 -VarName "OE_RG_NAME_G_NETWORK" -VarValue "$rgNameNetwork"
-          Set-EnvVar2 -VarName "OE_RG_NAME_G_OBSERVABILITY" -VarValue "$rgNameObservability"
-          Set-EnvVar2 -VarName "OE_RG_NAME_G_DATA" -VarValue "$rgNameData"
-          Set-EnvVar2 -VarName "OE_RG_NAME_G_WORKLOAD" -VarValue "$rgNameWorkload"
+          Set-EnvVar2 -VarName "OE_RG_NAME_G_CORE" -VarValue "$rgNameGlobalCore"
+          Set-EnvVar2 -VarName "OE_RG_NAME_G_NETWORK" -VarValue "$rgNameGlobalNetwork"
+          Set-EnvVar2 -VarName "OE_RG_NAME_G_OBSERVABILITY" -VarValue "$rgNameGlobalObservability"
+          Set-EnvVar2 -VarName "OE_RG_NAME_G_DATA" -VarValue "$rgNameGlobalData"
+          Set-EnvVar2 -VarName "OE_RG_NAME_G_WORKLOAD" -VarValue "$rgNameGlobalWorkload"
 
 
           # User Assigned Identity
-          $uaiName = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "mid" -Sequence $configConstants.SeqNumUai
-          $uaiResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "$rgNameCore" -ResourceProviderName "Microsoft.ManagedIdentity" -ResourceTypeName "userAssignedIdentities" -ResourceName $uaiName
+          $uaiName = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix $configConstants.PrefixUai -Sequence $configConstants.SeqNumUai
+          $uaiResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "$rgNameGlobalCore" -ResourceProviderName "Microsoft.ManagedIdentity" -ResourceTypeName "userAssignedIdentities" -ResourceName $uaiName
 
           Set-EnvVar2 -VarName "OE_UAI_NAME" -VarValue "$uaiName"
           Set-EnvVar2 -VarName "OE_UAI_RESOURCE_ID" -VarValue "$uaiResourceId"
@@ -91,8 +91,8 @@ jobs:
 
 
           # Log Analytics
-          $workspaceName = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "law" -Sequence $configConstants.SeqNumLogAnalytics
-          $workspaceResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "$rgNameObservability" -ResourceProviderName "microsoft.operationalinsights" -ResourceTypeName "workspaces" -ResourceName $workspaceName
+          $workspaceName = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix $configConstants.PrefixLogAnalytics -Sequence $configConstants.SeqNumLogAnalytics
+          $workspaceResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "$rgNameGlobalObservability" -ResourceProviderName "microsoft.operationalinsights" -ResourceTypeName "workspaces" -ResourceName $workspaceName
 
           Set-EnvVar2 -VarName "OE_LAW_NAME" -VarValue "$workspaceName"
           Set-EnvVar2 -VarName "OE_LAW_RESOURCE_ID" -VarValue "$workspaceResourceId"
@@ -339,17 +339,12 @@ jobs:
           $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
           $configGlobal = Get-ConfigGlobal -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}"
 
-
-          #$privateEndpointName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "pep" -Sequence $configConstants.SeqNumData
-          #$dbServerNicName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "nic" -Sequence $configConstants.SeqNumData
-          #$dbServerNicResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_?????? }}" -ResourceProviderName "Microsoft.Network" -ResourceTypeName "networkInterfaces" -ResourceName $dbServerNicName
-
           Write-Debug -Debug:$true -Message "Deploy Database"
           if ($configGlobal.Database.Type -eq "MariaDB")
           {
             # Default instance - should be exactly one
             $instance = $configGlobal.Database.Instances | Where-Object { $_.Mode -eq "Default" }
-            $defaultInstanceName = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "db" -Sequence $configConstants.SeqNumData -Suffix "01"
+            $defaultInstanceName = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix $configConstants.PrefixDatabase -Sequence $configConstants.SeqNumData -Suffix "01"
             $defaultInstanceResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_G_DATA }}" -ResourceProviderName $configGlobal.Database.ResourceProvider -ResourceTypeName $configGlobal.Database.ResourceType -ResourceName $defaultInstanceName
 
             $output = Deploy-MariaDbServer `
@@ -397,7 +392,8 @@ jobs:
 
             foreach ($instance in $configGlobal.Database.Instances | Where-Object { $_.Mode -eq "Replica" })
             {
-              $instanceName = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "db" -Sequence $configConstants.SeqNumData -Suffix $instanceIndex.ToString().PadLeft(2, "0")
+              $instanceSuffix = $instanceIndex.ToString().PadLeft(2, "0")
+              $instanceName = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix $configConstants.PrefixDatabase -Sequence $configConstants.SeqNumData -Suffix $instanceSuffix
               $instanceResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_G_DATA }}" -ResourceProviderName $configGlobal.Database.ResourceProvider -ResourceTypeName $configGlobal.Database.ResourceType -ResourceName $instanceName
 
               $output = Deploy-MariaDbServer `
@@ -446,60 +442,12 @@ jobs:
           {
             Write-Debug -Debug:$true -Message "UNKNOWN DATABASE TYPE"
           }
-
-
-          #Write-Debug -Debug:$true -Message "Deploy Private Endpoint and NIC"
-          #$output = Deploy-PrivateEndpointAndNic `
-          #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          #  -Location $configScaleUnit.Location `
-          #  -ResourceGroupName ${{ env.OE_RG_NAME_SU_WORKLOAD }} `
-          #  -TemplateUri ($configConstants.TemplateUriPrefix + "net.private-endpoint.json") `
-          #  -ProtectedWorkloadResourceId "${{ env.OE_DB_SERVER_RESOURCE_ID }}" `
-          #  -ProtectedWorkloadSubResource "mariadbServer" `
-          #  -PrivateEndpointName $privateEndpointName `
-          #  -NetworkInterfaceName $dbServerNicName `
-          #  -SubnetResourceId ${{ env.OE_SUBNET_RESOURCE_ID_PRIVATE_ENDPOINT }} `
-          #  -Tags ${{ env.OE_TAGS_FOR_ARM }}
-
-          #Write-Debug -Debug:$true -Message "$output"
-
-          ## NIC Diagnostics
-          #Write-Debug -Debug:$true -Message "Deploy NIC Diagnostics"
-          #$output = Deploy-DiagnosticsSetting `
-          #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          #  -ResourceGroupName ${{ env.OE_RG_NAME_SU_WORKLOAD }} `
-          #  -TemplateUri ($configConstants.TemplateUriPrefix + "diagnostic-settings.json") `
-          #  -ResourceId $dbServerNicResourceId `
-          #  -DiagnosticsSettingName ("diag-" + "${{ env.OE_LAW_NAME }}") `
-          #  -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
-          #  -SendLogs $false `
-          #  -SendMetrics $true
-
-          #Write-Debug -Debug:$true -Message "$output"
-
-
-          ## Private Endpoint DNS Zone Group
-          #Write-Debug -Debug:$true -Message "Deploy Private Endpoint DNS Zone Group"
-          #$privateDnsZoneResourceId = Get-ResourceId `
-          #  -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          #  -ResourceGroupName "${{ env.OE_RG_NAME_SU_NETWORK }}" `
-          #  -ResourceProviderName "Microsoft.Network" `
-          #  -ResourceTypeName "privateDnsZones" `
-          #  -ResourceName $configConstants.PrivateDnsZoneNameDatabaseMariaDb
-
-          #Deploy-PrivateEndpointPrivateDnsZoneGroup `
-          #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-          #  -ResourceGroupName ${{ env.OE_RG_NAME_SU_WORKLOAD }} `
-          #  -TemplateUri ($configConstants.TemplateUriPrefix + "net.private-endpoint.private-dns-zone-group.json") `
-          #  -PrivateEndpointName $privateEndpointName `
-          #  -PrivateDnsZoneName $configConstants.PrivateDnsZoneNameDatabaseMariaDb `
-          #  -PrivateDnsZoneGroupName "default" `
-          #  -PrivateDnsZoneResourceId $privateDnsZoneResourceId
         shell: pwsh
 
 
 
   prep_matrix:
+    needs: deploy_global
     name: Prepare Matrix
     environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
@@ -522,6 +470,8 @@ jobs:
           $matrix = "{'include':" + $matrix + "}"
           echo "matrix=$matrix" >> $env:GITHUB_OUTPUT
         shell: pwsh
+
+
 
   deploy_scale_unit:
     needs: prep_matrix
@@ -570,55 +520,110 @@ jobs:
           . ./scripts/infra/Network.ps1
 
           $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configGlobal = Get-ConfigGlobal -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}"
           $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.ScaleUnit }}"
 
           Set-EnvVars `
             -Environment "${{ inputs.environment }}" `
             -ConfigScaleUnit $configScaleUnit
 
-          # Resource Groups
-          $rgNameCore = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitCore
-          $rgNameNetwork = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitNetwork
-          $rgNameObservability = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitObservability
-          $rgNameData = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitData
-          $rgNameWorkload = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitWorkload
+          # ##################################################
+          # GLOBAL
 
-          Set-EnvVar2 -VarName "OE_RG_NAME_SU_CORE" -VarValue "$rgNameCore"
-          Set-EnvVar2 -VarName "OE_RG_NAME_SU_NETWORK" -VarValue "$rgNameNetwork"
-          Set-EnvVar2 -VarName "OE_RG_NAME_SU_OBSERVABILITY" -VarValue "$rgNameObservability"
-          Set-EnvVar2 -VarName "OE_RG_NAME_SU_DATA" -VarValue "$rgNameData"
-          Set-EnvVar2 -VarName "OE_RG_NAME_SU_WORKLOAD" -VarValue "$rgNameWorkload"
+          # Resource Groups
+          $rgNameGlobalCore = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalCore
+          $rgNameGlobalNetwork = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalNetwork
+          $rgNameGlobalObservability = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalObservability
+          $rgNameGlobalData = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalData
+          $rgNameGlobalWorkload = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalWorkload
+
+          Set-EnvVar2 -VarName "OE_RG_NAME_G_CORE" -VarValue "$rgNameGlobalCore"
+          Set-EnvVar2 -VarName "OE_RG_NAME_G_NETWORK" -VarValue "$rgNameGlobalNetwork"
+          Set-EnvVar2 -VarName "OE_RG_NAME_G_OBSERVABILITY" -VarValue "$rgNameGlobalObservability"
+          Set-EnvVar2 -VarName "OE_RG_NAME_G_DATA" -VarValue "$rgNameGlobalData"
+          Set-EnvVar2 -VarName "OE_RG_NAME_G_WORKLOAD" -VarValue "$rgNameGlobalWorkload"
+
+          # User Assigned Identity
+          $uaiName = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix $configConstants.PrefixUai -Sequence $configConstants.SeqNumUai
+          $uaiResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "$rgNameGlobalCore" -ResourceProviderName "Microsoft.ManagedIdentity" -ResourceTypeName "userAssignedIdentities" -ResourceName $uaiName
+
+          Set-EnvVar2 -VarName "OE_UAI_NAME" -VarValue "$uaiName"
+          Set-EnvVar2 -VarName "OE_UAI_RESOURCE_ID" -VarValue "$uaiResourceId"
+          
+          $uai = "$(az identity show -g "$rgNameGlobalCore" -n $uaiName" | ConvertFrom-Json
+
+          Set-EnvVar2 -VarName "OE_UAI_CLIENT_ID" -VarValue $uai.clientId
+          Set-EnvVar2 -VarName "OE_UAI_PRINCIPAL_ID" -VarValue $uai.principalId
+
+          # Log Analytics
+          $workspaceName = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix $configConstants.PrefixLogAnalytics -Sequence $configConstants.SeqNumLogAnalytics
+          $workspaceResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "$rgNameGlobalObservability" -ResourceProviderName "microsoft.operationalinsights" -ResourceTypeName "workspaces" -ResourceName $workspaceName
+
+          Set-EnvVar2 -VarName "OE_LAW_NAME" -VarValue "$workspaceName"
+          Set-EnvVar2 -VarName "OE_LAW_RESOURCE_ID" -VarValue "$workspaceResourceId"
+          # ##################################################
+
+
+          # ##################################################
+          # SCALE UNIT
+
+          # Resource Groups
+          $rgNameScaleUnitCore = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitCore
+          $rgNameScaleUnitNetwork = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitNetwork
+          $rgNameScaleUnitObservability = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitObservability
+          $rgNameScaleUnitData = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitData
+          $rgNameScaleUnitWorkload = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitWorkload
+
+          Set-EnvVar2 -VarName "OE_RG_NAME_SU_CORE" -VarValue "$rgNameScaleUnitCore"
+          Set-EnvVar2 -VarName "OE_RG_NAME_SU_NETWORK" -VarValue "$rgNameScaleUnitNetwork"
+          Set-EnvVar2 -VarName "OE_RG_NAME_SU_OBSERVABILITY" -VarValue "$rgNameScaleUnitObservability"
+          Set-EnvVar2 -VarName "OE_RG_NAME_SU_DATA" -VarValue "$rgNameScaleUnitData"
+          Set-EnvVar2 -VarName "OE_RG_NAME_SU_WORKLOAD" -VarValue "$rgNameScaleUnitWorkload"
 
           # Network
           # TODO may need to nuance this a bit more than simply grabbing the first subnet
           Write-Debug -Debug:$true -Message "Get first subnet resource id"
-          $subnetResourceIds = Get-SubnetResourceIds -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -SubscriptionId ${{ secrets.OE_AZURE_SUBSCRIPTION_ID }} -ResourceGroupName "$rgNameNetwork"
+          $subnetResourceIds = Get-SubnetResourceIds -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -SubscriptionId ${{ secrets.OE_AZURE_SUBSCRIPTION_ID }} -ResourceGroupName "$rgNameScaleUnitNetwork"
           $subnetResourceId = $subnetResourceIds[0]
           Set-EnvVar2 -VarName "OE_SUBNET_RESOURCE_ID_PRIVATE_ENDPOINT" -VarValue $subnetResourceId
 
           # Key Vault
-          $keyVaultName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "kvt" -Sequence $configConstants.SeqNumKeyVault
-          $keyVaultResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "$rgNameCore" -ResourceProviderName "Microsoft.KeyVault" -ResourceTypeName "vaults" -ResourceName $keyVaultName
+          $keyVaultName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixKeyVault -Sequence $configConstants.SeqNumKeyVault
+          $keyVaultResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "$rgNameScaleUnitCore" -ResourceProviderName "Microsoft.KeyVault" -ResourceTypeName "vaults" -ResourceName $keyVaultName
 
           Set-EnvVar2 -VarName "OE_KEYVAULT_NAME" -VarValue "$keyVaultName"
           Set-EnvVar2 -VarName "OE_KEYVAULT_RESOURCE_ID" -VarValue "$keyVaultResourceId"
 
           # Storage
-          $storageAccountName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "sa" -Sequence $configConstants.SeqNumStorage -IncludeDelimiter $false
-          $storageAccountResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "$rgNameCore" -ResourceProviderName "Microsoft.Storage" -ResourceTypeName "storageAccounts" -ResourceName $storageAccountName
+          $storageAccountName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixStorageAccount -Sequence $configConstants.SeqNumStorage -IncludeDelimiter $false
+          $storageAccountResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "$rgNameScaleUnitCore" -ResourceProviderName "Microsoft.Storage" -ResourceTypeName "storageAccounts" -ResourceName $storageAccountName
 
           Set-EnvVar2 -VarName "OE_STORAGE_ACCOUNT_NAME" -VarValue "$storageAccountName"
           Set-EnvVar2 -VarName "OE_STORAGE_ACCOUNT_RESOURCE_ID" -VarValue "$storageAccountResourceId"
 
           # App Service
-          $appServiceName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "app" -Sequence $configConstants.SeqNumWorkloadWebApp
-          $appServiceResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "$rgNameWorkload" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "sites" -ResourceName $appServiceName
+          $appServiceName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixApp -Sequence $configConstants.SeqNumWorkloadWebApp
+          $appServiceResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "$rgNameScaleUnitWorkload" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "sites" -ResourceName $appServiceName
 
           Set-EnvVar2 -VarName "OE_APP_SERVICE_NAME" -VarValue "$appServiceName"
           Set-EnvVar2 -VarName "OE_APP_SERVICE_RESOURCE_ID" -VarValue "$appServiceResourceId"
+          # ##################################################
 
 
+          # ##################################################
           # Env vars listed here for convenience
+          # OE_RG_NAME_G_CORE
+          # OE_RG_NAME_G_NETWORK
+          # OE_RG_NAME_G_OBSERVABILITY
+          # OE_RG_NAME_G_DATA
+          # OE_RG_NAME_G_WORKLOAD
+          # OE_UAI_NAME
+          # OE_UAI_RESOURCE_ID
+          # OE_UAI_CLIENT_ID - set below
+          # OE_UAI_PRINCIPAL_ID - set below
+          # OE_LAW_NAME
+          # OE_LAW_RESOURCE_ID
+
           # OE_RG_NAME_SU_CORE
           # OE_RG_NAME_SU_NETWORK
           # OE_RG_NAME_SU_OBSERVABILITY
@@ -631,6 +636,7 @@ jobs:
           # OE_STORAGE_ACCOUNT_RESOURCE_ID
           # OE_APP_SERVICE_NAME
           # OE_APP_SERVICE_RESOURCE_ID
+          # ##################################################
         shell: pwsh
 
       - name: Create Resource Groups
@@ -749,12 +755,12 @@ jobs:
           $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
           $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.ScaleUnit }}"
 
-          $privateLinkScopeName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "pls" -Sequence $configConstants.SeqNumAmpls
+          $privateLinkScopeName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixAmpls -Sequence $configConstants.SeqNumAmpls
           $privateLinkScopeResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_OBSERVABILITY }}" -ResourceProviderName "microsoft.insights" -ResourceTypeName "privatelinkscopes" -ResourceName $privateLinkScopeName
 
-          $privateEndpointName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "pep" -Sequence $configConstants.SeqNumAmpls
+          $privateEndpointName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixPrivateEndpoint -Sequence $configConstants.SeqNumAmpls
 
-          $privateLinkScopeNicName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "nic" -Sequence $configConstants.SeqNumAmpls
+          $privateLinkScopeNicName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixNic -Sequence $configConstants.SeqNumAmpls
           $privateLinkScopeNicResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_OBSERVABILITY }}" -ResourceProviderName "Microsoft.Network" -ResourceTypeName "networkInterfaces" -ResourceName $privateLinkScopeNicName
 
           Write-Debug -Debug:$true -Message "Deploy AMPLS"
@@ -849,9 +855,9 @@ jobs:
           $subnetResourceIdsCsv = $($subnetResourceIds -join ",")
           Write-Debug -Debug:$true -Message "$subnetResourceIdsCsv"
 
-          $privateEndpointName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "pep" -Sequence $configConstants.SeqNumKeyVault
+          $privateEndpointName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixPrivateEndpoint -Sequence $configConstants.SeqNumKeyVault
 
-          $keyVaultNicName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "nic" -Sequence $configConstants.SeqNumKeyVault
+          $keyVaultNicName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixNic -Sequence $configConstants.SeqNumKeyVault
           $keyVaultNicResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_CORE }}" -ResourceProviderName "Microsoft.Network" -ResourceTypeName "networkInterfaces" -ResourceName $keyVaultNicName
 
           Write-Debug -Debug:$true -Message "Deploy Key Vault"
@@ -963,8 +969,8 @@ jobs:
           Write-Debug -Debug:$true -Message "$subnetResourceIdsCsv"
 
           # Blob
-          $privateEndpointNameBlob = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "pep" -Sequence $configConstants.SeqNumStorage -Suffix "blob"
-          $storageAccountNicNameBlob = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "nic" -Sequence $configConstants.SeqNumStorage -Suffix "blob"
+          $privateEndpointNameBlob = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixPrivateEndpoint -Sequence $configConstants.SeqNumStorage -Suffix "blob"
+          $storageAccountNicNameBlob = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixNic -Sequence $configConstants.SeqNumStorage -Suffix "blob"
           $storageAccountNicResourceIdBlob = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_CORE }}" -ResourceProviderName "Microsoft.Network" -ResourceTypeName "networkInterfaces" -ResourceName $storageAccountNicNameBlob
 
           Write-Debug -Debug:$true -Message "Deploy Storage Account"
@@ -1044,6 +1050,146 @@ jobs:
             -PrivateDnsZoneResourceId $privateDnsZoneResourceId
         shell: pwsh
 
+      - name: Deploy Database Connectivity
+        if: success()
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          . ./scripts/infra/Utility.ps1
+          . ./scripts/infra/Network.ps1
+          . ./scripts/infra/Observability.ps1
+          . ./scripts/infra/Database.ps1
+
+          $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configGlobal = Get-ConfigGlobal -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}"
+          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.ScaleUnit }}"
+
+
+          if ($configGlobal.Database.Type -eq "MariaDB")
+          {
+            # Private Endpoint DNS Zone Group
+            $privateDnsZoneResourceId = Get-ResourceId `
+              -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+              -ResourceGroupName "${{ env.OE_RG_NAME_SU_NETWORK }}" `
+              -ResourceProviderName "Microsoft.Network" `
+              -ResourceTypeName "privateDnsZones" `
+              -ResourceName $configConstants.PrivateDnsZoneNameDatabaseMariaDb
+
+            # ##################################################
+            # Default instance - should be exactly one
+            $instance = $configGlobal.Database.Instances | Where-Object { $_.Mode -eq "Default" }
+            $defaultInstanceName = Get-DatabaseInstanceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Suffix "01"
+            $defaultInstanceResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_G_DATA }}" -ResourceProviderName $configGlobal.Database.ResourceProvider -ResourceTypeName $configGlobal.Database.ResourceType -ResourceName $defaultInstanceName
+
+            $privateEndpointName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixPrivateEndpoint -Sequence $configConstants.SeqNumData -Suffix "01"
+            $instanceNicName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixNic -Sequence $configConstants.SeqNumData -Suffix "01"
+            $instanceNicResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_DATA }}" -ResourceProviderName "Microsoft.Network" -ResourceTypeName "networkInterfaces" -ResourceName $instanceNicName
+
+            Write-Debug -Debug:$true -Message "Deploy Private Endpoint and NIC"
+            $output = Deploy-PrivateEndpointAndNic `
+              -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+              -Location $configScaleUnit.Location `
+              -ResourceGroupName ${{ env.OE_RG_NAME_SU_DATA }} `
+              -TemplateUri ($configConstants.TemplateUriPrefix + "net.private-endpoint.json") `
+              -ProtectedWorkloadResourceId "$defaultInstanceResourceId" `
+              -ProtectedWorkloadSubResource "mariadbServer" `
+              -PrivateEndpointName $privateEndpointName `
+              -NetworkInterfaceName $instanceNicName `
+              -SubnetResourceId ${{ env.OE_SUBNET_RESOURCE_ID_PRIVATE_ENDPOINT }} `
+              -Tags ${{ env.OE_TAGS_FOR_ARM }}
+
+            Write-Debug -Debug:$true -Message "$output"
+
+            # NIC Diagnostics
+            Write-Debug -Debug:$true -Message "Deploy NIC Diagnostics"
+            $output = Deploy-DiagnosticsSetting `
+              -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+              -ResourceGroupName ${{ env.OE_RG_NAME_SU_DATA }} `
+              -TemplateUri ($configConstants.TemplateUriPrefix + "diagnostic-settings.json") `
+              -ResourceId $instanceNicResourceId `
+              -DiagnosticsSettingName ("diag-" + "${{ env.OE_LAW_NAME }}") `
+              -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+              -SendLogs $false `
+              -SendMetrics $true
+
+            Write-Debug -Debug:$true -Message "$output"
+
+            # Private Endpoint DNS Zone Group
+            Deploy-PrivateEndpointPrivateDnsZoneGroup `
+              -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+              -ResourceGroupName ${{ env.OE_RG_NAME_SU_DATA }} `
+              -TemplateUri ($configConstants.TemplateUriPrefix + "net.private-endpoint.private-dns-zone-group.json") `
+              -PrivateEndpointName $privateEndpointName `
+              -PrivateDnsZoneName $configConstants.PrivateDnsZoneNameDatabaseMariaDb `
+              -PrivateDnsZoneGroupName "default" `
+              -PrivateDnsZoneResourceId $privateDnsZoneResourceId
+            # ##################################################
+
+            # ##################################################
+            # Read-only replicas
+
+            $instanceIndex = 2
+
+            foreach ($instance in $configGlobal.Database.Instances | Where-Object { $_.Mode -eq "Replica" })
+            {
+              $instanceSuffix = $instanceIndex.ToString().PadLeft(2, "0")
+              $defaultInstanceName = Get-DatabaseInstanceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Suffix $instanceSuffix
+              $instanceResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_G_DATA }}" -ResourceProviderName $configGlobal.Database.ResourceProvider -ResourceTypeName $configGlobal.Database.ResourceType -ResourceName $instanceName
+
+              $privateEndpointName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixPrivateEndpoint -Sequence $configConstants.SeqNumData -Suffix $instanceSuffix
+              $instanceNicName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixNic -Sequence $configConstants.SeqNumData -Suffix $instanceSuffix
+              $instanceNicResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_DATA }}" -ResourceProviderName "Microsoft.Network" -ResourceTypeName "networkInterfaces" -ResourceName $instanceNicName
+
+              Write-Debug -Debug:$true -Message "Deploy Private Endpoint and NIC"
+              $output = Deploy-PrivateEndpointAndNic `
+                -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+                -Location $configScaleUnit.Location `
+                -ResourceGroupName ${{ env.OE_RG_NAME_SU_DATA }} `
+                -TemplateUri ($configConstants.TemplateUriPrefix + "net.private-endpoint.json") `
+                -ProtectedWorkloadResourceId "$instanceResourceId" `
+                -ProtectedWorkloadSubResource "mariadbServer" `
+                -PrivateEndpointName $privateEndpointName `
+                -NetworkInterfaceName $instanceNicName `
+                -SubnetResourceId ${{ env.OE_SUBNET_RESOURCE_ID_PRIVATE_ENDPOINT }} `
+                -Tags ${{ env.OE_TAGS_FOR_ARM }}
+
+              Write-Debug -Debug:$true -Message "$output"
+
+              # NIC Diagnostics
+              Write-Debug -Debug:$true -Message "Deploy NIC Diagnostics"
+              $output = Deploy-DiagnosticsSetting `
+                -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+                -ResourceGroupName ${{ env.OE_RG_NAME_SU_DATA }} `
+                -TemplateUri ($configConstants.TemplateUriPrefix + "diagnostic-settings.json") `
+                -ResourceId $instanceNicResourceId `
+                -DiagnosticsSettingName ("diag-" + "${{ env.OE_LAW_NAME }}") `
+                -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+                -SendLogs $false `
+                -SendMetrics $true
+
+              Write-Debug -Debug:$true -Message "$output"
+
+              Write-Debug -Debug:$true -Message "Deploy Private Endpoint DNS Zone Group"
+              Deploy-PrivateEndpointPrivateDnsZoneGroup `
+                -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+                -ResourceGroupName ${{ env.OE_RG_NAME_SU_DATA }} `
+                -TemplateUri ($configConstants.TemplateUriPrefix + "net.private-endpoint.private-dns-zone-group.json") `
+                -PrivateEndpointName $privateEndpointName `
+                -PrivateDnsZoneName $configConstants.PrivateDnsZoneNameDatabaseMariaDb `
+                -PrivateDnsZoneGroupName "default" `
+                -PrivateDnsZoneResourceId $privateDnsZoneResourceId
+
+              $instanceIndex++
+            }
+            # ##################################################
+          }
+          else
+          {
+            Write-Debug -Debug:$true -Message "UNKNOWN DATABASE TYPE"
+          }
+
+
       - name: Write Secrets to Key Vault
         if: success()
         run: |
@@ -1054,6 +1200,7 @@ jobs:
           . ./scripts/infra/KeyVault.ps1
 
           $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configGlobal = Get-ConfigGlobal -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}"
           $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.ScaleUnit }}"
 
           Write-Debug -Debug:$true -Message "Get runner IP address"
@@ -1077,12 +1224,14 @@ jobs:
 
           Write-Debug -Debug:$true -Message "Write Key Vault secrets for database"
 
+          $defaultInstanceName = Get-DatabaseInstanceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Suffix "01"
+          $defaultInstanceFqdn = $defaultInstanceName + "." + $configGlobal.Database.Tld
           Write-Debug -Debug:$true -Message "Write Key Vault secret MYSQL_HOST"
           Set-KeyVaultSecret `
             -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -KeyVaultName "${{ env.OE_KEYVAULT_NAME }}" `
             -SecretName "MYSQL_HOST" `
-            -SecretValue "${{ env.OE_DB_SERVER_NAME }}.mariadb.database.azure.com"
+            -SecretValue "$defaultInstanceFqdn"
 
           Write-Debug -Debug:$true -Message "Write Key Vault secret MYSQL_DATABASE"
           Set-KeyVaultSecret `
@@ -1164,7 +1313,7 @@ jobs:
           $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
           $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.ScaleUnit }}"
 
-          $appServicePlanName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "asp" -Sequence $configConstants.SeqNumWorkloadAppServicePlan
+          $appServicePlanName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixAppServicePlan -Sequence $configConstants.SeqNumWorkloadAppServicePlan
           $appServicePlanResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_WORKLOAD }}" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "serverFarms" -ResourceName $appServicePlanName
 
           $output = Deploy-AppServicePlan `
@@ -1209,10 +1358,10 @@ jobs:
           $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
           $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.ScaleUnit }}"
 
-          $appServicePlanName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "asp" -Sequence $configConstants.SeqNumWorkloadAppServicePlan
+          $appServicePlanName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixAppServicePlan -Sequence $configConstants.SeqNumWorkloadAppServicePlan
           $appServicePlanResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_WORKLOAD }}" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "serverFarms" -ResourceName $appServicePlanName
 
-          $appServicePlanAutoScaleSettingsName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "scl" -Sequence $configConstants.SeqNumWorkloadAppServicePlan
+          $appServicePlanAutoScaleSettingsName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixAutoscale -Sequence $configConstants.SeqNumWorkloadAppServicePlan
           $appServicePlanAutoScaleSettingsResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_WORKLOAD }}" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "serverFarms" -ResourceSubTypeName "autoscaleSettings" -ResourceName $appServicePlanName
 
           $output = Deploy-AppServicePlanAutoscaleSettings `
@@ -1255,7 +1404,7 @@ jobs:
           $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
           $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.ScaleUnit }}"
 
-          $appInsightsName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "ai" -Sequence $configConstants.SeqNumWorkloadWebApp
+          $appInsightsName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixAppInsights -Sequence $configConstants.SeqNumWorkloadWebApp
           $appInsightsResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_WORKLOAD }}" -ResourceProviderName "Microsoft.Insights" -ResourceTypeName "components" -ResourceName $appInsightsName
 
           $output = Deploy-AppInsights `
@@ -1295,10 +1444,10 @@ jobs:
           $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
           $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.ScaleUnit }}"
 
-          $appServicePlanName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "asp" -Sequence $configConstants.SeqNumWorkloadAppServicePlan
+          $appServicePlanName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixAppServicePlan -Sequence $configConstants.SeqNumWorkloadAppServicePlan
           $appServicePlanResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_WORKLOAD }}" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "serverFarms" -ResourceName $appServicePlanName
 
-          $appInsightsName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "ai" -Sequence $configConstants.SeqNumWorkloadWebApp
+          $appInsightsName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixAppInsights -Sequence $configConstants.SeqNumWorkloadWebApp
           $appInsightsResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_WORKLOAD }}" -ResourceProviderName "Microsoft.Insights" -ResourceTypeName "components" -ResourceName $appInsightsName
 
 
@@ -1335,9 +1484,9 @@ jobs:
           # ##################################################
           # App Service
 
-          $appServicePrivateEndpointName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "pep" -Sequence $configConstants.SeqNumWorkloadWebApp
+          $appServicePrivateEndpointName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixPrivateEndpoint -Sequence $configConstants.SeqNumWorkloadWebApp
 
-          $appServiceNicName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "nic" -Sequence $configConstants.SeqNumWorkloadWebApp
+          $appServiceNicName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixNic -Sequence $configConstants.SeqNumWorkloadWebApp
           $appServiceNicResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_WORKLOAD }}" -ResourceProviderName "Microsoft.Network" -ResourceTypeName "networkInterfaces" -ResourceName $appServiceNicName
 
           $subnetResourceIds = Get-SubnetResourceIds -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -SubscriptionId ${{ secrets.OE_AZURE_SUBSCRIPTION_ID }} -ResourceGroupName ${{ env.OE_RG_NAME_SU_NETWORK }}
@@ -1487,7 +1636,6 @@ jobs:
 
           Write-Debug -Debug:$true -Message "Write to ${{ env.OE_APP_SERVICE_NAME }}"
           az webapp config appsettings set -g ${{ env.OE_RG_NAME_SU_WORKLOAD }} -n ${{ env.OE_APP_SERVICE_NAME }} --settings '@config.json'
-
         shell: pwsh
 
 
