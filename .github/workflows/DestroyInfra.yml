@@ -99,7 +99,9 @@ jobs:
           $rgNameScaleUnitData = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitData
           $rgNameScaleUnitWorkload = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitWorkload
 
-          $rgExists = "$(az group exists -n $rgNameScaleUnitWorkload)"
+          $rgExists = $null
+
+          [bool]::TryParse("$(az group exists -g $rgNameScaleUnitWorkload)", [ref]$rgExists) | Out-Null
           if ($rgExists)
           {
             az group delete -y `
@@ -107,7 +109,7 @@ jobs:
               -n $rgNameScaleUnitWorkload
           }
 
-          $rgExists = "$(az group exists -n $rgNameScaleUnitData)"
+          [bool]::TryParse("$(az group exists -g $rgNameScaleUnitData)", [ref]$rgExists) | Out-Null
           if ($rgExists)
           {
             az group delete -y `
@@ -115,7 +117,7 @@ jobs:
               -n $rgNameScaleUnitData
           }
 
-          $rgExists = "$(az group exists -n $rgNameScaleUnitObservability)"
+          [bool]::TryParse("$(az group exists -g $rgNameScaleUnitObservability)", [ref]$rgExists) | Out-Null
           if ($rgExists)
           {
             az group delete -y `
@@ -123,7 +125,7 @@ jobs:
               -n $rgNameScaleUnitObservability
           }
 
-          $rgExists = "$(az group exists -n $rgNameScaleUnitCore)"
+          [bool]::TryParse("$(az group exists -g $rgNameScaleUnitCore)", [ref]$rgExists) | Out-Null
           if ($rgExists)
           {
             az group delete -y `
@@ -131,7 +133,7 @@ jobs:
               -n $rgNameScaleUnitCore
           }
 
-          $rgExists = "$(az group exists -n $rgNameScaleUnitNetwork)"
+          [bool]::TryParse("$(az group exists -g $rgNameScaleUnitNetwork)", [ref]$rgExists) | Out-Null
           if ($rgExists)
           {
             az group delete -y `
@@ -203,7 +205,9 @@ jobs:
           $rgNameGlobalData = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalData
           $rgNameGlobalWorkload = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalWorkload
 
-          $rgExists = "$(az group exists -n $rgNameGlobalWorkload)"
+          $rgExists = $null
+
+          [bool]::TryParse("$(az group exists -g $rgNameGlobalWorkload)", [ref]$rgExists) | Out-Null
           if ($rgExists)
           {
             az group delete -y `
@@ -211,7 +215,7 @@ jobs:
               -n $rgNameGlobalWorkload
           }
 
-          $rgExists = "$(az group exists -n $rgNameGlobalData)"
+          [bool]::TryParse("$(az group exists -g $rgNameGlobalData)", [ref]$rgExists) | Out-Null
           if ($rgExists)
           {
             az group delete -y `
@@ -219,7 +223,7 @@ jobs:
               -n $rgNameGlobalData
           }
 
-          $rgExists = "$(az group exists -n $rgNameGlobalObservability)"
+          [bool]::TryParse("$(az group exists -g $rgNameGlobalObservability)", [ref]$rgExists) | Out-Null
           if ($rgExists)
           {
             az group delete -y `
@@ -227,7 +231,7 @@ jobs:
               -n $rgNameGlobalObservability
           }
 
-          $rgExists = "$(az group exists -n $rgNameGlobalCore)"
+          [bool]::TryParse("$(az group exists -g $rgNameGlobalCore)", [ref]$rgExists) | Out-Null
           if ($rgExists)
           {
             az group delete -y `
@@ -235,7 +239,7 @@ jobs:
               -n $rgNameGlobalCore
           }
 
-          $rgExists = "$(az group exists -n $rgNameGlobalNetwork)"
+          [bool]::TryParse("$(az group exists -g $rgNameGlobalNetwork)", [ref]$rgExists) | Out-Null
           if ($rgExists)
           {
             az group delete -y `
