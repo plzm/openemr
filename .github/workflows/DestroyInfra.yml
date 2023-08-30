@@ -176,7 +176,6 @@ jobs:
 
           $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
           $configGlobal = Get-ConfigGlobal -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}"
-          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
 
           $rgNameGlobalCore = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalCore
           $rgNameGlobalNetwork = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalNetwork

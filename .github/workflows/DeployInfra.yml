@@ -466,7 +466,6 @@ jobs:
           $configEnv = Get-Content -Path $path | ConvertFrom-Json
           echo "::debug::configEnv=$configEnv"
           $matrix = ($configEnv | Where-Object { $_.Scope -eq "ScaleUnit" } | ConvertTo-Json -Depth 100 -Compress).Replace("`"", "'")
-          # $matrix = ($configEnv | Select-Object ScaleUnit | ConvertTo-Json -Depth 100 -Compress).Replace("`"", "'")
           echo "::debug::matrix=$matrix"
           $matrix = "{'include':" + $matrix + "}"
           echo "matrix=$matrix" >> $env:GITHUB_OUTPUT
