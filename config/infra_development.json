@@ -26,7 +26,7 @@
         },
         {
           "Mode": "Replica",
-          "Location": "westus3",
+          "Location": "westus2",
           "StorageAutogrow": "Disabled"
         }
       ]
@@ -108,7 +108,7 @@
   {
     "Scope": "ScaleUnit",
     "Id": "02",
-    "Location": "westus3",
+    "Location": "westus2",
     "Network": {
       "NSGs": [
         {
