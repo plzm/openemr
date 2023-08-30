@@ -10,7 +10,7 @@ on:
 
 jobs:
   prep_matrix:
-    name: Prepare Matrix
+    name: Prepare Scale Unit Matrix
     environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
     outputs:
@@ -26,7 +26,7 @@ jobs:
           echo "::debug::path=$path"
           $configEnv = Get-Content -Path $path | ConvertFrom-Json
           echo "::debug::configEnv=$configEnv"
-          $matrix = ($configEnv | Select-Object DeployUnit | ConvertTo-Json -Depth 100 -Compress).Replace("`"", "'")
+          $matrix = ($configEnv | Where-Object { $_.Scope -eq "ScaleUnit" } | ConvertTo-Json -Depth 100 -Compress).Replace("`"", "'")
           echo "::debug::matrix=$matrix"
           $matrix = "{'include':" + $matrix + "}"
           echo "matrix=$matrix" >> $env:GITHUB_OUTPUT
@@ -34,7 +34,7 @@ jobs:
 
   destroy_matrix:
     needs: prep_matrix
-    name: Destroy Infrastructure
+    name: Destroy Scale Unit ${{ matrix.Id }} Infrastructure
     environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
     strategy:
@@ -46,9 +46,9 @@ jobs:
 
       - name: Set Azure CLI extensions to auto-install
         if: success()
+        shell: pwsh
         run: |
           az config set extension.use_dynamic_install=yes_without_prompt
-        shell: pwsh
 
       - name: Azure login
         if: success()
@@ -59,62 +59,87 @@ jobs:
 
       - name: Set Config File Paths to Environment
         if: success()
+        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
 
           . ./scripts/infra/Utility.ps1
 
-          Set-EnvVar2 -VarName "OE_CONFIG_FILE_ALL" -VarValue "./config/infra_all.json"
+          Set-EnvVar2 -VarName "OE_CONFIG_FILE_ALL" -VarValue "./config/infra_constants.json"
           Set-EnvVar2 -VarName "OE_CONFIG_FILE_ENV" -VarValue ("./config/infra_" + "${{ inputs.environment }}" + ".json")
-        shell: pwsh
 
       - name: Set Environment Variables
         if: success()
+        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
 
           . ./scripts/infra/Utility.ps1
 
-          $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
 
           Set-EnvVars `
             -Environment "${{ inputs.environment }}" `
-            -ConfigAll $configAll `
-            -ConfigMatrix $configMatrix
-        shell: pwsh
+            -ConfigScaleUnit $configScaleUnit
 
       - name: Delete Resource Groups
         if: success()
+        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
 
           . ./scripts/infra/Utility.ps1
 
-          $configAll = Get-Config -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          $configMatrix = Get-ConfigMatrix -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -DeployUnit "${{ matrix.DeployUnit }}"
+          $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
 
-          $rgNameMain = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence $configAll.SeqNumRgMain
-          $rgNameNetwork = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence $configAll.SeqNumRgNetwork
-          $rgNameObservability = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence $configAll.SeqNumRgObservability
-          $rgNameWorkload = Get-ResourceName -ConfigAll $configAll -ConfigMatrix $configMatrix -Prefix "" -Sequence $configAll.SeqNumRgWorkload
+          $rgNameScaleUnitCore = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitCore
+          $rgNameScaleUnitNetwork = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitNetwork
+          $rgNameScaleUnitObservability = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitObservability
+          $rgNameScaleUnitData = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitData
+          $rgNameScaleUnitWorkload = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitWorkload
 
-          az group delete -y `
-            --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -n $rgNameWorkload
+          $rgExists = $null
 
-          az group delete -y `
-            --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -n $rgNameObservability
+          [bool]::TryParse("$(az group exists -g $rgNameScaleUnitWorkload)", [ref]$rgExists) | Out-Null
+          if ($rgExists)
+          {
+            az group delete -y `
+              --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+              -n $rgNameScaleUnitWorkload
+          }
 
-          az group delete -y `
-            --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -n $rgNameMain
+          [bool]::TryParse("$(az group exists -g $rgNameScaleUnitData)", [ref]$rgExists) | Out-Null
+          if ($rgExists)
+          {
+            az group delete -y `
+              --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+              -n $rgNameScaleUnitData
+          }
 
-          az group delete -y `
-            --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -n $rgNameNetwork
-        shell: pwsh
+          [bool]::TryParse("$(az group exists -g $rgNameScaleUnitObservability)", [ref]$rgExists) | Out-Null
+          if ($rgExists)
+          {
+            az group delete -y `
+              --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+              -n $rgNameScaleUnitObservability
+          }
+
+          [bool]::TryParse("$(az group exists -g $rgNameScaleUnitCore)", [ref]$rgExists) | Out-Null
+          if ($rgExists)
+          {
+            az group delete -y `
+              --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+              -n $rgNameScaleUnitCore
+          }
+
+          [bool]::TryParse("$(az group exists -g $rgNameScaleUnitNetwork)", [ref]$rgExists) | Out-Null
+          if ($rgExists)
+          {
+            az group delete -y `
+              --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+              -n $rgNameScaleUnitNetwork
+          }
 
 
       - name: Azure logout
@@ -125,4 +150,101 @@ jobs:
             az logout
             az cache purge
             az account clear
+
+  destroy_global:
+    needs: destroy_matrix
+    name: Destroy Global Infrastructure
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Azure login
+        if: success()
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          enable-AzPSSession: true
+
+      - name: Set Config File Paths to Environment
+        if: success()
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          . ./scripts/infra/Utility.ps1
+
+          Set-EnvVar2 -VarName "OE_CONFIG_FILE_ALL" -VarValue "./config/infra_constants.json"
+          Set-EnvVar2 -VarName "OE_CONFIG_FILE_ENV" -VarValue ("./config/infra_" + "${{ inputs.environment }}" + ".json")
+
+      - name: Set Environment Variables
+        if: success()
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          . ./scripts/infra/Utility.ps1
+
+          Set-EnvVars -Environment "${{ inputs.environment }}"
+
+      - name: Delete Resource Groups
+        if: success()
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          . ./scripts/infra/Utility.ps1
+
+          $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configGlobal = Get-ConfigGlobal -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}"
+
+          $rgNameGlobalCore = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalCore
+          $rgNameGlobalNetwork = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalNetwork
+          $rgNameGlobalObservability = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalObservability
+          $rgNameGlobalData = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalData
+          $rgNameGlobalWorkload = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalWorkload
+
+          $rgExists = $null
+
+          [bool]::TryParse("$(az group exists -g $rgNameGlobalWorkload)", [ref]$rgExists) | Out-Null
+          if ($rgExists)
+          {
+            az group delete -y `
+              --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+              -n $rgNameGlobalWorkload
+          }
+
+          [bool]::TryParse("$(az group exists -g $rgNameGlobalData)", [ref]$rgExists) | Out-Null
+          if ($rgExists)
+          {
+            az group delete -y `
+              --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+              -n $rgNameGlobalData
+          }
+
+          [bool]::TryParse("$(az group exists -g $rgNameGlobalObservability)", [ref]$rgExists) | Out-Null
+          if ($rgExists)
+          {
+            az group delete -y `
+              --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+              -n $rgNameGlobalObservability
+          }
+
+          [bool]::TryParse("$(az group exists -g $rgNameGlobalCore)", [ref]$rgExists) | Out-Null
+          if ($rgExists)
+          {
+            az group delete -y `
+              --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+              -n $rgNameGlobalCore
+          }
+
+          [bool]::TryParse("$(az group exists -g $rgNameGlobalNetwork)", [ref]$rgExists) | Out-Null
+          if ($rgExists)
+          {
+            az group delete -y `
+              --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+              -n $rgNameGlobalNetwork
+          }
+
 ...

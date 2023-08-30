@@ -1,6 +1,40 @@
 [
   {
-    "DeployUnit": "01",
+    "Scope": "Global",
+    "Id": "00",
+    "Location": "eastus",
+    "Database": {
+      "Type": "MariaDB",
+      "ResourceProvider": "Microsoft.DBforMariaDB",
+      "ResourceType": "servers",
+      "SkuTier": "GeneralPurpose",
+      "SkuFamily": "Gen5",
+      "SkuName": "GP_Gen5_2",
+      "SkuCapacity": 2,
+      "SkuSizeMB": 102400,
+      "Version": "10.3",
+      "BackupRetentionDays": 7,
+      "GeoRedundantBackup": "Enabled",
+      "MinimumTlsVersion": "TLS1_2",
+      "PublicNetworkAccess": "Disabled",
+      "Tld": "mariadb.database.azure.com",
+      "Instances": [
+        {
+          "Mode": "Default",
+          "Location": "eastus",
+          "StorageAutogrow": "Enabled"
+        },
+        {
+          "Mode": "Replica",
+          "Location": "westus2",
+          "StorageAutogrow": "Disabled"
+        }
+      ]
+    }
+  },
+  {
+    "Scope": "ScaleUnit",
+    "Id": "01",
     "Location": "eastus",
     "Network": {
       "NSGs": [
@@ -52,23 +86,6 @@
     "Storage": {
       "SkuName": "Standard_LRS"
     },
-    "Database": {
-      "Type": "MariaDB",
-      "ResourceProvider": "Microsoft.DBforMariaDB",
-      "ResourceType": "servers",
-      "SkuTier": "GeneralPurpose",
-      "SkuFamily": "Gen5",
-      "SkuName": "GP_Gen5_2",
-      "SkuCapacity": 2,
-      "SkuSizeMB": 102400,
-      "MariaDbVersion": "10.3",
-      "CreateMode": "Default",
-      "BackupRetentionDays": 7,
-      "GeoRedundantBackup": "Enabled",
-      "StorageAutogrow": "Enabled",
-      "MinimumTlsVersion": "TLS1_2",
-      "PublicNetworkAccess": "Disabled"
-    },
     "Workload": {
       "AppServicePlanSkuName": "P1V3",
       "AppServicePlanSkuTier": "PremiumV3",
@@ -89,8 +106,9 @@
     }
   },
   {
-    "DeployUnit": "02",
-    "Location": "westus3",
+    "Scope": "ScaleUnit",
+    "Id": "02",
+    "Location": "westus2",
     "Network": {
       "NSGs": [
         {
@@ -140,23 +158,6 @@
     },
     "Storage": {
       "SkuName": "Standard_LRS"
-    },
-    "Database": {
-      "Type": "MariaDB",
-      "ResourceProvider": "Microsoft.DBforMariaDB",
-      "ResourceType": "servers",
-      "SkuTier": "GeneralPurpose",
-      "SkuFamily": "Gen5",
-      "SkuName": "GP_Gen5_2",
-      "SkuCapacity": 2,
-      "SkuSizeMB": 102400,
-      "MariaDbVersion": "10.3",
-      "CreateMode": "Default",
-      "BackupRetentionDays": 7,
-      "GeoRedundantBackup": "Enabled",
-      "StorageAutogrow": "Enabled",
-      "MinimumTlsVersion": "TLS1_2",
-      "PublicNetworkAccess": "Disabled"
     },
     "Workload": {
       "AppServicePlanSkuName": "P1V3",

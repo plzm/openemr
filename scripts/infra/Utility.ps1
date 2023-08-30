@@ -22,7 +22,7 @@ function Get-Timestamp()
 
 #region Configuration
 
-function Get-Config()
+function Get-ConfigConstants()
 {
   [CmdletBinding()]
   param
@@ -32,12 +32,29 @@ function Get-Config()
     $ConfigFilePath
   )
 
-  Write-Debug -Debug:$debug -Message ("Get-Config: ConfigFilePath: " + "$ConfigFilePath")
+  Write-Debug -Debug:$debug -Message ("Get-ConfigConstants: ConfigFilePath: " + "$ConfigFilePath")
 
   Get-Content -Path "$ConfigFilePath" | ConvertFrom-Json
 }
 
-function Get-ConfigMatrix()
+function Get-ConfigGlobal()
+{
+  [CmdletBinding()]
+  param
+  (
+    [Parameter(Mandatory = $true)]
+    [string]
+    $ConfigFilePath
+  )
+
+  Write-Debug -Debug:$debug -Message ("Get-ConfigGlobal: ConfigFilePath: " + "$ConfigFilePath")
+
+  $config = Get-Content -Path "$ConfigFilePath" | ConvertFrom-Json
+
+  $config | Where-Object { $_.Scope -eq "Global" }
+}
+
+function Get-ConfigScaleUnit()
 {
   [CmdletBinding()]
   param
@@ -47,14 +64,14 @@ function Get-ConfigMatrix()
     $ConfigFilePath,
     [Parameter(Mandatory = $true)]
     [string]
-    $DeployUnit
+    $Id
   )
 
-  Write-Debug -Debug:$debug -Message ("Get-ConfigMatrix: ConfigFilePath: " + "$ConfigFilePath" + ", DeployUnit: " + "$DeployUnit")
+  Write-Debug -Debug:$debug -Message ("Get-ConfigScaleUnit: ConfigFilePath: " + "$ConfigFilePath" + ", Id: " + "$Id")
 
-  $configEnv = Get-Content -Path "$ConfigFilePath" | ConvertFrom-Json
+  $config = Get-Content -Path "$ConfigFilePath" | ConvertFrom-Json
 
-  $configEnv | Where-Object { $_.DeployUnit -eq "$DeployUnit" }
+  $config | Where-Object { $_.Scope -eq "ScaleUnit" -and $_.Id -eq "$Id" }
 }
 
 #endregion
@@ -68,10 +85,13 @@ function Get-ResourceName()
   (
     [Parameter(Mandatory = $true)]
     [object]
-    $ConfigAll,
-    [Parameter(Mandatory = $true)]
+    $ConfigConstants,
+    [Parameter(Mandatory = $false)]
     [object]
-    $ConfigMatrix,
+    $ConfigGlobal = $null,
+    [Parameter(Mandatory = $false)]
+    [object]
+    $ConfigScaleUnit = $null,
     [Parameter(Mandatory = $false)]
     [string]
     $Prefix = "",
@@ -99,10 +119,11 @@ function Get-ResourceName()
 
   $result = ""
 
-  if ($ConfigAll.NamePrefix) { $result = $ConfigAll.NamePrefix }
-  if ($ConfigAll.NameInfix) { $result += $delimiter + $ConfigAll.NameInfix }
-  if ($ConfigMatrix.DeployUnit) { $result += $delimiter + $ConfigMatrix.DeployUnit }
-  #if ($ConfigMatrix.Location) { $result += $delimiter + $ConfigMatrix.Location }
+  if ($ConfigConstants.NamePrefix) { $result = $ConfigConstants.NamePrefix }
+  if ($ConfigConstants.NameInfix) { $result += $delimiter + $ConfigConstants.NameInfix }
+
+  if ($ConfigGlobal -and $ConfigGlobal.Id) { $result += $delimiter + $ConfigGlobal.Id }
+  if ($ConfigScaleUnit -and $ConfigScaleUnit.Id) { $result += $delimiter + $ConfigScaleUnit.Id }
 
   if ($Prefix) { $result = $Prefix + $delimiter + $result }
   if ($Sequence) { $result += $delimiter + $Sequence }
@@ -195,39 +216,34 @@ function Set-EnvVars()
     [Parameter(Mandatory = $true)]
     [string]
     $Environment,
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $false)]
     [object]
-    $ConfigAll,
-    [Parameter(Mandatory = $true)]
-    [object]
-    $ConfigMatrix
+    $ConfigScaleUnit = $null
   )
 
   Write-Debug -Debug:$debug -Message ("Set-EnvVars: Environment: " + "$Environment")
 
-  Set-EnvVarsMatrix `
-  -ConfigAll $ConfigAll `
-  -ConfigMatrix $ConfigMatrix
+  if ($ConfigScaleUnit)
+  {
+    Set-EnvVarsScaleUnit `
+    -ConfigScaleUnit $ConfigScaleUnit
+  }
 
   Set-EnvVarTags `
     -Environment $Environment `
-    -ConfigAll $ConfigAll `
-    -ConfigMatrix $ConfigMatrix
+    -ConfigScaleUnit $ConfigScaleUnit
 }
 
-function Set-EnvVarsMatrix()
+function Set-EnvVarsScaleUnit()
 {
   [CmdletBinding()]
   param
   (
     [Parameter(Mandatory = $true)]
     [object]
-    $ConfigAll,
-    [Parameter(Mandatory = $true)]
-    [object]
-    $ConfigMatrix
+    $ConfigScaleUnit
   )
-  Write-Debug -Debug:$debug -Message ("Set-EnvVarsMatrix")
+  Write-Debug -Debug:$debug -Message ("Set-EnvVarsScaleUnit")
  
   #Set-EnvVar2 -VarName "" -VarValue ""
 }
@@ -240,22 +256,33 @@ function Set-EnvVarTags()
     [Parameter(Mandatory = $true)]
     [string]
     $Environment,
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $false)]
     [object]
-    $ConfigAll,
-    [Parameter(Mandatory = $true)]
-    [object]
-    $ConfigMatrix
+    $ConfigScaleUnit = $null
   )
 
   Write-Debug -Debug:$debug -Message ("Set-EnvVarTags: Environment: " + "$Environment")
 
   $tagEnv = "env=" + $Environment
 
-  $tagsForAzureCli = @($tagEnv)
+  if ($ConfigScaleUnit)
+  {
+    $tagScaleUnit = "ScaleUnit=" + $ConfigScaleUnit.Id
+
+    $tagsForAzureCli = @($tagEnv, $tagScaleUnit)
+  }
+  else
+  {
+    $tagsForAzureCli = @($tagEnv)
+  }
 
   $tagsObject = @{}
   $tagsObject['env'] = $Environment
+
+  if ($ConfigScaleUnit)
+  {
+    $tagsObject['ScaleUnit'] = $ConfigScaleUnit.Id
+  }
 
   # The following manipulations are needed to get through separate un-escaping by Powershell AND by Azure CLI, 
   # and to get CLI to correctly see the tags as a JSON string passed into ARM templates as an object type.
