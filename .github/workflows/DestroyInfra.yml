@@ -99,25 +99,45 @@ jobs:
           $rgNameScaleUnitData = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitData
           $rgNameScaleUnitWorkload = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitWorkload
 
-          az group delete -y `
-            --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -n $rgNameScaleUnitWorkload
+          $rgExists = "$(az group exists -n $rgNameScaleUnitWorkload)"
+          if ($rgExists)
+          {
+            az group delete -y `
+              --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+              -n $rgNameScaleUnitWorkload
+          }
 
-          az group delete -y `
-            --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -n $rgNameScaleUnitData
+          $rgExists = "$(az group exists -n $rgNameScaleUnitData)"
+          if ($rgExists)
+          {
+            az group delete -y `
+              --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+              -n $rgNameScaleUnitData
+          }
 
-          az group delete -y `
-            --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -n $rgNameScaleUnitObservability
+          $rgExists = "$(az group exists -n $rgNameScaleUnitObservability)"
+          if ($rgExists)
+          {
+            az group delete -y `
+              --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+              -n $rgNameScaleUnitObservability
+          }
 
-          az group delete -y `
-            --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -n $rgNameScaleUnitCore
+          $rgExists = "$(az group exists -n $rgNameScaleUnitCore)"
+          if ($rgExists)
+          {
+            az group delete -y `
+              --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+              -n $rgNameScaleUnitCore
+          }
 
-          az group delete -y `
-            --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -n $rgNameScaleUnitNetwork
+          $rgExists = "$(az group exists -n $rgNameScaleUnitNetwork)"
+          if ($rgExists)
+          {
+            az group delete -y `
+              --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+              -n $rgNameScaleUnitNetwork
+          }
 
 
       - name: Azure logout
@@ -183,24 +203,44 @@ jobs:
           $rgNameGlobalData = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalData
           $rgNameGlobalWorkload = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalWorkload
 
-          az group delete -y `
-            --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -n $rgNameGlobalWorkload
+          $rgExists = "$(az group exists -n $rgNameGlobalWorkload)"
+          if ($rgExists)
+          {
+            az group delete -y `
+              --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+              -n $rgNameGlobalWorkload
+          }
 
-          az group delete -y `
-            --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -n $rgNameGlobalData
+          $rgExists = "$(az group exists -n $rgNameGlobalData)"
+          if ($rgExists)
+          {
+            az group delete -y `
+              --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+              -n $rgNameGlobalData
+          }
 
-          az group delete -y `
-            --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -n $rgNameGlobalObservability
+          $rgExists = "$(az group exists -n $rgNameGlobalObservability)"
+          if ($rgExists)
+          {
+            az group delete -y `
+              --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+              -n $rgNameGlobalObservability
+          }
 
-          az group delete -y `
-            --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -n $rgNameGlobalCore
+          $rgExists = "$(az group exists -n $rgNameGlobalCore)"
+          if ($rgExists)
+          {
+            az group delete -y `
+              --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+              -n $rgNameGlobalCore
+          }
 
-          az group delete -y `
-            --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -n $rgNameGlobalNetwork
+          $rgExists = "$(az group exists -n $rgNameGlobalNetwork)"
+          if ($rgExists)
+          {
+            az group delete -y `
+              --subscription "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+              -n $rgNameGlobalNetwork
+          }
 
 ...
