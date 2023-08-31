@@ -111,3 +111,38 @@ function Deploy-RoleAssignmentSub()
 
   return $output
 }
+
+function Remove-RoleAssignmentsSub()
+{
+  [CmdletBinding()]
+  param
+  (
+    [Parameter(Mandatory = $true)]
+    [string]
+    $SubscriptionId,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $PrincipalId
+  )
+
+  $Scope = "/subscriptions/" + $SubscriptionId
+
+  $assignments = "$(az role assignment list --scope $Scope --assignee $principalId --query '[].id')" | ConvertFrom-Json
+
+  $count = $assignments.Count
+
+  if ($count -gt 0)
+  {
+    Write-Debug -Debug:$true -Message "Delete $count Sub Role Assignment(s) for Scope $Scope and UAI Principal ID $principalId"
+
+    $output = az role assignment delete --verbose `
+      --scope $Scope `
+      --assignee $principalId
+
+    return $output
+  }
+  else
+  {
+    Write-Debug -Debug:$true -Message "No Sub Role Assignment(s) for Scope $Scope and UAI Principal ID $principalId"
+  }
+}

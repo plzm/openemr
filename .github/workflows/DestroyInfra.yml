@@ -188,6 +188,31 @@ jobs:
 
           Set-EnvVars -Environment "${{ inputs.environment }}"
 
+      - name: Delete UAI Role Assignments
+        if: success()
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          . ./scripts/infra/Utility.ps1
+          . ./scripts/infra/Security.ps1
+
+          $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configGlobal = Get-ConfigGlobal -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}"
+
+          $rgNameGlobalCore = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalCore
+
+          $uaiName = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix $configConstants.PrefixUai -Sequence $configConstants.SeqNumUai
+
+          Write-Debug -Debug:$true -Message "Get UAI $uaiName"
+          $uai = "$(az identity show -g $rgNameGlobalCore -n $uaiName)" | ConvertFrom-Json
+
+          $output = Remove-RoleAssignmentsSub `
+            -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -PrincipalId $uai.principalId
+ 
+          Write-Debug -Debug:$true -Message "$output"
+
       - name: Delete Resource Groups
         if: success()
         shell: pwsh

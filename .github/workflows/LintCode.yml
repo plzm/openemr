@@ -1,5 +1,5 @@
 ---
-name: Lint Code Base
+name: Lint
 
 on:
   workflow_dispatch:
@@ -9,15 +9,11 @@ on:
       - 'feature/*'
       - 'fix/*'
       - 'release/*'
-    paths:
-      - 'src/**'
   pull_request:
     branches:
       - develop
       - main
       - 'release/*'
-    paths:
-      - 'src/**'
 
 jobs:
   lint_workflows:
@@ -41,5 +37,4 @@ jobs:
           VALIDATE_ALL_CODEBASE: true
           DEFAULT_BRANCH: develop
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          FILTER_REGEX_INCLUDE: .*src/.*
 ...
