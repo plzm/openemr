@@ -131,8 +131,7 @@ function Remove-RoleAssignmentsSub()
 
   $output = az role assignment delete --verbose `
     --scope $Scope `
-    --assignee-object-id $UAIPrincipalId `
-    --assignee-principal-type ServicePrincipal
+    --assignee $UAIPrincipalId
 
   return $output
 }
