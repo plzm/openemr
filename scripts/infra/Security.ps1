@@ -125,10 +125,12 @@ function Remove-RoleAssignmentsSub()
     $UAIClientId
   )
 
-  Write-Debug -Debug:$true -Message "Delete Sub Role Assignments for UAI Client ID $UAIClientId"
+  $Scope = "/subscriptions/" + $SubscriptionId
+
+  Write-Debug -Debug:$true -Message "Delete Sub Role Assignments for Scope $Scope and UAI Client ID $UAIClientId"
 
   $output = az role assignment delete --verbose `
-    --scope $SubscriptionId `
+    --scope $Scope `
     --assignee $UAIClientId
 
   return $output
