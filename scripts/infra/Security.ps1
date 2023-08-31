@@ -111,3 +111,25 @@ function Deploy-RoleAssignmentSub()
 
   return $output
 }
+
+function Remove-RoleAssignmentsSub()
+{
+  [CmdletBinding()]
+  param
+  (
+    [Parameter(Mandatory = $true)]
+    [string]
+    $SubscriptionId,
+    [Parameter(Mandatory = $true)]
+    [string]
+    $UAIClientId
+  )
+
+  Write-Debug -Debug:$true -Message "Delete Sub Role Assignments for UAI Client ID $UAIClientId"
+
+  $output = az role assignment delete --verbose `
+    --scope $SubscriptionId `
+    --assignee $UAIClientId
+
+  return $output
+}
