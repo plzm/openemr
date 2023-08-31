@@ -209,7 +209,7 @@ jobs:
 
           $output = Remove-RoleAssignmentsSub `
             -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -UAIPrincipalId $uai.principalId
+            -PrincipalId $uai.principalId
  
           Write-Debug -Debug:$true -Message "$output"
 

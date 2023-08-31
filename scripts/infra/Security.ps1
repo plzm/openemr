@@ -122,16 +122,27 @@ function Remove-RoleAssignmentsSub()
     $SubscriptionId,
     [Parameter(Mandatory = $true)]
     [string]
-    $UAIPrincipalId
+    $PrincipalId
   )
 
   $Scope = "/subscriptions/" + $SubscriptionId
 
-  Write-Debug -Debug:$true -Message "Delete Sub Role Assignments for Scope $Scope and UAI Principal ID $UAIPrincipalId"
+  $assignments = "$(az role assignment list --scope $Scope --assignee $principalId --query '[].id')" | ConvertFrom-Json
 
-  $output = az role assignment delete --verbose `
-    --scope $Scope `
-    --assignee $UAIPrincipalId
+  $count = $assignments.Count
 
-  return $output
+  if ($count -gt 0)
+  {
+    Write-Debug -Debug:$true -Message "Delete $count Sub Role Assignment(s) for Scope $Scope and UAI Principal ID $principalId"
+
+    $output = az role assignment delete --verbose `
+      --scope $Scope `
+      --assignee $principalId
+
+    return $output
+  }
+  else
+  {
+    Write-Debug -Debug:$true -Message "No Sub Role Assignment(s) for Scope $Scope and UAI Principal ID $principalId"
+  }
 }
