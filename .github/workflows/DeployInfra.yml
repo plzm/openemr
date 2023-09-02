@@ -1075,167 +1075,167 @@ jobs:
             -PrivateDnsZoneResourceId $privateDnsZoneResourceId
 
       - name: Deploy Database Connectivity
-      #  if: success()
-      #  shell: pwsh
-      #  run: |
-      #    $ErrorActionPreference = "Stop"
+        if: success()
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
 
-      #    . ./scripts/infra/Utility.ps1
-      #    . ./scripts/infra/Network.ps1
-      #    . ./scripts/infra/Observability.ps1
-      #    . ./scripts/infra/Database.ps1
+          . ./scripts/infra/Utility.ps1
+          . ./scripts/infra/Network.ps1
+          . ./scripts/infra/Observability.ps1
+          . ./scripts/infra/Database.ps1
 
-      #    $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-      #    $configGlobal = Get-ConfigGlobal -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}"
-      #    $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
+          $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configGlobal = Get-ConfigGlobal -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}"
+          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
 
 
-      #    if ($configGlobal.Database.Type -eq "MariaDB")
-      #    {
-      #      # Private Endpoint DNS Zone Group
-      #      $privateDnsZoneResourceId = Get-ResourceId `
-      #        -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #        -ResourceGroupName "${{ env.OE_RG_NAME_SU_NETWORK }}" `
-      #        -ResourceProviderName "Microsoft.Network" `
-      #        -ResourceTypeName "privateDnsZones" `
-      #        -ResourceName $configConstants.PrivateDnsZoneNameDatabaseMariaDb
+          if ($configGlobal.Database.Type -eq "MariaDB")
+          {
+            # Private Endpoint DNS Zone Group
+            $privateDnsZoneResourceId = Get-ResourceId `
+              -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+              -ResourceGroupName "${{ env.OE_RG_NAME_SU_NETWORK }}" `
+              -ResourceProviderName "Microsoft.Network" `
+              -ResourceTypeName "privateDnsZones" `
+              -ResourceName $configConstants.PrivateDnsZoneNameDatabaseMariaDb
 
-      #      # ##################################################
-      #      # Main instance - should be exactly one
-      #      $mainInstance = $configGlobal.Database.Instances | Where-Object { $_.Mode -eq "Default" }
+            # ##################################################
+            # Main instance - should be exactly one
+            $mainInstance = $configGlobal.Database.Instances | Where-Object { $_.Mode -eq "Default" }
 
-      #      $mainInstanceName = Get-ResourceName `
-      #        -ConfigConstants $configConstants `
-      #        -ConfigGlobal $configGlobal `
-      #        -Prefix $configConstants.PrefixDatabase `
-      #        -Sequence $configConstants.SeqNumData `
-      #        -Suffix "01"
+            $mainInstanceName = Get-ResourceName `
+              -ConfigConstants $configConstants `
+              -ConfigGlobal $configGlobal `
+              -Prefix $configConstants.PrefixDatabase `
+              -Sequence $configConstants.SeqNumData `
+              -Suffix "01"
 
-      #      $mainInstanceResourceId = Get-ResourceId `
-      #        -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #        -ResourceGroupName "${{ env.OE_RG_NAME_G_DATA }}" `
-      #        -ResourceProviderName $configGlobal.Database.ResourceProvider `
-      #        -ResourceTypeName $configGlobal.Database.ResourceType `
-      #        -ResourceName $mainInstanceName
+            $mainInstanceResourceId = Get-ResourceId `
+              -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+              -ResourceGroupName "${{ env.OE_RG_NAME_G_DATA }}" `
+              -ResourceProviderName $configGlobal.Database.ResourceProvider `
+              -ResourceTypeName $configGlobal.Database.ResourceType `
+              -ResourceName $mainInstanceName
 
-      #      $privateEndpointName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixPrivateEndpoint -Sequence $configConstants.SeqNumData -Suffix "01"
-      #      $instanceNicName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixNic -Sequence $configConstants.SeqNumData -Suffix "01"
-      #      $instanceNicResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_DATA }}" -ResourceProviderName "Microsoft.Network" -ResourceTypeName "networkInterfaces" -ResourceName $instanceNicName
+            $privateEndpointName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixPrivateEndpoint -Sequence $configConstants.SeqNumData -Suffix "01"
+            $instanceNicName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixNic -Sequence $configConstants.SeqNumData -Suffix "01"
+            $instanceNicResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_DATA }}" -ResourceProviderName "Microsoft.Network" -ResourceTypeName "networkInterfaces" -ResourceName $instanceNicName
 
-      #      Write-Debug -Debug:$true -Message "Deploy Private Endpoint and NIC"
-      #      $output = Deploy-PrivateEndpointAndNic `
-      #        -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #        -Location $configScaleUnit.Location `
-      #        -ResourceGroupName ${{ env.OE_RG_NAME_SU_DATA }} `
-      #        -TemplateUri ($configConstants.TemplateUriPrefix + "net.private-endpoint.json") `
-      #        -ProtectedWorkloadResourceId "$mainInstanceResourceId" `
-      #        -ProtectedWorkloadSubResource "mariadbServer" `
-      #        -PrivateEndpointName $privateEndpointName `
-      #        -NetworkInterfaceName $instanceNicName `
-      #        -SubnetResourceId ${{ env.OE_SUBNET_RESOURCE_ID_PRIVATE_ENDPOINT }} `
-      #        -Tags ${{ env.OE_TAGS_FOR_ARM }}
+            Write-Debug -Debug:$true -Message "Deploy Private Endpoint and NIC"
+            $output = Deploy-PrivateEndpointAndNic `
+              -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+              -Location $configScaleUnit.Location `
+              -ResourceGroupName ${{ env.OE_RG_NAME_SU_DATA }} `
+              -TemplateUri ($configConstants.TemplateUriPrefix + "net.private-endpoint.json") `
+              -ProtectedWorkloadResourceId "$mainInstanceResourceId" `
+              -ProtectedWorkloadSubResource "mariadbServer" `
+              -PrivateEndpointName $privateEndpointName `
+              -NetworkInterfaceName $instanceNicName `
+              -SubnetResourceId ${{ env.OE_SUBNET_RESOURCE_ID_PRIVATE_ENDPOINT }} `
+              -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
-      #      Write-Debug -Debug:$true -Message "$output"
+            Write-Debug -Debug:$true -Message "$output"
 
-      #      # NIC Diagnostics
-      #      Write-Debug -Debug:$true -Message "Deploy NIC Diagnostics"
-      #      $output = Deploy-DiagnosticsSetting `
-      #        -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #        -ResourceGroupName ${{ env.OE_RG_NAME_SU_DATA }} `
-      #        -TemplateUri ($configConstants.TemplateUriPrefix + "diagnostic-settings.json") `
-      #        -ResourceId $instanceNicResourceId `
-      #        -DiagnosticsSettingName ("diag-" + "${{ env.OE_LAW_NAME }}") `
-      #        -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
-      #        -SendLogs $false `
-      #        -SendMetrics $true
+            # NIC Diagnostics
+            Write-Debug -Debug:$true -Message "Deploy NIC Diagnostics"
+            $output = Deploy-DiagnosticsSetting `
+              -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+              -ResourceGroupName ${{ env.OE_RG_NAME_SU_DATA }} `
+              -TemplateUri ($configConstants.TemplateUriPrefix + "diagnostic-settings.json") `
+              -ResourceId $instanceNicResourceId `
+              -DiagnosticsSettingName ("diag-" + "${{ env.OE_LAW_NAME }}") `
+              -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+              -SendLogs $false `
+              -SendMetrics $true
 
-      #      Write-Debug -Debug:$true -Message "$output"
+            Write-Debug -Debug:$true -Message "$output"
 
-      #      # Private Endpoint DNS Zone Group
-      #      Deploy-PrivateEndpointPrivateDnsZoneGroup `
-      #        -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #        -ResourceGroupName ${{ env.OE_RG_NAME_SU_DATA }} `
-      #        -TemplateUri ($configConstants.TemplateUriPrefix + "net.private-endpoint.private-dns-zone-group.json") `
-      #        -PrivateEndpointName $privateEndpointName `
-      #        -PrivateDnsZoneName $configConstants.PrivateDnsZoneNameDatabaseMariaDb `
-      #        -PrivateDnsZoneGroupName "default" `
-      #        -PrivateDnsZoneResourceId $privateDnsZoneResourceId
-      #      # ##################################################
+            # Private Endpoint DNS Zone Group
+            Deploy-PrivateEndpointPrivateDnsZoneGroup `
+              -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+              -ResourceGroupName ${{ env.OE_RG_NAME_SU_DATA }} `
+              -TemplateUri ($configConstants.TemplateUriPrefix + "net.private-endpoint.private-dns-zone-group.json") `
+              -PrivateEndpointName $privateEndpointName `
+              -PrivateDnsZoneName $configConstants.PrivateDnsZoneNameDatabaseMariaDb `
+              -PrivateDnsZoneGroupName "default" `
+              -PrivateDnsZoneResourceId $privateDnsZoneResourceId
+            # ##################################################
 
-      #      # ##################################################
-      #      # Read-only replicas
+            # ##################################################
+            # Read-only replicas
 
-      #      $instanceIndex = 2
+            $instanceIndex = 2
 
-      #      foreach ($instance in $configGlobal.Database.Instances | Where-Object { $_.Mode -eq "Replica" })
-      #      {
-      #        $instanceSuffix = $instanceIndex.ToString().PadLeft(2, "0")
+            foreach ($instance in $configGlobal.Database.Instances | Where-Object { $_.Mode -eq "Replica" })
+            {
+              $instanceSuffix = $instanceIndex.ToString().PadLeft(2, "0")
 
-      #        $instanceName = Get-ResourceName `
-      #          -ConfigConstants $configConstants `
-      #          -ConfigGlobal $configGlobal `
-      #          -Prefix $configConstants.PrefixDatabase `
-      #          -Sequence $configConstants.SeqNumData `
-      #          -Suffix $instanceSuffix
+              $instanceName = Get-ResourceName `
+                -ConfigConstants $configConstants `
+                -ConfigGlobal $configGlobal `
+                -Prefix $configConstants.PrefixDatabase `
+                -Sequence $configConstants.SeqNumData `
+                -Suffix $instanceSuffix
 
-      #        $instanceResourceId = Get-ResourceId `
-      #          -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #          -ResourceGroupName "${{ env.OE_RG_NAME_G_DATA }}" `
-      #          -ResourceProviderName $configGlobal.Database.ResourceProvider `
-      #          -ResourceTypeName $configGlobal.Database.ResourceType `
-      #          -ResourceName $instanceName
+              $instanceResourceId = Get-ResourceId `
+                -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+                -ResourceGroupName "${{ env.OE_RG_NAME_G_DATA }}" `
+                -ResourceProviderName $configGlobal.Database.ResourceProvider `
+                -ResourceTypeName $configGlobal.Database.ResourceType `
+                -ResourceName $instanceName
 
-      #        $privateEndpointName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixPrivateEndpoint -Sequence $configConstants.SeqNumData -Suffix $instanceSuffix
-      #        $instanceNicName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixNic -Sequence $configConstants.SeqNumData -Suffix $instanceSuffix
-      #        $instanceNicResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_DATA }}" -ResourceProviderName "Microsoft.Network" -ResourceTypeName "networkInterfaces" -ResourceName $instanceNicName
+              $privateEndpointName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixPrivateEndpoint -Sequence $configConstants.SeqNumData -Suffix $instanceSuffix
+              $instanceNicName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixNic -Sequence $configConstants.SeqNumData -Suffix $instanceSuffix
+              $instanceNicResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_DATA }}" -ResourceProviderName "Microsoft.Network" -ResourceTypeName "networkInterfaces" -ResourceName $instanceNicName
 
-      #        Write-Debug -Debug:$true -Message "Deploy Private Endpoint and NIC"
-      #        $output = Deploy-PrivateEndpointAndNic `
-      #          -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #          -Location $configScaleUnit.Location `
-      #          -ResourceGroupName ${{ env.OE_RG_NAME_SU_DATA }} `
-      #          -TemplateUri ($configConstants.TemplateUriPrefix + "net.private-endpoint.json") `
-      #          -ProtectedWorkloadResourceId "$instanceResourceId" `
-      #          -ProtectedWorkloadSubResource "mariadbServer" `
-      #          -PrivateEndpointName $privateEndpointName `
-      #          -NetworkInterfaceName $instanceNicName `
-      #          -SubnetResourceId ${{ env.OE_SUBNET_RESOURCE_ID_PRIVATE_ENDPOINT }} `
-      #          -Tags ${{ env.OE_TAGS_FOR_ARM }}
+              Write-Debug -Debug:$true -Message "Deploy Private Endpoint and NIC"
+              $output = Deploy-PrivateEndpointAndNic `
+                -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+                -Location $configScaleUnit.Location `
+                -ResourceGroupName ${{ env.OE_RG_NAME_SU_DATA }} `
+                -TemplateUri ($configConstants.TemplateUriPrefix + "net.private-endpoint.json") `
+                -ProtectedWorkloadResourceId "$instanceResourceId" `
+                -ProtectedWorkloadSubResource "mariadbServer" `
+                -PrivateEndpointName $privateEndpointName `
+                -NetworkInterfaceName $instanceNicName `
+                -SubnetResourceId ${{ env.OE_SUBNET_RESOURCE_ID_PRIVATE_ENDPOINT }} `
+                -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
-      #        Write-Debug -Debug:$true -Message "$output"
+              Write-Debug -Debug:$true -Message "$output"
 
-      #        # NIC Diagnostics
-      #        Write-Debug -Debug:$true -Message "Deploy NIC Diagnostics"
-      #        $output = Deploy-DiagnosticsSetting `
-      #          -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #          -ResourceGroupName ${{ env.OE_RG_NAME_SU_DATA }} `
-      #          -TemplateUri ($configConstants.TemplateUriPrefix + "diagnostic-settings.json") `
-      #          -ResourceId $instanceNicResourceId `
-      #          -DiagnosticsSettingName ("diag-" + "${{ env.OE_LAW_NAME }}") `
-      #          -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
-      #          -SendLogs $false `
-      #          -SendMetrics $true
+              # NIC Diagnostics
+              Write-Debug -Debug:$true -Message "Deploy NIC Diagnostics"
+              $output = Deploy-DiagnosticsSetting `
+                -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+                -ResourceGroupName ${{ env.OE_RG_NAME_SU_DATA }} `
+                -TemplateUri ($configConstants.TemplateUriPrefix + "diagnostic-settings.json") `
+                -ResourceId $instanceNicResourceId `
+                -DiagnosticsSettingName ("diag-" + "${{ env.OE_LAW_NAME }}") `
+                -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+                -SendLogs $false `
+                -SendMetrics $true
 
-      #        Write-Debug -Debug:$true -Message "$output"
+              Write-Debug -Debug:$true -Message "$output"
 
-      #        Write-Debug -Debug:$true -Message "Deploy Private Endpoint DNS Zone Group"
-      #        Deploy-PrivateEndpointPrivateDnsZoneGroup `
-      #          -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-      #          -ResourceGroupName ${{ env.OE_RG_NAME_SU_DATA }} `
-      #          -TemplateUri ($configConstants.TemplateUriPrefix + "net.private-endpoint.private-dns-zone-group.json") `
-      #          -PrivateEndpointName $privateEndpointName `
-      #          -PrivateDnsZoneName $configConstants.PrivateDnsZoneNameDatabaseMariaDb `
-      #          -PrivateDnsZoneGroupName "default" `
-      #          -PrivateDnsZoneResourceId $privateDnsZoneResourceId
+              Write-Debug -Debug:$true -Message "Deploy Private Endpoint DNS Zone Group"
+              Deploy-PrivateEndpointPrivateDnsZoneGroup `
+                -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+                -ResourceGroupName ${{ env.OE_RG_NAME_SU_DATA }} `
+                -TemplateUri ($configConstants.TemplateUriPrefix + "net.private-endpoint.private-dns-zone-group.json") `
+                -PrivateEndpointName $privateEndpointName `
+                -PrivateDnsZoneName $configConstants.PrivateDnsZoneNameDatabaseMariaDb `
+                -PrivateDnsZoneGroupName "default" `
+                -PrivateDnsZoneResourceId $privateDnsZoneResourceId
 
-      #        $instanceIndex++
-      #      }
-      #      # ##################################################
-      #    }
-      #    else
-      #    {
-      #      Write-Debug -Debug:$true -Message "UNKNOWN DATABASE TYPE"
-      #    }
+              $instanceIndex++
+            }
+            # ##################################################
+          }
+          else
+          {
+            Write-Debug -Debug:$true -Message "UNKNOWN DATABASE TYPE"
+          }
 
       - name: Write Secrets to Key Vault
         if: success()
