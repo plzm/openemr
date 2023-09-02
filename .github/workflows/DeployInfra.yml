@@ -343,17 +343,29 @@ jobs:
           Write-Debug -Debug:$true -Message "Deploy Database"
           if ($configGlobal.Database.Type -eq "MariaDB")
           {
-            ## Default instance - should be exactly one
-            #$instance = $configGlobal.Database.Instances | Where-Object { $_.Mode -eq "Default" }
-            #$instanceName = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix $configConstants.PrefixDatabase -Sequence $configConstants.SeqNumData -Suffix "01"
-            #$instanceResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_G_DATA }}" -ResourceProviderName $configGlobal.Database.ResourceProvider -ResourceTypeName $configGlobal.Database.ResourceType -ResourceName $instanceName
+            # Main instance - should be exactly one
+            $mainInstance = $configGlobal.Database.Instances | Where-Object { $_.Mode -eq "Default" }
+
+            $mainInstanceName = Get-ResourceName `
+              -ConfigConstants $configConstants `
+              -ConfigGlobal $configGlobal `
+              -Prefix $configConstants.PrefixDatabase `
+              -Sequence $configConstants.SeqNumData `
+              -Suffix "01"
+
+            $mainInstanceResourceId = Get-ResourceId `
+              -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+              -ResourceGroupName "${{ env.OE_RG_NAME_G_DATA }}" `
+              -ResourceProviderName $configGlobal.Database.ResourceProvider `
+              -ResourceTypeName $configGlobal.Database.ResourceType `
+              -ResourceName $mainInstanceName
 
             #$output = Deploy-MariaDbServer `
             #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            #  -Location $instance.Location `
+            #  -Location $mainInstance.Location `
             #  -ResourceGroupName ${{ env.OE_RG_NAME_G_DATA }} `
             #  -TemplateUri ($configConstants.TemplateUriPrefix + "db.mariadb.server.json") `
-            #  -ServerName "$instanceName" `
+            #  -ServerName "$mainInstanceName" `
             #  -AdministratorLogin "${{ secrets.OE_DB_ADMIN_LOGIN }}" `
             #  -AdministratorPassword "${{ secrets.OE_DB_ADMIN_PASSWORD }}" `
             #  -SkuTier $configGlobal.Database.SkuTier `
@@ -362,18 +374,18 @@ jobs:
             #  -SkuCapacity $configGlobal.Database.SkuCapacity `
             #  -SkuSizeMB $configGlobal.Database.SkuSizeMB `
             #  -MariaDbVersion $configGlobal.Database.Version `
-            #  -CreateMode $instance.Mode `
+            #  -CreateMode $mainInstance.Mode `
             #  -BackupRetentionDays $configGlobal.Database.BackupRetentionDays `
             #  -GeoRedundantBackup $configGlobal.Database.GeoRedundantBackup `
-            #  -StorageAutogrow $instance.StorageAutogrow `
+            #  -StorageAutogrow $mainInstance.StorageAutogrow `
             #  -MinimumTlsVersion $configGlobal.Database.MinimumTlsVersion `
             #  -PublicNetworkAccess $configGlobal.Database.PublicNetworkAccess `
             #  -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
             #Write-Debug -Debug:$true -Message "$output"
 
-            #Write-Debug -Debug:$true -Message "Wait until instance $instanceName exists."
-            #az mariadb server wait -g ${{ env.OE_RG_NAME_G_DATA }} --name $instanceName --exists --timeout 600 --custom "properties.userVisibleState=='Ready'"
+            #Write-Debug -Debug:$true -Message "Wait until instance $mainInstanceName exists."
+            #az mariadb server wait -g ${{ env.OE_RG_NAME_G_DATA }} --name $mainInstanceName --exists --timeout 600 --custom "properties.userVisibleState=='Ready'"
 
             ## Database Server Diagnostics
             #Write-Debug -Debug:$true -Message "Deploy Diagnostics"
@@ -381,7 +393,7 @@ jobs:
             #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             #  -ResourceGroupName ${{ env.OE_RG_NAME_G_DATA }} `
             #  -TemplateUri ($configConstants.TemplateUriPrefix + "diagnostic-settings.json") `
-            #  -ResourceId "$instanceResourceId" `
+            #  -ResourceId "$mainInstanceResourceId" `
             #  -DiagnosticsSettingName ("diag-" + "${{ env.OE_LAW_NAME }}") `
             #  -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
             #  -SendLogs $true `
@@ -395,8 +407,20 @@ jobs:
             foreach ($instance in $configGlobal.Database.Instances | Where-Object { $_.Mode -eq "Replica" })
             {
               $instanceSuffix = $instanceIndex.ToString().PadLeft(2, "0")
-              $instanceName = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix $configConstants.PrefixDatabase -Sequence $configConstants.SeqNumData -Suffix $instanceSuffix
-              $instanceResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_G_DATA }}" -ResourceProviderName $configGlobal.Database.ResourceProvider -ResourceTypeName $configGlobal.Database.ResourceType -ResourceName $instanceName
+
+              $instanceName = Get-ResourceName `
+                -ConfigConstants $configConstants `
+                -ConfigGlobal $configGlobal `
+                -Prefix $configConstants.PrefixDatabase `
+                -Sequence $configConstants.SeqNumData `
+                -Suffix $instanceSuffix
+
+              $instanceResourceId = Get-ResourceId `
+                -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+                -ResourceGroupName "${{ env.OE_RG_NAME_G_DATA }}" `
+                -ResourceProviderName $configGlobal.Database.ResourceProvider `
+                -ResourceTypeName $configGlobal.Database.ResourceType `
+                -ResourceName $instanceName
 
               $output = Deploy-MariaDbServer `
                 -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
@@ -413,7 +437,7 @@ jobs:
                 -SkuSizeMB $configGlobal.Database.SkuSizeMB `
                 -MariaDbVersion $configGlobal.Database.Version `
                 -CreateMode $instance.Mode `
-                -SourceServerId $instanceResourceId `
+                -SourceServerId $mainInstanceResourceId `
                 -BackupRetentionDays $configGlobal.Database.BackupRetentionDays `
                 -GeoRedundantBackup $configGlobal.Database.GeoRedundantBackup `
                 -StorageAutogrow $instance.StorageAutogrow `
@@ -423,19 +447,19 @@ jobs:
 
               Write-Debug -Debug:$true -Message "$output"
 
-              ## Database Server Diagnostics
-              #Write-Debug -Debug:$true -Message "Deploy Diagnostics"
-              #$output = Deploy-DiagnosticsSetting `
-              #  -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-              #  -ResourceGroupName ${{ env.OE_RG_NAME_G_DATA }} `
-              #  -TemplateUri ($configConstants.TemplateUriPrefix + "diagnostic-settings.json") `
-              #  -ResourceId "$instanceResourceId" `
-              #  -DiagnosticsSettingName ("diag-" + "${{ env.OE_LAW_NAME }}") `
-              #  -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
-              #  -SendLogs $true `
-              #  -SendMetrics $true
+              # Database Server Diagnostics
+              Write-Debug -Debug:$true -Message "Deploy Diagnostics"
+              $output = Deploy-DiagnosticsSetting `
+                -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+                -ResourceGroupName ${{ env.OE_RG_NAME_G_DATA }} `
+                -TemplateUri ($configConstants.TemplateUriPrefix + "diagnostic-settings.json") `
+                -ResourceId "$instanceResourceId" `
+                -DiagnosticsSettingName ("diag-" + "${{ env.OE_LAW_NAME }}") `
+                -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+                -SendLogs $true `
+                -SendMetrics $true
 
-              #Write-Debug -Debug:$true -Message "$output"
+              Write-Debug -Debug:$true -Message "$output"
 
               $instanceIndex++
             }
@@ -1077,10 +1101,22 @@ jobs:
   #            -ResourceName $configConstants.PrivateDnsZoneNameDatabaseMariaDb
 
   #          # ##################################################
-  #          # Default instance - should be exactly one
-  #          $instance = $configGlobal.Database.Instances | Where-Object { $_.Mode -eq "Default" }
-  #          $instanceName = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix $configConstants.PrefixDatabase -Sequence $configConstants.SeqNumData -Suffix "01"
-  #          $instanceResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_G_DATA }}" -ResourceProviderName $configGlobal.Database.ResourceProvider -ResourceTypeName $configGlobal.Database.ResourceType -ResourceName $instanceName
+  #          # Main instance - should be exactly one
+  #          $mainInstance = $configGlobal.Database.Instances | Where-Object { $_.Mode -eq "Default" }
+
+  #          $mainInstanceName = Get-ResourceName `
+  #            -ConfigConstants $configConstants `
+  #            -ConfigGlobal $configGlobal `
+  #            -Prefix $configConstants.PrefixDatabase `
+  #            -Sequence $configConstants.SeqNumData `
+  #            -Suffix "01"
+
+  #          $mainInstanceResourceId = Get-ResourceId `
+  #            -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+  #            -ResourceGroupName "${{ env.OE_RG_NAME_G_DATA }}" `
+  #            -ResourceProviderName $configGlobal.Database.ResourceProvider `
+  #            -ResourceTypeName $configGlobal.Database.ResourceType `
+  #            -ResourceName $mainInstanceName
 
   #          $privateEndpointName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixPrivateEndpoint -Sequence $configConstants.SeqNumData -Suffix "01"
   #          $instanceNicName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixNic -Sequence $configConstants.SeqNumData -Suffix "01"
@@ -1092,7 +1128,7 @@ jobs:
   #            -Location $configScaleUnit.Location `
   #            -ResourceGroupName ${{ env.OE_RG_NAME_SU_DATA }} `
   #            -TemplateUri ($configConstants.TemplateUriPrefix + "net.private-endpoint.json") `
-  #            -ProtectedWorkloadResourceId "$instanceResourceId" `
+  #            -ProtectedWorkloadResourceId "$mainInstanceResourceId" `
   #            -ProtectedWorkloadSubResource "mariadbServer" `
   #            -PrivateEndpointName $privateEndpointName `
   #            -NetworkInterfaceName $instanceNicName `
@@ -1134,8 +1170,20 @@ jobs:
   #          foreach ($instance in $configGlobal.Database.Instances | Where-Object { $_.Mode -eq "Replica" })
   #          {
   #            $instanceSuffix = $instanceIndex.ToString().PadLeft(2, "0")
-  #            $instanceName = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix $configConstants.PrefixDatabase -Sequence $configConstants.SeqNumData -Suffix $instanceSuffix
-  #            $instanceResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_G_DATA }}" -ResourceProviderName $configGlobal.Database.ResourceProvider -ResourceTypeName $configGlobal.Database.ResourceType -ResourceName $instanceName
+
+  #            $instanceName = Get-ResourceName `
+  #              -ConfigConstants $configConstants `
+  #              -ConfigGlobal $configGlobal `
+  #              -Prefix $configConstants.PrefixDatabase `
+  #              -Sequence $configConstants.SeqNumData `
+  #              -Suffix $instanceSuffix
+
+  #            $instanceResourceId = Get-ResourceId `
+  #              -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+  #              -ResourceGroupName "${{ env.OE_RG_NAME_G_DATA }}" `
+  #              -ResourceProviderName $configGlobal.Database.ResourceProvider `
+  #              -ResourceTypeName $configGlobal.Database.ResourceType `
+  #              -ResourceName $instanceName
 
   #            $privateEndpointName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixPrivateEndpoint -Sequence $configConstants.SeqNumData -Suffix $instanceSuffix
   #            $instanceNicName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixNic -Sequence $configConstants.SeqNumData -Suffix $instanceSuffix
@@ -1588,10 +1636,10 @@ jobs:
   #        . ./scripts/infra/KeyVault.ps1
   #        . ./scripts/infra/Workload.ps1
 
-          #$configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          #$configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
+  #        $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+  #        $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
 
-          #$sp = "@Microsoft.KeyVault(SecretUri=https://${{ env.OE_KEYVAULT_NAME }}.vault.azure.net/secrets/"
+  #        $sp = "@Microsoft.KeyVault(SecretUri=https://${{ env.OE_KEYVAULT_NAME }}.vault.azure.net/secrets/"
 
   #        # Prepare JSON file
   #        $fileContents = "{`n"
