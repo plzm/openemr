@@ -1426,18 +1426,6 @@ jobs:
 
           Write-Debug -Debug:$true -Message "$output"
 
-          $output = Deploy-DiagnosticsSetting `
-            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -ResourceGroupName ${{ env.OE_RG_NAME_SU_WORKLOAD }} `
-            -TemplateUri ($configConstants.TemplateUriPrefix + "diagnostic-settings.json") `
-            -ResourceId "$appServicePlanAutoScaleSettingsResourceId" `
-            -DiagnosticsSettingName ("diag-" + "${{ env.OE_LAW_NAME }}") `
-            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
-            -SendLogs $true `
-            -SendMetrics $true
-
-          Write-Debug -Debug:$true -Message "$output"
-
       - name: Deploy Workload - App Insights
         if: success()
         shell: pwsh

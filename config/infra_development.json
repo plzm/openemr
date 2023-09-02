@@ -108,7 +108,7 @@
   {
     "Scope": "ScaleUnit",
     "Id": "02",
-    "Location": "westus2",
+    "Location": "westus3",
     "Network": {
       "NSGs": [
         {
