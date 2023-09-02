@@ -1,3 +1,5 @@
+[![GitHub Super-Linter](https://github.com/plzm/openemr/actions/workflows/LintCode.yml/badge.svg)](https://github.com/marketplace/actions/super-linter)
+
 # OpenEMR on Azure
 
 ## Steps
