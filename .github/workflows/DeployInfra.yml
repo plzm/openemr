@@ -471,34 +471,34 @@ jobs:
 
 
 
-  #prep_matrix:
-  #  needs: deploy_global
-  #  name: Prepare Scale Unit Matrix
-  #  environment: ${{ inputs.environment }}
-  #  runs-on: ubuntu-latest
-  #  outputs:
-  #    matrix: ${{ steps.set-matrix.outputs.matrix }}
-  #  steps:
-  #    - name: Checkout repository
-  #      uses: actions/checkout@v3
+  prep_matrix:
+    #needs: deploy_global
+    name: Prepare Scale Unit Matrix
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-  #    - name: Write matrix string to output
-  #      id: set-matrix
-  #      shell: pwsh
-  #      run: |
-  #        $path = "./config/infra_" + "${{ inputs.environment }}" + ".json"
-  #        echo "::debug::path=$path"
-  #        $configEnv = Get-Content -Path $path | ConvertFrom-Json
-  #        echo "::debug::configEnv=$configEnv"
-  #        $matrix = ($configEnv | Where-Object { $_.Scope -eq "ScaleUnit" } | ConvertTo-Json -Depth 100 -Compress).Replace("`"", "'")
-  #        echo "::debug::matrix=$matrix"
-  #        $matrix = "{'include':" + $matrix + "}"
-  #        echo "matrix=$matrix" >> $env:GITHUB_OUTPUT
+      - name: Write matrix string to output
+        id: set-matrix
+        shell: pwsh
+        run: |
+          $path = "./config/infra_" + "${{ inputs.environment }}" + ".json"
+          echo "::debug::path=$path"
+          $configEnv = Get-Content -Path $path | ConvertFrom-Json
+          echo "::debug::configEnv=$configEnv"
+          $matrix = ($configEnv | Where-Object { $_.Scope -eq "ScaleUnit" } | ConvertTo-Json -Depth 100 -Compress).Replace("`"", "'")
+          echo "::debug::matrix=$matrix"
+          $matrix = "{'include':" + $matrix + "}"
+          echo "matrix=$matrix" >> $env:GITHUB_OUTPUT
 
 
 
   deploy_scale_unit:
-    #needs: prep_matrix
+    needs: prep_matrix
     name: Deploy Scale Unit ${{ matrix.Id }} Infrastructure
     environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
