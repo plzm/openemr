@@ -1588,15 +1588,17 @@ jobs:
   #        . ./scripts/infra/KeyVault.ps1
   #        . ./scripts/infra/Workload.ps1
 
-  #        $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-  #        $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
+          #$configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          #$configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
+
+          #$sp = "@Microsoft.KeyVault(SecretUri=https://${{ env.OE_KEYVAULT_NAME }}.vault.azure.net/secrets/"
 
   #        # Prepare JSON file
   #        $fileContents = "{`n"
 
   #        $varName = "MYSQL_HOST"
   #        $secretName = Get-KeyVaultSecretName -VarName $varName
-  #        $fileContents += "`"$varName`":`"@Microsoft.KeyVault(SecretUri=https://${{ env.OE_KEYVAULT_NAME }}.vault.azure.net/secrets/$secretName)`",`n"
+  #        $fileContents += "`"$varName`":`"" + $sp + $secretName + ")`",`n"
 
   #        $varName = "MYSQL_DATABASE"
   #        $secretName = Get-KeyVaultSecretName -VarName $varName

@@ -1,19 +1,19 @@
 ---
-name: Lint
+name: Lint Code Base
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - develop
-      - 'feature/*'
-      - 'fix/*'
-      - 'release/*'
-  pull_request:
-    branches:
-      - develop
-      - main
-      - 'release/*'
+  #push:
+  #  branches:
+  #    - develop
+  #    - 'feature/*'
+  #    - 'fix/*'
+  #    - 'release/*'
+  #pull_request:
+  #  branches:
+  #    - develop
+  #    - main
+  #    - 'release/*'
 
 jobs:
   lint_workflows:
