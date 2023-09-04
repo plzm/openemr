@@ -21,16 +21,23 @@ jobs:
 
       - name: Write matrix string to output
         id: set-matrix
-        run: |
-          $path = "./config/infra_" + "${{ inputs.environment }}" + ".json"
-          echo "::debug::path=$path"
-          $configEnv = Get-Content -Path $path | ConvertFrom-Json
-          echo "::debug::configEnv=$configEnv"
-          $matrix = ($configEnv | Where-Object { $_.Scope -eq "ScaleUnit" } | ConvertTo-Json -Depth 100 -Compress).Replace("`"", "'")
-          echo "::debug::matrix=$matrix"
-          $matrix = "{'include':" + $matrix + "}"
-          echo "matrix=$matrix" >> $env:GITHUB_OUTPUT
         shell: pwsh
+        run: |
+          . ./scripts/infra/Utility.ps1
+
+          $path = "./config/infra_" + "${{ inputs.environment }}" + ".json"
+          Write-Debug -Debug:$true -Message "Path = $path"
+
+          $configEnv = Get-ConfigScaleUnits -ConfigFilePath $path
+          Write-Debug -Debug:$true -Message "Config = $configEnv"
+
+          $matrix = ($configEnv | Where-Object { $_.Scope -eq "ScaleUnit" } | Select-Object -Property Id | ConvertTo-Json -Depth 100 -Compress).Replace("`"", "'")
+          Write-Debug -Debug:$true -Message "Raw matrix = $matrix"
+
+          $matrix = "{'include':" + $matrix + "}"
+          Write-Debug -Debug:$true -Message "Final matrix = $matrix"
+
+          echo "matrix=$matrix" >> $env:GITHUB_OUTPUT
 
   destroy_matrix:
     needs: prep_matrix
