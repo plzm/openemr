@@ -1259,6 +1259,7 @@ jobs:
 
           $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
           $configGlobal = Get-ConfigGlobal -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}"
+          $configScaleUnitTemplate = Get-ConfigScaleUnitTemplate -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}"
           $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
 
           Write-Debug -Debug:$true -Message "Get runner IP address"
@@ -1303,7 +1304,7 @@ jobs:
             -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -KeyVaultName "${{ env.OE_KEYVAULT_NAME }}" `
             -SecretName "MYSQL_ROOT_USER" `
-            -SecretValue "${{ secrets.OE_DB_ADMIN_LOGIN }}"
+            -SecretValue "${{ secrets.OE_DB_ADMIN_LOGIN }}" + "@" + "$instanceName"
 
           Write-Debug -Debug:$true -Message "Write Key Vault secret MYSQL_ROOT_PASS"
           Set-KeyVaultSecret `
@@ -1317,7 +1318,7 @@ jobs:
             -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -KeyVaultName "${{ env.OE_KEYVAULT_NAME }}" `
             -SecretName "MYSQL_USER" `
-            -SecretValue "${{ secrets.OE_DB_LOGIN }}"
+            -SecretValue "${{ secrets.OE_DB_LOGIN }}" + "@" + "$instanceName"
 
           Write-Debug -Debug:$true -Message "Write Key Vault secret MYSQL_PASS"
           Set-KeyVaultSecret `
@@ -1339,6 +1340,13 @@ jobs:
             -KeyVaultName "${{ env.OE_KEYVAULT_NAME }}" `
             -SecretName "OE_PASS" `
             -SecretValue "${{ secrets.OE_PASSWORD }}"
+
+          Write-Debug -Debug:$true -Message "Write Key Vault secret WEBSITES_PORT"
+          Set-KeyVaultSecret `
+            -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+            -KeyVaultName "${{ env.OE_KEYVAULT_NAME }}" `
+            -SecretName "WEBSITES_PORT" `
+            -SecretValue $configScaleUnitTemplate.Workload.DefaultPort
 
 
 
@@ -1671,6 +1679,10 @@ jobs:
           $fileContents += "`"$varName`":`"" + $sp + $secretName + ")`",`n"
 
           $varName = "OE_PASS"
+          $secretName = Get-KeyVaultSecretName -VarName $varName
+          $fileContents += "`"$varName`":`"" + $sp + $secretName + ")`",`n"
+
+          $varName = "WEBSITES_PORT"
           $secretName = Get-KeyVaultSecretName -VarName $varName
           $fileContents += "`"$varName`":`"" + $sp + $secretName + ")`",`n"
 
