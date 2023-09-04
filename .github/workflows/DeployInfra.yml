@@ -68,11 +68,11 @@ jobs:
 
 
           # Resource Groups
-          $rgNameGlobalCore = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalCore
-          $rgNameGlobalNetwork = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalNetwork
-          $rgNameGlobalObservability = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalObservability
-          $rgNameGlobalData = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalData
-          $rgNameGlobalWorkload = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalWorkload
+          $rgNameGlobalCore = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Sequence $configConstants.SeqNumRgGlobalCore
+          $rgNameGlobalNetwork = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Sequence $configConstants.SeqNumRgGlobalNetwork
+          $rgNameGlobalObservability = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Sequence $configConstants.SeqNumRgGlobalObservability
+          $rgNameGlobalData = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Sequence $configConstants.SeqNumRgGlobalData
+          $rgNameGlobalWorkload = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Sequence $configConstants.SeqNumRgGlobalWorkload
 
           Set-EnvVar2 -VarName "OE_RG_NAME_G_CORE" -VarValue "$rgNameGlobalCore"
           Set-EnvVar2 -VarName "OE_RG_NAME_G_NETWORK" -VarValue "$rgNameGlobalNetwork"
@@ -486,13 +486,20 @@ jobs:
         id: set-matrix
         shell: pwsh
         run: |
+          . ./scripts/infra/Utility.ps1
+
           $path = "./config/infra_" + "${{ inputs.environment }}" + ".json"
-          echo "::debug::path=$path"
-          $configEnv = Get-Content -Path $path | ConvertFrom-Json
-          echo "::debug::configEnv=$configEnv"
-          $matrix = ($configEnv | Where-Object { $_.Scope -eq "ScaleUnit" } | ConvertTo-Json -Depth 100 -Compress).Replace("`"", "'")
-          echo "::debug::matrix=$matrix"
+          Write-Debug -Debug:$true -Message "Path = $path"
+
+          $configEnv = Get-ConfigScaleUnits -ConfigFilePath $path
+          Write-Debug -Debug:$true -Message "Config = $configEnv"
+
+          $matrix = ($configEnv | Where-Object { $_.Scope -eq "ScaleUnit" } | Select-Object -Property Id | ConvertTo-Json -Depth 100 -Compress).Replace("`"", "'")
+          Write-Debug -Debug:$true -Message "Raw matrix = $matrix"
+
           $matrix = "{'include':" + $matrix + "}"
+          Write-Debug -Debug:$true -Message "Final matrix = $matrix"
+
           echo "matrix=$matrix" >> $env:GITHUB_OUTPUT
 
 
@@ -556,11 +563,11 @@ jobs:
           # GLOBAL
 
           # Resource Groups
-          $rgNameGlobalCore = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalCore
-          $rgNameGlobalNetwork = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalNetwork
-          $rgNameGlobalObservability = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalObservability
-          $rgNameGlobalData = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalData
-          $rgNameGlobalWorkload = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalWorkload
+          $rgNameGlobalCore = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Sequence $configConstants.SeqNumRgGlobalCore
+          $rgNameGlobalNetwork = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Sequence $configConstants.SeqNumRgGlobalNetwork
+          $rgNameGlobalObservability = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Sequence $configConstants.SeqNumRgGlobalObservability
+          $rgNameGlobalData = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Sequence $configConstants.SeqNumRgGlobalData
+          $rgNameGlobalWorkload = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Sequence $configConstants.SeqNumRgGlobalWorkload
 
           Set-EnvVar2 -VarName "OE_RG_NAME_G_CORE" -VarValue "$rgNameGlobalCore"
           Set-EnvVar2 -VarName "OE_RG_NAME_G_NETWORK" -VarValue "$rgNameGlobalNetwork"
@@ -593,11 +600,11 @@ jobs:
           # SCALE UNIT
 
           # Resource Groups
-          $rgNameScaleUnitCore = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitCore
-          $rgNameScaleUnitNetwork = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitNetwork
-          $rgNameScaleUnitObservability = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitObservability
-          $rgNameScaleUnitData = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitData
-          $rgNameScaleUnitWorkload = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitWorkload
+          $rgNameScaleUnitCore = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Sequence $configConstants.SeqNumRgScaleUnitCore
+          $rgNameScaleUnitNetwork = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Sequence $configConstants.SeqNumRgScaleUnitNetwork
+          $rgNameScaleUnitObservability = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Sequence $configConstants.SeqNumRgScaleUnitObservability
+          $rgNameScaleUnitData = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Sequence $configConstants.SeqNumRgScaleUnitData
+          $rgNameScaleUnitWorkload = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Sequence $configConstants.SeqNumRgScaleUnitWorkload
 
           Set-EnvVar2 -VarName "OE_RG_NAME_SU_CORE" -VarValue "$rgNameScaleUnitCore"
           Set-EnvVar2 -VarName "OE_RG_NAME_SU_NETWORK" -VarValue "$rgNameScaleUnitNetwork"
@@ -735,11 +742,13 @@ jobs:
           . ./scripts/infra/Network.ps1
 
           $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configScaleUnitTemplate = Get-ConfigScaleUnitTemplate -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}"
           $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
 
           Write-Debug -Debug:$true -Message "Deploy Network"
           Deploy-Network `
             -ConfigConstants $configConstants `
+            -ConfigScaleUnitTemplate $configScaleUnitTemplate `
             -ConfigScaleUnit $configScaleUnit `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -ResourceGroupName ${{ env.OE_RG_NAME_SU_NETWORK }} `
@@ -981,6 +990,7 @@ jobs:
           . ./scripts/infra/Storage.ps1
 
           $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configScaleUnitTemplate = Get-ConfigScaleUnitTemplate -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}"
           $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
 
           Write-Debug -Debug:$true -Message "Get subnets for Storage Account network access rules"
@@ -1005,7 +1015,7 @@ jobs:
             -ResourceGroupName ${{ env.OE_RG_NAME_SU_CORE }} `
             -TemplateUri ($configConstants.TemplateUriPrefix + "storage.account.json") `
             -StorageAccountName "${{ env.OE_STORAGE_ACCOUNT_NAME }}" `
-            -SkuName $configScaleUnit.Storage.SkuName `
+            -SkuName $configScaleUnitTemplate.Storage.SkuName `
             -AllowedSubnetResourceIdsCsv "$subnetResourceIdsCsv" `
             -AllowedIpAddressRangesCsv "" `
             -DefaultAction "Deny" `
@@ -1359,6 +1369,7 @@ jobs:
           . ./scripts/infra/Workload.ps1
 
           $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configScaleUnitTemplate = Get-ConfigScaleUnitTemplate -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}"
           $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
 
           $appServicePlanName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixAppServicePlan -Sequence $configConstants.SeqNumWorkloadAppServicePlan
@@ -1370,12 +1381,12 @@ jobs:
             -ResourceGroupName ${{ env.OE_RG_NAME_SU_WORKLOAD }} `
             -TemplateUri ($configConstants.TemplateUriPrefix + "app-service-plan.json") `
             -AppServicePlanName $appServicePlanName `
-            -SkuName $configScaleUnit.Workload.AppServicePlanSkuName `
-            -SkuTier $configScaleUnit.Workload.AppServicePlanSkuTier `
-            -SkuFamily $configScaleUnit.Workload.AppServicePlanSkuFamily `
-            -Capacity $configScaleUnit.Workload.AppServicePlanCapacity `
-            -Kind $configScaleUnit.Workload.AppServicePlanKind `
-            -ZoneRedundant $configScaleUnit.Workload.AppServicePlanZoneRedundant `
+            -SkuName $configScaleUnitTemplate.Workload.AppServicePlanSkuName `
+            -SkuTier $configScaleUnitTemplate.Workload.AppServicePlanSkuTier `
+            -SkuFamily $configScaleUnitTemplate.Workload.AppServicePlanSkuFamily `
+            -Capacity $configScaleUnitTemplate.Workload.AppServicePlanCapacity `
+            -Kind $configScaleUnitTemplate.Workload.AppServicePlanKind `
+            -ZoneRedundant $configScaleUnitTemplate.Workload.AppServicePlanZoneRedundant `
             -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
           Write-Debug -Debug:$true -Message "$output"
@@ -1404,6 +1415,7 @@ jobs:
           . ./scripts/infra/Workload.ps1
 
           $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configScaleUnitTemplate = Get-ConfigScaleUnitTemplate -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}"
           $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
 
           $appServicePlanName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixAppServicePlan -Sequence $configConstants.SeqNumWorkloadAppServicePlan
@@ -1419,9 +1431,9 @@ jobs:
             -TemplateUri ($configConstants.TemplateUriPrefix + "app-service-plan.autoscale.json") `
             -AutoscaleSettingsName $appServicePlanAutoScaleSettingsName `
             -AppServicePlanResourceId $appServicePlanResourceId `
-            -MinimumInstances $configScaleUnit.Workload.AppServicePlanAutoscaleSettingsMinimumInstances `
-            -MaximumInstances $configScaleUnit.Workload.AppServicePlanAutoscaleSettingsMaximumInstances `
-            -DefaultInstances $configScaleUnit.Workload.AppServicePlanAutoscaleSettingsDefaultInstances `
+            -MinimumInstances $configScaleUnitTemplate.Workload.AppServicePlanAutoscaleSettingsMinimumInstances `
+            -MaximumInstances $configScaleUnitTemplate.Workload.AppServicePlanAutoscaleSettingsMaximumInstances `
+            -DefaultInstances $configScaleUnitTemplate.Workload.AppServicePlanAutoscaleSettingsDefaultInstances `
             -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
           Write-Debug -Debug:$true -Message "$output"
@@ -1478,6 +1490,7 @@ jobs:
           . ./scripts/infra/Workload.ps1
 
           $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $configScaleUnitTemplate = Get-ConfigScaleUnitTemplate -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}"
           $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
 
           $appServicePlanName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixAppServicePlan -Sequence $configConstants.SeqNumWorkloadAppServicePlan
@@ -1490,9 +1503,9 @@ jobs:
           # ##################################################
           # App Service Certificate
           # Only proceed if there is a custom FQDN (and there should be a certificate file too)
-          if ($configScaleUnit.Workload.CustomFqdn)
+          if ($configScaleUnitTemplate.Workload.CustomFqdn)
           {
-            $appServiceCertificateName = "${{ env.OE_KEYVAULT_NAME }}" + "-" + $configScaleUnit.Workload.AppServiceCertificateName
+            $appServiceCertificateName = "${{ env.OE_KEYVAULT_NAME }}" + "-" + $configScaleUnitTemplate.Workload.AppServiceCertificateName
 
             $output = Deploy-AppServiceCertificate `
               -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
@@ -1502,7 +1515,7 @@ jobs:
               -AppServicePlanResourceId $appServicePlanResourceId `
               -AppServiceCertificateName $appServiceCertificateName `
               -KeyVaultResourceId "${{ env.OE_KEYVAULT_RESOURCE_ID }}" `
-              -KeyVaultSecretName $configScaleUnit.Workload.AppServiceCertificateSecretName `
+              -KeyVaultSecretName $configScaleUnitTemplate.Workload.AppServiceCertificateSecretName `
               -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
             Write-Debug -Debug:$true -Message "$output"
@@ -1528,7 +1541,7 @@ jobs:
           $subnetResourceIds = Get-SubnetResourceIds -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -SubscriptionId ${{ secrets.OE_AZURE_SUBSCRIPTION_ID }} -ResourceGroupName ${{ env.OE_RG_NAME_SU_NETWORK }}
           $subnetResourceId = $subnetResourceIds[1]
 
-          $appServiceLinuxFxVersion = $configScaleUnit.Workload.AppServiceLinuxFxVersion
+          $appServiceLinuxFxVersion = $configScaleUnitTemplate.Workload.AppServiceLinuxFxVersion
 
           $output = Deploy-AppService `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
@@ -1536,7 +1549,7 @@ jobs:
             -ResourceGroupName ${{ env.OE_RG_NAME_SU_WORKLOAD }} `
             -TemplateUri ($configConstants.TemplateUriPrefix + "app-service.app.json") `
             -AppServiceName ${{ env.OE_APP_SERVICE_NAME }} `
-            -Kind $configScaleUnit.Workload.AppServiceKind `
+            -Kind $configScaleUnitTemplate.Workload.AppServiceKind `
             -AssignSystemIdentity $false `
             -UserAssignedIdentityResourceId ${{ env.OE_UAI_RESOURCE_ID }} `
             -UserAssignedIdentityClientId ${{ env.OE_UAI_CLIENT_ID }} `
@@ -1548,8 +1561,8 @@ jobs:
             -PublicNetworkAccess "Enabled" `
             -SubnetResourceId "$subnetResourceId" `
             -RouteAllTrafficThroughVNet $true `
-            -AllowedIpAddressRanges $configScaleUnit.Workload.AllowedIpAddressRanges `
-            -CustomFqdn $configScaleUnit.Workload.CustomFqdn `
+            -AllowedIpAddressRanges $configScaleUnitTemplate.Workload.AllowedIpAddressRanges `
+            -CustomFqdn $configScaleUnitTemplate.Workload.CustomFqdn `
             -CertificateForAppServiceThumbprint $appServiceCertificateThumbprint `
             -Tags ${{ env.OE_TAGS_FOR_ARM }}
 
@@ -1624,9 +1637,6 @@ jobs:
           . ./scripts/infra/KeyVault.ps1
           . ./scripts/infra/Workload.ps1
 
-          $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
-
           $sp = "@Microsoft.KeyVault(SecretUri=https://${{ env.OE_KEYVAULT_NAME }}.vault.azure.net/secrets/"
 
           # Prepare JSON file
@@ -1638,31 +1648,31 @@ jobs:
 
           $varName = "MYSQL_DATABASE"
           $secretName = Get-KeyVaultSecretName -VarName $varName
-          $fileContents += "`"$varName`":`"@Microsoft.KeyVault(SecretUri=https://${{ env.OE_KEYVAULT_NAME }}.vault.azure.net/secrets/$secretName)`",`n"
+          $fileContents += "`"$varName`":`"" + $sp + $secretName + ")`",`n"
 
           $varName = "MYSQL_ROOT_USER"
           $secretName = Get-KeyVaultSecretName -VarName $varName
-          $fileContents += "`"$varName`":`"@Microsoft.KeyVault(SecretUri=https://${{ env.OE_KEYVAULT_NAME }}.vault.azure.net/secrets/$secretName)`",`n"
+          $fileContents += "`"$varName`":`"" + $sp + $secretName + ")`",`n"
 
           $varName = "MYSQL_ROOT_PASS"
           $secretName = Get-KeyVaultSecretName -VarName $varName
-          $fileContents += "`"$varName`":`"@Microsoft.KeyVault(SecretUri=https://${{ env.OE_KEYVAULT_NAME }}.vault.azure.net/secrets/$secretName)`",`n"
+          $fileContents += "`"$varName`":`"" + $sp + $secretName + ")`",`n"
 
           $varName = "MYSQL_USER"
           $secretName = Get-KeyVaultSecretName -VarName $varName
-          $fileContents += "`"$varName`":`"@Microsoft.KeyVault(SecretUri=https://${{ env.OE_KEYVAULT_NAME }}.vault.azure.net/secrets/$secretName)`",`n"
+          $fileContents += "`"$varName`":`"" + $sp + $secretName + ")`",`n"
 
           $varName = "MYSQL_PASS"
           $secretName = Get-KeyVaultSecretName -VarName $varName
-          $fileContents += "`"$varName`":`"@Microsoft.KeyVault(SecretUri=https://${{ env.OE_KEYVAULT_NAME }}.vault.azure.net/secrets/$secretName)`",`n"
+          $fileContents += "`"$varName`":`"" + $sp + $secretName + ")`",`n"
 
           $varName = "OE_USER"
           $secretName = Get-KeyVaultSecretName -VarName $varName
-          $fileContents += "`"$varName`":`"@Microsoft.KeyVault(SecretUri=https://${{ env.OE_KEYVAULT_NAME }}.vault.azure.net/secrets/$secretName)`",`n"
+          $fileContents += "`"$varName`":`"" + $sp + $secretName + ")`",`n"
 
           $varName = "OE_PASS"
           $secretName = Get-KeyVaultSecretName -VarName $varName
-          $fileContents += "`"$varName`":`"@Microsoft.KeyVault(SecretUri=https://${{ env.OE_KEYVAULT_NAME }}.vault.azure.net/secrets/$secretName)`",`n"
+          $fileContents += "`"$varName`":`"" + $sp + $secretName + ")`",`n"
 
           $fileContents += "}"
 

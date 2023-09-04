@@ -33,9 +33,7 @@
     }
   },
   {
-    "Scope": "ScaleUnit",
-    "Id": "01",
-    "Location": "eastus",
+    "Scope": "ScaleUnitTemplate",
     "Network": {
       "NSGs": [
         {
@@ -57,7 +55,35 @@
             }
           ]
         }
-      ],
+      ]
+    },
+    "Storage": {
+      "SkuName": "Standard_LRS"
+    },
+    "Workload": {
+      "AppServicePlanSkuName": "P1V3",
+      "AppServicePlanSkuTier": "PremiumV3",
+      "AppServicePlanSkuFamily": "Pv3",
+      "AppServicePlanCapacity": 3,
+      "AppServicePlanKind": "linux",
+      "AppServicePlanZoneRedundant": true,
+      "AppServicePlanAutoscaleSettingsMinimumInstances": 3,
+      "AppServicePlanAutoscaleSettingsMaximumInstances": 9,
+      "AppServicePlanAutoscaleSettingsDefaultInstances": 3,
+      "AppServiceKind": "app,linux,container",
+      "AppServiceLinuxFxVersion": "DOCKER|openemr/openemr:latest",
+      "AllowedIpAddressRanges": "",
+      "CustomFqdn": "",
+      "AppServiceCertificateName": "oe-aa-cert",
+      "AppServiceCertificateSecretName": "oe-aa-cert",
+      "AppServiceCertificateFilePath": ""
+    }
+  },
+  {
+    "Scope": "ScaleUnit",
+    "Id": "01",
+    "Location": "eastus",
+    "Network": {
       "VNets": [
         {
           "AddressSpace": "10.0.1.0/24",
@@ -82,27 +108,6 @@
           ]
         }
       ]
-    },
-    "Storage": {
-      "SkuName": "Standard_LRS"
-    },
-    "Workload": {
-      "AppServicePlanSkuName": "P1V3",
-      "AppServicePlanSkuTier": "PremiumV3",
-      "AppServicePlanSkuFamily": "Pv3",
-      "AppServicePlanCapacity": 3,
-      "AppServicePlanKind": "linux",
-      "AppServicePlanZoneRedundant": true,
-      "AppServicePlanAutoscaleSettingsMinimumInstances": 3,
-      "AppServicePlanAutoscaleSettingsMaximumInstances": 9,
-      "AppServicePlanAutoscaleSettingsDefaultInstances": 3,
-      "AppServiceKind": "app,linux,container",
-      "AppServiceLinuxFxVersion": "DOCKER|openemr/openemr:latest",
-      "AllowedIpAddressRanges": "",
-      "CustomFqdn": "",
-      "AppServiceCertificateName": "oe-aa-cert",
-      "AppServiceCertificateSecretName": "oe-alfaadin-cert",
-      "AppServiceCertificateFilePath": ""
     }
   },
   {
@@ -110,27 +115,6 @@
     "Id": "02",
     "Location": "westus3",
     "Network": {
-      "NSGs": [
-        {
-          "NsgId": "nsg1",
-          "Name": "",
-          "ResourceId": "",
-          "Rules": [
-            {
-              "Name": "Patrick-Home",
-              "Description": "AA Main Public IP Address",
-              "Priority": 110,
-              "Direction": "Inbound",
-              "Access": "Allow",
-              "Protocol": "*",
-              "SourceAddressPrefix": "75.68.47.183",
-              "SourcePortRange": "*",
-              "DestinationAddressPrefix": "VirtualNetwork",
-              "DestinationPortRange": "*"
-            }
-          ]
-        }
-      ],
       "VNets": [
         {
           "AddressSpace": "10.0.2.0/24",
@@ -155,27 +139,6 @@
           ]
         }
       ]
-    },
-    "Storage": {
-      "SkuName": "Standard_LRS"
-    },
-    "Workload": {
-      "AppServicePlanSkuName": "P1V3",
-      "AppServicePlanSkuTier": "PremiumV3",
-      "AppServicePlanSkuFamily": "Pv3",
-      "AppServicePlanCapacity": 3,
-      "AppServicePlanKind": "linux",
-      "AppServicePlanZoneRedundant": true,
-      "AppServicePlanAutoscaleSettingsMinimumInstances": 3,
-      "AppServicePlanAutoscaleSettingsMaximumInstances": 9,
-      "AppServicePlanAutoscaleSettingsDefaultInstances": 3,
-      "AppServiceKind": "app,linux,container",
-      "AppServiceLinuxFxVersion": "DOCKER|openemr/openemr:latest",
-      "AllowedIpAddressRanges": "",
-      "CustomFqdn": "",
-      "AppServiceCertificateName": "oe-aa-cert",
-      "AppServiceCertificateSecretName": "oe-alfaadin-cert",
-      "AppServiceCertificateFilePath": ""
     }
   }
 ]
