@@ -200,7 +200,7 @@ jobs:
           $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
           $configGlobal = Get-ConfigGlobal -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}"
 
-          $rgNameGlobalCore = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix "" -Sequence $configConstants.SeqNumRgGlobalCore
+          $rgNameGlobalCore = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Sequence $configConstants.SeqNumRgGlobalCore
 
           $uaiName = Get-ResourceName -ConfigConstants $configConstants -ConfigGlobal $configGlobal -Prefix $configConstants.PrefixUai -Sequence $configConstants.SeqNumUai
 

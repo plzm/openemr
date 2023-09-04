@@ -1,6 +1,7 @@
 [
   {
     "Scope": "Global",
+    "Id": "00",
     "Location": "eastus",
     "Database": {
       "Type": "MariaDB",
