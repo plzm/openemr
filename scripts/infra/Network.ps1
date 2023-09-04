@@ -8,6 +8,9 @@ function Deploy-Network()
     $ConfigConstants,
     [Parameter(Mandatory = $true)]
     [object]
+    $ConfigScaleUnitTemplate,
+    [Parameter(Mandatory = $true)]
+    [object]
     $ConfigScaleUnit,
     [Parameter(Mandatory = $true)]
     [string]
@@ -30,7 +33,10 @@ function Deploy-Network()
 
   $nsgIndex = 1
 
-  foreach ($nsg in $ConfigScaleUnit.Network.NSGs)
+  $nsgs = $ConfigScaleUnitTemplate.Network.NSGs
+  $nsgs += $ConfigScaleUnit.Network.NSGs
+
+  foreach ($nsg in $nsgs)
   {
     $nsgName = Get-ResourceName -ConfigConstants $ConfigConstants -ConfigScaleUnit $ConfigScaleUnit -Prefix "nsg" -Sequence ($nsgIndex.ToString().PadLeft(2, "0"))
     $nsgResourceId = "/subscriptions/" + $SubscriptionId + "/resourceGroups/" + $ResourceGroupName + "/providers/Microsoft.Network/networkSecurityGroups/" + $nsgName
