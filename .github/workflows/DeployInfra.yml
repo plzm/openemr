@@ -1300,11 +1300,12 @@ jobs:
             -SecretValue "${{ secrets.OE_DB_DATABASE_NAME }}"
 
           Write-Debug -Debug:$true -Message "Write Key Vault secret MYSQL_ROOT_USER"
+          $secretValue = "${{ secrets.OE_DB_ADMIN_LOGIN }}" + "@" + "$instanceName"
           Set-KeyVaultSecret `
             -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -KeyVaultName "${{ env.OE_KEYVAULT_NAME }}" `
             -SecretName "MYSQL_ROOT_USER" `
-            -SecretValue "${{ secrets.OE_DB_ADMIN_LOGIN }}" + "@" + "$instanceName"
+            -SecretValue "$secretValue"
 
           Write-Debug -Debug:$true -Message "Write Key Vault secret MYSQL_ROOT_PASS"
           Set-KeyVaultSecret `
@@ -1314,11 +1315,12 @@ jobs:
             -SecretValue "${{ secrets.OE_DB_ADMIN_PASSWORD }}"
 
           Write-Debug -Debug:$true -Message "Write Key Vault secret MYSQL_USER"
+          $secretValue = "${{ secrets.OE_DB_LOGIN }}" + "@" + "$instanceName"
           Set-KeyVaultSecret `
             -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -KeyVaultName "${{ env.OE_KEYVAULT_NAME }}" `
             -SecretName "MYSQL_USER" `
-            -SecretValue "${{ secrets.OE_DB_LOGIN }}" + "@" + "$instanceName"
+            -SecretValue "$secretValue"
 
           Write-Debug -Debug:$true -Message "Write Key Vault secret MYSQL_PASS"
           Set-KeyVaultSecret `
