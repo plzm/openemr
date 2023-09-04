@@ -54,6 +54,23 @@ function Get-ConfigGlobal()
   $config | Where-Object { $_.Scope -eq "Global" }
 }
 
+function Get-ConfigScaleUnits()
+{
+  [CmdletBinding()]
+  param
+  (
+    [Parameter(Mandatory = $true)]
+    [string]
+    $ConfigFilePath
+  )
+
+  Write-Debug -Debug:$debug -Message ("Get-ConfigScaleUnits: ConfigFilePath: " + "$ConfigFilePath")
+
+  $config = Get-Content -Path "$ConfigFilePath" | ConvertFrom-Json
+
+  $config | Where-Object { $_.Scope -eq "ScaleUnit" }
+}
+
 function Get-ConfigScaleUnit()
 {
   [CmdletBinding()]
