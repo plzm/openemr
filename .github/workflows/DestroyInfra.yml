@@ -41,7 +41,7 @@ jobs:
 
   destroy_matrix:
     needs: prep_matrix
-    name: Destroy Scale Unit ${{ matrix.Id }} Infrastructure
+    name: Destroy Scale Unit Infrastructure
     environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
     strategy:

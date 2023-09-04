@@ -76,7 +76,8 @@
       "CustomFqdn": "",
       "AppServiceCertificateName": "oe-aa-cert",
       "AppServiceCertificateSecretName": "oe-aa-cert",
-      "AppServiceCertificateFilePath": ""
+      "AppServiceCertificateFilePath": "",
+      "DefaultPort": "8081"
     }
   },
   {
@@ -93,7 +94,7 @@
               "Name": "subnet01",
               "AddressSpace": "10.0.1.0/25",
               "Delegation": "",
-              "ServiceEndpoints": "Microsoft.KeyVault,Microsoft.Storage",
+              "ServiceEndpoints": "Microsoft.KeyVault,Microsoft.Sql,Microsoft.Storage",
               "NsgId": "nsg1",
               "UdrId": ""
             },
@@ -101,7 +102,7 @@
               "Name": "subnet02",
               "AddressSpace": "10.0.1.128/25",
               "Delegation": "Microsoft.Web/serverFarms",
-              "ServiceEndpoints": "Microsoft.KeyVault,Microsoft.Storage",
+              "ServiceEndpoints": "Microsoft.KeyVault,Microsoft.Sql,Microsoft.Storage",
               "NsgId": "nsg1",
               "UdrId": ""
             }
@@ -124,7 +125,7 @@
               "Name": "subnet01",
               "AddressSpace": "10.0.2.0/25",
               "Delegation": "",
-              "ServiceEndpoints": "Microsoft.KeyVault,Microsoft.Storage",
+              "ServiceEndpoints": "Microsoft.KeyVault,Microsoft.Sql,Microsoft.Storage",
               "NsgId": "nsg1",
               "UdrId": ""
             },
@@ -132,7 +133,7 @@
               "Name": "subnet02",
               "AddressSpace": "10.0.2.128/25",
               "Delegation": "Microsoft.Web/serverFarms",
-              "ServiceEndpoints": "Microsoft.KeyVault,Microsoft.Storage",
+              "ServiceEndpoints": "Microsoft.KeyVault,Microsoft.Sql,Microsoft.Storage",
               "NsgId": "nsg1",
               "UdrId": ""
             }
