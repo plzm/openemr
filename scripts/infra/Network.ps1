@@ -33,8 +33,10 @@ function Deploy-Network()
 
   $nsgIndex = 1
 
-  $nsgs = $ConfigScaleUnitTemplate.Network.NSGs
-  $nsgs += $ConfigScaleUnit.Network.NSGs
+  # Ingest both template and scale unit NSGs into a single arraylist
+  $nsgs = [System.Collections.ArrayList]@()
+  if ($ConfigScaleUnitTemplate.Network.NSGs.Count -gt 0) { $nsgs.AddRange($ConfigScaleUnitTemplate.Network.NSGs) }
+  if ($ConfigScaleUnit.Network.NSGs.Count -gt 0) { $nsgs.AddRange($ConfigScaleUnit.Network.NSGs) }
 
   foreach ($nsg in $nsgs)
   {
