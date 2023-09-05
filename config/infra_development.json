@@ -110,36 +110,5 @@
         }
       ]
     }
-  },
-  {
-    "Scope": "ScaleUnit",
-    "Id": "02",
-    "Location": "westus3",
-    "Network": {
-      "VNets": [
-        {
-          "AddressSpace": "10.0.2.0/24",
-          "EnableDdosProtection": false,
-          "Subnets": [
-            {
-              "Name": "subnet01",
-              "AddressSpace": "10.0.2.0/25",
-              "Delegation": "",
-              "ServiceEndpoints": "Microsoft.KeyVault,Microsoft.Sql,Microsoft.Storage",
-              "NsgId": "nsg1",
-              "UdrId": ""
-            },
-            {
-              "Name": "subnet02",
-              "AddressSpace": "10.0.2.128/25",
-              "Delegation": "Microsoft.Web/serverFarms",
-              "ServiceEndpoints": "Microsoft.KeyVault,Microsoft.Sql,Microsoft.Storage",
-              "NsgId": "nsg1",
-              "UdrId": ""
-            }
-          ]
-        }
-      ]
-    }
   }
 ]
