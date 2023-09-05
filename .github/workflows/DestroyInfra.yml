@@ -31,7 +31,7 @@ jobs:
           $configEnv = Get-ConfigScaleUnits -ConfigFilePath $path
           Write-Debug -Debug:$true -Message "Config = $configEnv"
 
-          $matrix = ($configEnv | Where-Object { $_.Scope -eq "ScaleUnit" } | Select-Object -Property Id | ConvertTo-Json -Depth 100 -Compress).Replace("`"", "'")
+          $matrix = ($configEnv | Where-Object { $_.Scope -eq "ScaleUnit" } | Select-Object -Property Id | ConvertTo-Json -Depth 100 -Compress -AsArray).Replace("`"", "'")
           Write-Debug -Debug:$true -Message "Raw matrix = $matrix"
 
           $matrix = "{'include':" + $matrix + "}"
