@@ -72,7 +72,7 @@
       "AppServiceCertificateName": "oe-aa-cert",
       "AppServiceCertificateSecretName": "oe-aa-cert",
       "AppServiceCertificateFilePath": "",
-      "DefaultPort": "8081"
+      "DefaultPort": "443"
     }
   },
   {
