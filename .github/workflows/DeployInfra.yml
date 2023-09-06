@@ -1367,337 +1367,337 @@ jobs:
             -PublicNetworkAccess "Disabled" `
             -DefaultAction "Deny"
 
-      - name: Deploy Workload - App Service Plan
-        if: success()
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = "Stop"
-
-          . ./scripts/infra/Utility.ps1
-          . ./scripts/infra/Network.ps1
-          . ./scripts/infra/Observability.ps1
-          . ./scripts/infra/Workload.ps1
-
-          $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          $configScaleUnitTemplate = Get-ConfigScaleUnitTemplate -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}"
-          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
-
-          $appServicePlanName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixAppServicePlan -Sequence $configConstants.SeqNumWorkloadAppServicePlan
-          $appServicePlanResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_WORKLOAD }}" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "serverFarms" -ResourceName $appServicePlanName
-
-          $output = Deploy-AppServicePlan `
-            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -Location $configScaleUnit.Location `
-            -ResourceGroupName ${{ env.OE_RG_NAME_SU_WORKLOAD }} `
-            -TemplateUri ($configConstants.TemplateUriPrefix + "app-service-plan.json") `
-            -AppServicePlanName $appServicePlanName `
-            -SkuName $configScaleUnitTemplate.Workload.AppServicePlanSkuName `
-            -SkuTier $configScaleUnitTemplate.Workload.AppServicePlanSkuTier `
-            -SkuFamily $configScaleUnitTemplate.Workload.AppServicePlanSkuFamily `
-            -Capacity $configScaleUnitTemplate.Workload.AppServicePlanCapacity `
-            -Kind $configScaleUnitTemplate.Workload.AppServicePlanKind `
-            -ZoneRedundant $configScaleUnitTemplate.Workload.AppServicePlanZoneRedundant `
-            -Tags ${{ env.OE_TAGS_FOR_ARM }}
-
-          Write-Debug -Debug:$true -Message "$output"
-
-          $output = Deploy-DiagnosticsSetting `
-            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -ResourceGroupName ${{ env.OE_RG_NAME_SU_WORKLOAD }} `
-            -TemplateUri ($configConstants.TemplateUriPrefix + "diagnostic-settings.json") `
-            -ResourceId "$appServicePlanResourceId" `
-            -DiagnosticsSettingName ("diag-" + "${{ env.OE_LAW_NAME }}") `
-            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
-            -SendLogs $false `
-            -SendMetrics $true
-
-          Write-Debug -Debug:$true -Message "$output"
-
-      - name: Deploy Workload - App Service Plan AutoScale Settings
-        if: success()
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = "Stop"
-
-          . ./scripts/infra/Utility.ps1
-          . ./scripts/infra/Network.ps1
-          . ./scripts/infra/Observability.ps1
-          . ./scripts/infra/Workload.ps1
-
-          $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          $configScaleUnitTemplate = Get-ConfigScaleUnitTemplate -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}"
-          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
-
-          $appServicePlanName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixAppServicePlan -Sequence $configConstants.SeqNumWorkloadAppServicePlan
-          $appServicePlanResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_WORKLOAD }}" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "serverFarms" -ResourceName $appServicePlanName
-
-          $appServicePlanAutoScaleSettingsName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixAutoscale -Sequence $configConstants.SeqNumWorkloadAppServicePlan
-          $appServicePlanAutoScaleSettingsResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_WORKLOAD }}" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "serverFarms" -ResourceSubTypeName "autoscaleSettings" -ResourceName $appServicePlanName
-
-          $output = Deploy-AppServicePlanAutoscaleSettings `
-            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -Location $configScaleUnit.Location `
-            -ResourceGroupName ${{ env.OE_RG_NAME_SU_WORKLOAD }} `
-            -TemplateUri ($configConstants.TemplateUriPrefix + "app-service-plan.autoscale.json") `
-            -AutoscaleSettingsName $appServicePlanAutoScaleSettingsName `
-            -AppServicePlanResourceId $appServicePlanResourceId `
-            -MinimumInstances $configScaleUnitTemplate.Workload.AppServicePlanAutoscaleSettingsMinimumInstances `
-            -MaximumInstances $configScaleUnitTemplate.Workload.AppServicePlanAutoscaleSettingsMaximumInstances `
-            -DefaultInstances $configScaleUnitTemplate.Workload.AppServicePlanAutoscaleSettingsDefaultInstances `
-            -Tags ${{ env.OE_TAGS_FOR_ARM }}
-
-          Write-Debug -Debug:$true -Message "$output"
-
-      - name: Deploy Workload - App Insights
-        if: success()
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = "Stop"
-
-          . ./scripts/infra/Utility.ps1
-          . ./scripts/infra/Network.ps1
-          . ./scripts/infra/Observability.ps1
-          . ./scripts/infra/Workload.ps1
-
-          $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
-
-          $appInsightsName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixAppInsights -Sequence $configConstants.SeqNumWorkloadWebApp
-          $appInsightsResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_WORKLOAD }}" -ResourceProviderName "Microsoft.Insights" -ResourceTypeName "components" -ResourceName $appInsightsName
-
-          $output = Deploy-AppInsights `
-            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -Location $configScaleUnit.Location `
-            -ResourceGroupName ${{ env.OE_RG_NAME_SU_WORKLOAD }} `
-            -TemplateUri ($configConstants.TemplateUriPrefix + "monitor.app-insights.json") `
-            -AppInsightsName $appInsightsName `
-            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
-            -Tags ${{ env.OE_TAGS_FOR_ARM }}
-
-          Write-Debug -Debug:$true -Message "$output"
-
-          $output = Deploy-DiagnosticsSetting `
-            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -ResourceGroupName ${{ env.OE_RG_NAME_SU_WORKLOAD }} `
-            -TemplateUri ($configConstants.TemplateUriPrefix + "diagnostic-settings.json") `
-            -ResourceId "$appInsightsResourceId" `
-            -DiagnosticsSettingName ("diag-" + "${{ env.OE_LAW_NAME }}") `
-            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
-            -SendLogs $true `
-            -SendMetrics $true
-
-          Write-Debug -Debug:$true -Message "$output"
-
-      - name: Deploy Workload - App Service
-        if: success()
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = "Stop"
-
-          . ./scripts/infra/Utility.ps1
-          . ./scripts/infra/Network.ps1
-          . ./scripts/infra/Observability.ps1
-          . ./scripts/infra/Workload.ps1
-
-          $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          $configScaleUnitTemplate = Get-ConfigScaleUnitTemplate -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}"
-          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
-
-          $appServicePlanName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixAppServicePlan -Sequence $configConstants.SeqNumWorkloadAppServicePlan
-          $appServicePlanResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_WORKLOAD }}" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "serverFarms" -ResourceName $appServicePlanName
-
-          $appInsightsName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixAppInsights -Sequence $configConstants.SeqNumWorkloadWebApp
-          $appInsightsResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_WORKLOAD }}" -ResourceProviderName "Microsoft.Insights" -ResourceTypeName "components" -ResourceName $appInsightsName
-
-
-          # ##################################################
-          # App Service Certificate
-          # Only proceed if there is a custom FQDN (and there should be a certificate file too)
-          if ($configScaleUnitTemplate.Workload.CustomFqdn)
-          {
-            $appServiceCertificateName = "${{ env.OE_KEYVAULT_NAME }}" + "-" + $configScaleUnitTemplate.Workload.AppServiceCertificateName
-
-            $output = Deploy-AppServiceCertificate `
-              -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-              -Location $configScaleUnit.Location `
-              -ResourceGroupName ${{ env.OE_RG_NAME_SU_WORKLOAD }} `
-              -TemplateUri ($configConstants.TemplateUriPrefix + "app-service.certificate.json") `
-              -AppServicePlanResourceId $appServicePlanResourceId `
-              -AppServiceCertificateName $appServiceCertificateName `
-              -KeyVaultResourceId "${{ env.OE_KEYVAULT_RESOURCE_ID }}" `
-              -KeyVaultSecretName $configScaleUnitTemplate.Workload.AppServiceCertificateSecretName `
-              -Tags ${{ env.OE_TAGS_FOR_ARM }}
-
-            Write-Debug -Debug:$true -Message "$output"
-
-            # Get certificate thumbprint
-            $appServiceCertificateThumbprint = "$(az webapp config ssl show -g ${{ env.OE_RG_NAME_SU_WORKLOAD }} --certificate-name "$appServiceCertificateName" --query 'thumbprint' -o tsv)"
-            Write-Debug -Debug:$true -Message "$appServiceCertificateThumbprint"
-          }
-          else
-          {
-            $appServiceCertificateThumbprint = ""
-          }
-          # ##################################################
-
-          # ##################################################
-          # App Service
-
-          $appServicePrivateEndpointName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixPrivateEndpoint -Sequence $configConstants.SeqNumWorkloadWebApp
-
-          $appServiceNicName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixNic -Sequence $configConstants.SeqNumWorkloadWebApp
-          $appServiceNicResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_WORKLOAD }}" -ResourceProviderName "Microsoft.Network" -ResourceTypeName "networkInterfaces" -ResourceName $appServiceNicName
-
-          $subnetResourceIds = Get-SubnetResourceIds -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -SubscriptionId ${{ secrets.OE_AZURE_SUBSCRIPTION_ID }} -ResourceGroupName ${{ env.OE_RG_NAME_SU_NETWORK }}
-          $subnetResourceId = $subnetResourceIds[1]
-
-          $appServiceLinuxFxVersion = $configScaleUnitTemplate.Workload.AppServiceLinuxFxVersion
-
-          $output = Deploy-AppService `
-            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -Location $configScaleUnit.Location `
-            -ResourceGroupName ${{ env.OE_RG_NAME_SU_WORKLOAD }} `
-            -TemplateUri ($configConstants.TemplateUriPrefix + "app-service.app.json") `
-            -AppServiceName ${{ env.OE_APP_SERVICE_NAME }} `
-            -Kind $configScaleUnitTemplate.Workload.AppServiceKind `
-            -AssignSystemIdentity $false `
-            -UserAssignedIdentityResourceId ${{ env.OE_UAI_RESOURCE_ID }} `
-            -UserAssignedIdentityClientId ${{ env.OE_UAI_CLIENT_ID }} `
-            -AppServicePlanResourceId $appServicePlanResourceId `
-            -AppInsightsResourceId $appInsightsResourceId `
-            -StorageAccountResourceId "${{ env.OE_STORAGE_ACCOUNT_RESOURCE_ID }}" `
-            -StorageAccountName "${{ env.OE_STORAGE_ACCOUNT_NAME }}" `
-            -LinuxFxVersion "$appServiceLinuxFxVersion" `
-            -PublicNetworkAccess "Enabled" `
-            -SubnetResourceId "$subnetResourceId" `
-            -RouteAllTrafficThroughVNet $true `
-            -AllowedIpAddressRanges $configScaleUnitTemplate.Workload.AllowedIpAddressRanges `
-            -CustomFqdn $configScaleUnitTemplate.Workload.CustomFqdn `
-            -CertificateForAppServiceThumbprint $appServiceCertificateThumbprint `
-            -Tags ${{ env.OE_TAGS_FOR_ARM }}
-
-          Write-Debug -Debug:$true -Message "$output"
-
-          $output = Deploy-DiagnosticsSetting `
-            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -ResourceGroupName ${{ env.OE_RG_NAME_SU_WORKLOAD }} `
-            -TemplateUri ($configConstants.TemplateUriPrefix + "diagnostic-settings.json") `
-            -ResourceId "${{ env.OE_APP_SERVICE_RESOURCE_ID }}" `
-            -DiagnosticsSettingName ("diag-" + "${{ env.OE_LAW_NAME }}") `
-            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
-            -SendLogs $true `
-            -SendMetrics $true
-
-          Write-Debug -Debug:$true -Message "$output"
-
-          $output = Deploy-PrivateEndpointAndNic `
-            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -Location $configScaleUnit.Location `
-            -ResourceGroupName ${{ env.OE_RG_NAME_SU_WORKLOAD }} `
-            -TemplateUri ($configConstants.TemplateUriPrefix + "net.private-endpoint.json") `
-            -ProtectedWorkloadResourceId "${{ env.OE_APP_SERVICE_RESOURCE_ID }}" `
-            -ProtectedWorkloadSubResource "sites" `
-            -PrivateEndpointName $appServicePrivateEndpointName `
-            -NetworkInterfaceName $appServiceNicName `
-            -SubnetResourceId ${{ env.OE_SUBNET_RESOURCE_ID_PRIVATE_ENDPOINT }} `
-            -Tags ${{ env.OE_TAGS_FOR_ARM }}
-
-          Write-Debug -Debug:$true -Message "$output"
-
-          Write-Debug -Debug:$true -Message "Deploy NIC Diagnostics"
-          $output = Deploy-DiagnosticsSetting `
-            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -ResourceGroupName ${{ env.OE_RG_NAME_SU_WORKLOAD }} `
-            -TemplateUri ($configConstants.TemplateUriPrefix + "diagnostic-settings.json") `
-            -ResourceId $appServiceNicResourceId `
-            -DiagnosticsSettingName ("diag-" + "${{ env.OE_LAW_NAME }}") `
-            -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
-            -SendLogs $false `
-            -SendMetrics $true
-
-          Write-Debug -Debug:$true -Message "$output"
-
-
-          # Private Endpoint DNS Zone Group
-          Write-Debug -Debug:$true -Message "Deploy Private Endpoint DNS Zone Group"
-          $privateDnsZoneResourceId = Get-ResourceId `
-            -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -ResourceGroupName "${{ env.OE_RG_NAME_SU_NETWORK }}" `
-            -ResourceProviderName "Microsoft.Network" `
-            -ResourceTypeName "privateDnsZones" `
-            -ResourceName $configConstants.PrivateDnsZoneNameAppService
-
-          Deploy-PrivateEndpointPrivateDnsZoneGroup `
-            -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
-            -ResourceGroupName ${{ env.OE_RG_NAME_SU_WORKLOAD }} `
-            -TemplateUri ($configConstants.TemplateUriPrefix + "net.private-endpoint.private-dns-zone-group.json") `
-            -PrivateEndpointName $appServicePrivateEndpointName `
-            -PrivateDnsZoneName $configConstants.PrivateDnsZoneNameAppService `
-            -PrivateDnsZoneGroupName "default" `
-            -PrivateDnsZoneResourceId $privateDnsZoneResourceId
-          # ##################################################
-
-      - name: Deploy Workload - App Settings
-        if: success()
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = "Stop"
-
-          . ./scripts/infra/Utility.ps1
-          . ./scripts/infra/KeyVault.ps1
-          . ./scripts/infra/Workload.ps1
-
-          $sp = "@Microsoft.KeyVault(SecretUri=https://${{ env.OE_KEYVAULT_NAME }}.vault.azure.net/secrets/"
-
-          # Prepare JSON file
-          $fileContents = "{`n"
-
-          $varName = "MYSQL_HOST"
-          $secretName = Get-KeyVaultSecretName -VarName $varName
-          $fileContents += "`"$varName`":`"" + $sp + $secretName + ")`",`n"
-
-          $varName = "MYSQL_DATABASE"
-          $secretName = Get-KeyVaultSecretName -VarName $varName
-          $fileContents += "`"$varName`":`"" + $sp + $secretName + ")`",`n"
-
-          $varName = "MYSQL_ROOT_USER"
-          $secretName = Get-KeyVaultSecretName -VarName $varName
-          $fileContents += "`"$varName`":`"" + $sp + $secretName + ")`",`n"
-
-          $varName = "MYSQL_ROOT_PASS"
-          $secretName = Get-KeyVaultSecretName -VarName $varName
-          $fileContents += "`"$varName`":`"" + $sp + $secretName + ")`",`n"
-
-          $varName = "MYSQL_USER"
-          $secretName = Get-KeyVaultSecretName -VarName $varName
-          $fileContents += "`"$varName`":`"" + $sp + $secretName + ")`",`n"
-
-          $varName = "MYSQL_PASS"
-          $secretName = Get-KeyVaultSecretName -VarName $varName
-          $fileContents += "`"$varName`":`"" + $sp + $secretName + ")`",`n"
-
-          $varName = "OE_USER"
-          $secretName = Get-KeyVaultSecretName -VarName $varName
-          $fileContents += "`"$varName`":`"" + $sp + $secretName + ")`",`n"
-
-          $varName = "OE_PASS"
-          $secretName = Get-KeyVaultSecretName -VarName $varName
-          $fileContents += "`"$varName`":`"" + $sp + $secretName + ")`",`n"
-
-          $varName = "WEBSITES_PORT"
-          $secretName = Get-KeyVaultSecretName -VarName $varName
-          $fileContents += "`"$varName`":`"" + $sp + $secretName + ")`",`n"
-
-          $fileContents += "}"
-
-          Write-Debug -Debug:$true -Message "fileContents"
-          Write-Debug -Debug:$true -Message $fileContents
-
-          # Write config out to JSON file
-          $fileContents | Out-File 'config.json'
-
-          Write-Debug -Debug:$true -Message "Write to ${{ env.OE_APP_SERVICE_NAME }}"
-          az webapp config appsettings set -g ${{ env.OE_RG_NAME_SU_WORKLOAD }} -n ${{ env.OE_APP_SERVICE_NAME }} --settings '@config.json'
+      #- name: Deploy Workload - App Service Plan
+      #  if: success()
+      #  shell: pwsh
+      #  run: |
+      #    $ErrorActionPreference = "Stop"
+
+      #    . ./scripts/infra/Utility.ps1
+      #    . ./scripts/infra/Network.ps1
+      #    . ./scripts/infra/Observability.ps1
+      #    . ./scripts/infra/Workload.ps1
+
+      #    $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+      #    $configScaleUnitTemplate = Get-ConfigScaleUnitTemplate -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}"
+      #    $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
+
+      #    $appServicePlanName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixAppServicePlan -Sequence $configConstants.SeqNumWorkloadAppServicePlan
+      #    $appServicePlanResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_WORKLOAD }}" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "serverFarms" -ResourceName $appServicePlanName
+
+      #    $output = Deploy-AppServicePlan `
+      #      -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+      #      -Location $configScaleUnit.Location `
+      #      -ResourceGroupName ${{ env.OE_RG_NAME_SU_WORKLOAD }} `
+      #      -TemplateUri ($configConstants.TemplateUriPrefix + "app-service-plan.json") `
+      #      -AppServicePlanName $appServicePlanName `
+      #      -SkuName $configScaleUnitTemplate.Workload.AppServicePlanSkuName `
+      #      -SkuTier $configScaleUnitTemplate.Workload.AppServicePlanSkuTier `
+      #      -SkuFamily $configScaleUnitTemplate.Workload.AppServicePlanSkuFamily `
+      #      -Capacity $configScaleUnitTemplate.Workload.AppServicePlanCapacity `
+      #      -Kind $configScaleUnitTemplate.Workload.AppServicePlanKind `
+      #      -ZoneRedundant $configScaleUnitTemplate.Workload.AppServicePlanZoneRedundant `
+      #      -Tags ${{ env.OE_TAGS_FOR_ARM }}
+
+      #    Write-Debug -Debug:$true -Message "$output"
+
+      #    $output = Deploy-DiagnosticsSetting `
+      #      -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+      #      -ResourceGroupName ${{ env.OE_RG_NAME_SU_WORKLOAD }} `
+      #      -TemplateUri ($configConstants.TemplateUriPrefix + "diagnostic-settings.json") `
+      #      -ResourceId "$appServicePlanResourceId" `
+      #      -DiagnosticsSettingName ("diag-" + "${{ env.OE_LAW_NAME }}") `
+      #      -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+      #      -SendLogs $false `
+      #      -SendMetrics $true
+
+      #    Write-Debug -Debug:$true -Message "$output"
+
+      #- name: Deploy Workload - App Service Plan AutoScale Settings
+      #  if: success()
+      #  shell: pwsh
+      #  run: |
+      #    $ErrorActionPreference = "Stop"
+
+      #    . ./scripts/infra/Utility.ps1
+      #    . ./scripts/infra/Network.ps1
+      #    . ./scripts/infra/Observability.ps1
+      #    . ./scripts/infra/Workload.ps1
+
+      #    $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+      #    $configScaleUnitTemplate = Get-ConfigScaleUnitTemplate -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}"
+      #    $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
+
+      #    $appServicePlanName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixAppServicePlan -Sequence $configConstants.SeqNumWorkloadAppServicePlan
+      #    $appServicePlanResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_WORKLOAD }}" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "serverFarms" -ResourceName $appServicePlanName
+
+      #    $appServicePlanAutoScaleSettingsName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixAutoscale -Sequence $configConstants.SeqNumWorkloadAppServicePlan
+      #    $appServicePlanAutoScaleSettingsResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_WORKLOAD }}" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "serverFarms" -ResourceSubTypeName "autoscaleSettings" -ResourceName $appServicePlanName
+
+      #    $output = Deploy-AppServicePlanAutoscaleSettings `
+      #      -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+      #      -Location $configScaleUnit.Location `
+      #      -ResourceGroupName ${{ env.OE_RG_NAME_SU_WORKLOAD }} `
+      #      -TemplateUri ($configConstants.TemplateUriPrefix + "app-service-plan.autoscale.json") `
+      #      -AutoscaleSettingsName $appServicePlanAutoScaleSettingsName `
+      #      -AppServicePlanResourceId $appServicePlanResourceId `
+      #      -MinimumInstances $configScaleUnitTemplate.Workload.AppServicePlanAutoscaleSettingsMinimumInstances `
+      #      -MaximumInstances $configScaleUnitTemplate.Workload.AppServicePlanAutoscaleSettingsMaximumInstances `
+      #      -DefaultInstances $configScaleUnitTemplate.Workload.AppServicePlanAutoscaleSettingsDefaultInstances `
+      #      -Tags ${{ env.OE_TAGS_FOR_ARM }}
+
+      #    Write-Debug -Debug:$true -Message "$output"
+
+      #- name: Deploy Workload - App Insights
+      #  if: success()
+      #  shell: pwsh
+      #  run: |
+      #    $ErrorActionPreference = "Stop"
+
+      #    . ./scripts/infra/Utility.ps1
+      #    . ./scripts/infra/Network.ps1
+      #    . ./scripts/infra/Observability.ps1
+      #    . ./scripts/infra/Workload.ps1
+
+      #    $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+      #    $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
+
+      #    $appInsightsName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixAppInsights -Sequence $configConstants.SeqNumWorkloadWebApp
+      #    $appInsightsResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_WORKLOAD }}" -ResourceProviderName "Microsoft.Insights" -ResourceTypeName "components" -ResourceName $appInsightsName
+
+      #    $output = Deploy-AppInsights `
+      #      -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+      #      -Location $configScaleUnit.Location `
+      #      -ResourceGroupName ${{ env.OE_RG_NAME_SU_WORKLOAD }} `
+      #      -TemplateUri ($configConstants.TemplateUriPrefix + "monitor.app-insights.json") `
+      #      -AppInsightsName $appInsightsName `
+      #      -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+      #      -Tags ${{ env.OE_TAGS_FOR_ARM }}
+
+      #    Write-Debug -Debug:$true -Message "$output"
+
+      #    $output = Deploy-DiagnosticsSetting `
+      #      -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+      #      -ResourceGroupName ${{ env.OE_RG_NAME_SU_WORKLOAD }} `
+      #      -TemplateUri ($configConstants.TemplateUriPrefix + "diagnostic-settings.json") `
+      #      -ResourceId "$appInsightsResourceId" `
+      #      -DiagnosticsSettingName ("diag-" + "${{ env.OE_LAW_NAME }}") `
+      #      -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+      #      -SendLogs $true `
+      #      -SendMetrics $true
+
+      #    Write-Debug -Debug:$true -Message "$output"
+
+      #- name: Deploy Workload - App Service
+      #  if: success()
+      #  shell: pwsh
+      #  run: |
+      #    $ErrorActionPreference = "Stop"
+
+      #    . ./scripts/infra/Utility.ps1
+      #    . ./scripts/infra/Network.ps1
+      #    . ./scripts/infra/Observability.ps1
+      #    . ./scripts/infra/Workload.ps1
+
+      #    $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+      #    $configScaleUnitTemplate = Get-ConfigScaleUnitTemplate -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}"
+      #    $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
+
+      #    $appServicePlanName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixAppServicePlan -Sequence $configConstants.SeqNumWorkloadAppServicePlan
+      #    $appServicePlanResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_WORKLOAD }}" -ResourceProviderName "Microsoft.Web" -ResourceTypeName "serverFarms" -ResourceName $appServicePlanName
+
+      #    $appInsightsName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixAppInsights -Sequence $configConstants.SeqNumWorkloadWebApp
+      #    $appInsightsResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_WORKLOAD }}" -ResourceProviderName "Microsoft.Insights" -ResourceTypeName "components" -ResourceName $appInsightsName
+
+
+      #    # ##################################################
+      #    # App Service Certificate
+      #    # Only proceed if there is a custom FQDN (and there should be a certificate file too)
+      #    if ($configScaleUnitTemplate.Workload.CustomFqdn)
+      #    {
+      #      $appServiceCertificateName = "${{ env.OE_KEYVAULT_NAME }}" + "-" + $configScaleUnitTemplate.Workload.AppServiceCertificateName
+
+      #      $output = Deploy-AppServiceCertificate `
+      #        -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+      #        -Location $configScaleUnit.Location `
+      #        -ResourceGroupName ${{ env.OE_RG_NAME_SU_WORKLOAD }} `
+      #        -TemplateUri ($configConstants.TemplateUriPrefix + "app-service.certificate.json") `
+      #        -AppServicePlanResourceId $appServicePlanResourceId `
+      #        -AppServiceCertificateName $appServiceCertificateName `
+      #        -KeyVaultResourceId "${{ env.OE_KEYVAULT_RESOURCE_ID }}" `
+      #        -KeyVaultSecretName $configScaleUnitTemplate.Workload.AppServiceCertificateSecretName `
+      #        -Tags ${{ env.OE_TAGS_FOR_ARM }}
+
+      #      Write-Debug -Debug:$true -Message "$output"
+
+      #      # Get certificate thumbprint
+      #      $appServiceCertificateThumbprint = "$(az webapp config ssl show -g ${{ env.OE_RG_NAME_SU_WORKLOAD }} --certificate-name "$appServiceCertificateName" --query 'thumbprint' -o tsv)"
+      #      Write-Debug -Debug:$true -Message "$appServiceCertificateThumbprint"
+      #    }
+      #    else
+      #    {
+      #      $appServiceCertificateThumbprint = ""
+      #    }
+      #    # ##################################################
+
+      #    # ##################################################
+      #    # App Service
+
+      #    $appServicePrivateEndpointName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixPrivateEndpoint -Sequence $configConstants.SeqNumWorkloadWebApp
+
+      #    $appServiceNicName = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix $configConstants.PrefixNic -Sequence $configConstants.SeqNumWorkloadWebApp
+      #    $appServiceNicResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_WORKLOAD }}" -ResourceProviderName "Microsoft.Network" -ResourceTypeName "networkInterfaces" -ResourceName $appServiceNicName
+
+      #    $subnetResourceIds = Get-SubnetResourceIds -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -SubscriptionId ${{ secrets.OE_AZURE_SUBSCRIPTION_ID }} -ResourceGroupName ${{ env.OE_RG_NAME_SU_NETWORK }}
+      #    $subnetResourceId = $subnetResourceIds[1]
+
+      #    $appServiceLinuxFxVersion = $configScaleUnitTemplate.Workload.AppServiceLinuxFxVersion
+
+      #    $output = Deploy-AppService `
+      #      -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+      #      -Location $configScaleUnit.Location `
+      #      -ResourceGroupName ${{ env.OE_RG_NAME_SU_WORKLOAD }} `
+      #      -TemplateUri ($configConstants.TemplateUriPrefix + "app-service.app.json") `
+      #      -AppServiceName ${{ env.OE_APP_SERVICE_NAME }} `
+      #      -Kind $configScaleUnitTemplate.Workload.AppServiceKind `
+      #      -AssignSystemIdentity $false `
+      #      -UserAssignedIdentityResourceId ${{ env.OE_UAI_RESOURCE_ID }} `
+      #      -UserAssignedIdentityClientId ${{ env.OE_UAI_CLIENT_ID }} `
+      #      -AppServicePlanResourceId $appServicePlanResourceId `
+      #      -AppInsightsResourceId $appInsightsResourceId `
+      #      -StorageAccountResourceId "${{ env.OE_STORAGE_ACCOUNT_RESOURCE_ID }}" `
+      #      -StorageAccountName "${{ env.OE_STORAGE_ACCOUNT_NAME }}" `
+      #      -LinuxFxVersion "$appServiceLinuxFxVersion" `
+      #      -PublicNetworkAccess "Enabled" `
+      #      -SubnetResourceId "$subnetResourceId" `
+      #      -RouteAllTrafficThroughVNet $true `
+      #      -AllowedIpAddressRanges $configScaleUnitTemplate.Workload.AllowedIpAddressRanges `
+      #      -CustomFqdn $configScaleUnitTemplate.Workload.CustomFqdn `
+      #      -CertificateForAppServiceThumbprint $appServiceCertificateThumbprint `
+      #      -Tags ${{ env.OE_TAGS_FOR_ARM }}
+
+      #    Write-Debug -Debug:$true -Message "$output"
+
+      #    $output = Deploy-DiagnosticsSetting `
+      #      -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+      #      -ResourceGroupName ${{ env.OE_RG_NAME_SU_WORKLOAD }} `
+      #      -TemplateUri ($configConstants.TemplateUriPrefix + "diagnostic-settings.json") `
+      #      -ResourceId "${{ env.OE_APP_SERVICE_RESOURCE_ID }}" `
+      #      -DiagnosticsSettingName ("diag-" + "${{ env.OE_LAW_NAME }}") `
+      #      -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+      #      -SendLogs $true `
+      #      -SendMetrics $true
+
+      #    Write-Debug -Debug:$true -Message "$output"
+
+      #    $output = Deploy-PrivateEndpointAndNic `
+      #      -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+      #      -Location $configScaleUnit.Location `
+      #      -ResourceGroupName ${{ env.OE_RG_NAME_SU_WORKLOAD }} `
+      #      -TemplateUri ($configConstants.TemplateUriPrefix + "net.private-endpoint.json") `
+      #      -ProtectedWorkloadResourceId "${{ env.OE_APP_SERVICE_RESOURCE_ID }}" `
+      #      -ProtectedWorkloadSubResource "sites" `
+      #      -PrivateEndpointName $appServicePrivateEndpointName `
+      #      -NetworkInterfaceName $appServiceNicName `
+      #      -SubnetResourceId ${{ env.OE_SUBNET_RESOURCE_ID_PRIVATE_ENDPOINT }} `
+      #      -Tags ${{ env.OE_TAGS_FOR_ARM }}
+
+      #    Write-Debug -Debug:$true -Message "$output"
+
+      #    Write-Debug -Debug:$true -Message "Deploy NIC Diagnostics"
+      #    $output = Deploy-DiagnosticsSetting `
+      #      -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+      #      -ResourceGroupName ${{ env.OE_RG_NAME_SU_WORKLOAD }} `
+      #      -TemplateUri ($configConstants.TemplateUriPrefix + "diagnostic-settings.json") `
+      #      -ResourceId $appServiceNicResourceId `
+      #      -DiagnosticsSettingName ("diag-" + "${{ env.OE_LAW_NAME }}") `
+      #      -LogAnalyticsWorkspaceResourceId "${{ env.OE_LAW_RESOURCE_ID }}" `
+      #      -SendLogs $false `
+      #      -SendMetrics $true
+
+      #    Write-Debug -Debug:$true -Message "$output"
+
+
+      #    # Private Endpoint DNS Zone Group
+      #    Write-Debug -Debug:$true -Message "Deploy Private Endpoint DNS Zone Group"
+      #    $privateDnsZoneResourceId = Get-ResourceId `
+      #      -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+      #      -ResourceGroupName "${{ env.OE_RG_NAME_SU_NETWORK }}" `
+      #      -ResourceProviderName "Microsoft.Network" `
+      #      -ResourceTypeName "privateDnsZones" `
+      #      -ResourceName $configConstants.PrivateDnsZoneNameAppService
+
+      #    Deploy-PrivateEndpointPrivateDnsZoneGroup `
+      #      -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
+      #      -ResourceGroupName ${{ env.OE_RG_NAME_SU_WORKLOAD }} `
+      #      -TemplateUri ($configConstants.TemplateUriPrefix + "net.private-endpoint.private-dns-zone-group.json") `
+      #      -PrivateEndpointName $appServicePrivateEndpointName `
+      #      -PrivateDnsZoneName $configConstants.PrivateDnsZoneNameAppService `
+      #      -PrivateDnsZoneGroupName "default" `
+      #      -PrivateDnsZoneResourceId $privateDnsZoneResourceId
+      #    # ##################################################
+
+      #- name: Deploy Workload - App Settings
+      #  if: success()
+      #  shell: pwsh
+      #  run: |
+      #    $ErrorActionPreference = "Stop"
+
+      #    . ./scripts/infra/Utility.ps1
+      #    . ./scripts/infra/KeyVault.ps1
+      #    . ./scripts/infra/Workload.ps1
+
+      #    $sp = "@Microsoft.KeyVault(SecretUri=https://${{ env.OE_KEYVAULT_NAME }}.vault.azure.net/secrets/"
+
+      #    # Prepare JSON file
+      #    $fileContents = "{`n"
+
+      #    $varName = "MYSQL_HOST"
+      #    $secretName = Get-KeyVaultSecretName -VarName $varName
+      #    $fileContents += "`"$varName`":`"" + $sp + $secretName + ")`",`n"
+
+      #    $varName = "MYSQL_DATABASE"
+      #    $secretName = Get-KeyVaultSecretName -VarName $varName
+      #    $fileContents += "`"$varName`":`"" + $sp + $secretName + ")`",`n"
+
+      #    $varName = "MYSQL_ROOT_USER"
+      #    $secretName = Get-KeyVaultSecretName -VarName $varName
+      #    $fileContents += "`"$varName`":`"" + $sp + $secretName + ")`",`n"
+
+      #    $varName = "MYSQL_ROOT_PASS"
+      #    $secretName = Get-KeyVaultSecretName -VarName $varName
+      #    $fileContents += "`"$varName`":`"" + $sp + $secretName + ")`",`n"
+
+      #    $varName = "MYSQL_USER"
+      #    $secretName = Get-KeyVaultSecretName -VarName $varName
+      #    $fileContents += "`"$varName`":`"" + $sp + $secretName + ")`",`n"
+
+      #    $varName = "MYSQL_PASS"
+      #    $secretName = Get-KeyVaultSecretName -VarName $varName
+      #    $fileContents += "`"$varName`":`"" + $sp + $secretName + ")`",`n"
+
+      #    $varName = "OE_USER"
+      #    $secretName = Get-KeyVaultSecretName -VarName $varName
+      #    $fileContents += "`"$varName`":`"" + $sp + $secretName + ")`",`n"
+
+      #    $varName = "OE_PASS"
+      #    $secretName = Get-KeyVaultSecretName -VarName $varName
+      #    $fileContents += "`"$varName`":`"" + $sp + $secretName + ")`",`n"
+
+      #    $varName = "WEBSITES_PORT"
+      #    $secretName = Get-KeyVaultSecretName -VarName $varName
+      #    $fileContents += "`"$varName`":`"" + $sp + $secretName + ")`",`n"
+
+      #    $fileContents += "}"
+
+      #    Write-Debug -Debug:$true -Message "fileContents"
+      #    Write-Debug -Debug:$true -Message $fileContents
+
+      #    # Write config out to JSON file
+      #    $fileContents | Out-File 'config.json'
+
+      #    Write-Debug -Debug:$true -Message "Write to ${{ env.OE_APP_SERVICE_NAME }}"
+      #    az webapp config appsettings set -g ${{ env.OE_RG_NAME_SU_WORKLOAD }} -n ${{ env.OE_APP_SERVICE_NAME }} --settings '@config.json'
 
 
       - name: Azure logout

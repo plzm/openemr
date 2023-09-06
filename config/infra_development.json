@@ -23,11 +23,6 @@
           "Mode": "Default",
           "Location": "eastus",
           "StorageAutogrow": "Enabled"
-        },
-        {
-          "Mode": "Replica",
-          "Location": "westus2",
-          "StorageAutogrow": "Disabled"
         }
       ]
     }
