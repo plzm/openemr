@@ -366,6 +366,7 @@ jobs:
               -ResourceGroupName ${{ env.OE_RG_NAME_G_DATA }} `
               -TemplateUri ($configConstants.TemplateUriPrefix + "db.mariadb.server.json") `
               -ServerName "$mainInstanceName" `
+              -AdministratorLogin "${{ secrets.OE_DB_ADMIN_LOGIN }}" `
               -AdministratorPassword "${{ secrets.OE_DB_ADMIN_PASSWORD }}" `
               -SkuTier $configGlobal.Database.SkuTier `
               -SkuFamily $configGlobal.Database.SkuFamily `
@@ -427,6 +428,7 @@ jobs:
                 -ResourceGroupName ${{ env.OE_RG_NAME_G_DATA }} `
                 -TemplateUri ($configConstants.TemplateUriPrefix + "db.mariadb.server.json") `
                 -ServerName "$instanceName" `
+                -AdministratorLogin "${{ secrets.OE_DB_ADMIN_LOGIN }}" `
                 -AdministratorPassword "${{ secrets.OE_DB_ADMIN_PASSWORD }}" `
                 -SkuTier $configGlobal.Database.SkuTier `
                 -SkuFamily $configGlobal.Database.SkuFamily `
