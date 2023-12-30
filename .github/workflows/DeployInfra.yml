@@ -186,7 +186,7 @@ jobs:
           $configGlobal = Get-ConfigGlobal -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}"
 
           Write-Debug -Debug:$true -Message "Deploy UAI ${{ env.OE_UAI_NAME }}"
-          $output = Deploy-UAI `
+          $output = plzm.Azure\Deploy-UserAssignedIdentity `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -Location $configGlobal.Location `
             -ResourceGroupName ${{ env.OE_RG_NAME_G_CORE }} `
@@ -798,7 +798,7 @@ jobs:
           $privateLinkScopeNicResourceId = Get-ResourceId -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" -ResourceGroupName "${{ env.OE_RG_NAME_SU_OBSERVABILITY }}" -ResourceProviderName "Microsoft.Network" -ResourceTypeName "networkInterfaces" -ResourceName $privateLinkScopeNicName
 
           Write-Debug -Debug:$true -Message "Deploy AMPLS"
-          $output = Deploy-Ampls `
+          $output = plzm.Azure\Deploy-MonitorPrivateLinkScope `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -ResourceGroupName ${{ env.OE_RG_NAME_SU_OBSERVABILITY }} `
             -TemplateUri ($configConstants.TemplateUriPrefix + "monitor.private-link-scope.json") `
@@ -808,7 +808,7 @@ jobs:
           Write-Debug -Debug:$true -Message "$output"
 
           Write-Debug -Debug:$true -Message "Deploy AMPLS-LAW connection"
-          $output = Deploy-ConnectLawToAmpls `
+          $output = plzm.Azure\Deploy-MonitorPrivateLinkScopeResourceConnection `
             -SubscriptionID "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -ResourceGroupName ${{ env.OE_RG_NAME_SU_OBSERVABILITY }} `
             -TemplateUri ($configConstants.TemplateUriPrefix + "monitor.private-link-scope.scoped-resource.json") `

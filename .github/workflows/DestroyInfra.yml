@@ -19,19 +19,27 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Download and import plzm.Azure module
+        if: success()
+        shell: pwsh
+        run: |
+          $urlRoot = "${{ vars.URL_ROOT_MODULE_PLZM_AZURE }}"
+          . ./scripts/Module.ps1
+          Get-PlzmAzureModule -UrlRoot "$urlRoot"
+
       - name: Write matrix string to output
         id: set-matrix
         shell: pwsh
         run: |
-          . ./scripts/infra/Utility.ps1
+          Import-Module "${{ env.AA_MODULE_PATH_PLZM_AZURE }}" -Force
 
           $path = "./config/infra_" + "${{ inputs.environment }}" + ".json"
           Write-Debug -Debug:$true -Message "Path = $path"
 
-          $configEnv = Get-ConfigScaleUnits -ConfigFilePath $path
-          Write-Debug -Debug:$true -Message "Config = $configEnv"
+          $ConfigEnv = plzm.Azure\Get-ConfigFromFile -ConfigFilePath $path
+          Write-Debug -Debug:$true -Message "Config = $ConfigEnv"
 
-          $matrix = ($configEnv | Where-Object { $_.Scope -eq "ScaleUnit" } | Select-Object -Property Id | ConvertTo-Json -Depth 100 -Compress -AsArray).Replace("`"", "'")
+          $matrix = ($ConfigEnv | Where-Object { $_.Scope -eq "ScaleUnit" } | Select-Object -Property Id | ConvertTo-Json -Depth 100 -Compress -AsArray).Replace("`"", "'")
           Write-Debug -Debug:$true -Message "Raw matrix = $matrix"
 
           $matrix = "{'include':" + $matrix + "}"
@@ -64,47 +72,49 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: true
 
+      - name: Download and import plzm.Azure module
+        if: success()
+        shell: pwsh
+        run: |
+          $urlRoot = "${{ vars.URL_ROOT_MODULE_PLZM_AZURE }}"
+          . ./scripts/Module.ps1
+          Get-PlzmAzureModule -UrlRoot "$urlRoot"
+
       - name: Set Config File Paths to Environment
         if: success()
         shell: pwsh
         run: |
-          $ErrorActionPreference = "Stop"
+          Import-Module "${{ env.AA_MODULE_PATH_PLZM_AZURE }}" -Force
 
-          . ./scripts/infra/Utility.ps1
-
-          Set-EnvVar2 -VarName "OE_CONFIG_FILE_ALL" -VarValue "./config/infra_constants.json"
-          Set-EnvVar2 -VarName "OE_CONFIG_FILE_ENV" -VarValue ("./config/infra_" + "${{ inputs.environment }}" + ".json")
+          plzm.Azure\Set-EnvVar2 -VarName "OE_CONFIG_FILE_ALL" -VarValue "./config/infra_constants.json"
+          plzm.Azure\Set-EnvVar2 -VarName "OE_CONFIG_FILE_ENV" -VarValue ("./config/infra_" + "${{ inputs.environment }}" + ".json")
 
       - name: Set Environment Variables
         if: success()
         shell: pwsh
         run: |
-          $ErrorActionPreference = "Stop"
+          Import-Module "${{ env.AA_MODULE_PATH_PLZM_AZURE }}" -Force
+
+          $ConfigScaleUnit = plzm.Azure\Get-ConfigFromFile -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" | Where-Object { $_.Scope -eq "ScaleUnit" -and $_.Id -eq "$Id" }
 
           . ./scripts/infra/Utility.ps1
 
-          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
-
           Set-EnvVars `
             -Environment "${{ inputs.environment }}" `
-            -ConfigScaleUnit $configScaleUnit
+            -ConfigScaleUnit $ConfigScaleUnit
 
       - name: Delete Resource Groups
         if: success()
         shell: pwsh
         run: |
-          $ErrorActionPreference = "Stop"
+          $configConstants = plzm.Azure\Get-ConfigFromFile -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
+          $ConfigScaleUnit = plzm.Azure\Get-ConfigFromFile -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" | Where-Object { $_.Scope -eq "ScaleUnit" -and $_.Id -eq "$Id" }
 
-          . ./scripts/infra/Utility.ps1
-
-          $configConstants = Get-ConfigConstants -ConfigFilePath "${{ env.OE_CONFIG_FILE_ALL }}"
-          $configScaleUnit = Get-ConfigScaleUnit -ConfigFilePath "${{ env.OE_CONFIG_FILE_ENV }}" -Id "${{ matrix.Id }}"
-
-          $rgNameScaleUnitCore = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitCore
-          $rgNameScaleUnitNetwork = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitNetwork
-          $rgNameScaleUnitObservability = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitObservability
-          $rgNameScaleUnitData = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitData
-          $rgNameScaleUnitWorkload = Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $configScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitWorkload
+          $rgNameScaleUnitCore = plzm.Azure\Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $ConfigScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitCore
+          $rgNameScaleUnitNetwork = plzm.Azure\Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $ConfigScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitNetwork
+          $rgNameScaleUnitObservability = plzm.Azure\Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $ConfigScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitObservability
+          $rgNameScaleUnitData = plzm.Azure\Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $ConfigScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitData
+          $rgNameScaleUnitWorkload = plzm.Azure\Get-ResourceName -ConfigConstants $configConstants -ConfigScaleUnit $ConfigScaleUnit -Prefix "" -Sequence $configConstants.SeqNumRgScaleUnitWorkload
 
           $rgExists = $null
 
@@ -174,16 +184,24 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: true
 
+      - name: Download and import plzm.Azure module
+        if: success()
+        shell: pwsh
+        run: |
+          $urlRoot = "${{ vars.URL_ROOT_MODULE_PLZM_AZURE }}"
+          . ./scripts/Module.ps1
+          Get-PlzmAzureModule -UrlRoot "$urlRoot"
+
       - name: Set Config File Paths to Environment
         if: success()
         shell: pwsh
         run: |
-          $ErrorActionPreference = "Stop"
+          Import-Module "${{ env.AA_MODULE_PATH_PLZM_AZURE }}" -Force
 
           . ./scripts/infra/Utility.ps1
 
-          Set-EnvVar2 -VarName "OE_CONFIG_FILE_ALL" -VarValue "./config/infra_constants.json"
-          Set-EnvVar2 -VarName "OE_CONFIG_FILE_ENV" -VarValue ("./config/infra_" + "${{ inputs.environment }}" + ".json")
+          plzm.Azure\Set-EnvVar2 -VarName "OE_CONFIG_FILE_ALL" -VarValue "./config/infra_constants.json"
+          plzm.Azure\Set-EnvVar2 -VarName "OE_CONFIG_FILE_ENV" -VarValue ("./config/infra_" + "${{ inputs.environment }}" + ".json")
 
       - name: Set Environment Variables
         if: success()
@@ -214,7 +232,7 @@ jobs:
           Write-Debug -Debug:$true -Message "Get UAI $uaiName"
           $uai = "$(az identity show -g $rgNameGlobalCore -n $uaiName)" | ConvertFrom-Json
 
-          $output = Remove-RoleAssignmentsSub `
+          $output = plzm.Azure\Remove-RoleAssignments `
             -SubscriptionId "${{ secrets.OE_AZURE_SUBSCRIPTION_ID }}" `
             -PrincipalId $uai.principalId
  
